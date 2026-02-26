@@ -164,9 +164,9 @@ public class BackRedAuto extends NextFTCOpMode {
                         intake.slowIntake
                 ),
                 new ParallelGroup(
-                        new InstantCommand(
+                        /*new InstantCommand(
                                 () -> flywheel.setHoodGoalPos(0)
-                        ),
+                        ),*/
                         turret.setTurretForward,
                         flywheel.stopFlywheel,
                         intake.stopIntake,
@@ -206,7 +206,7 @@ public class BackRedAuto extends NextFTCOpMode {
             FLYWHEEL_VEL = 0;
         }
         HOOD_POS = Hood.AUTON_HOOD_POS; //aimbot.getAimbotValues().hoodPos;
-        flywheel.setHoodGoalPos(HOOD_POS);
+        //flywheel.setHoodGoalPos(HOOD_POS);
         flywheel.setTargetVel(FLYWHEEL_VEL);
         //flywheel.setTargetVel(FLYWHEEL_VEL);
         //flywheel.setTargetVel(0);

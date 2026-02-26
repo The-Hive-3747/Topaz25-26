@@ -133,9 +133,9 @@ public class FrontRedAutoOld extends NextFTCOpMode {
                         intake.startTransfer
                 ),
                 new ParallelGroup(
-                        new InstantCommand(
+                        /*new InstantCommand(
                                 () -> flywheel.setHoodGoalPos(0)
-                        ),
+                        ),*/
                         turret.setTurretForward,
                         flywheel.stopFlywheel,
                         intake.stopIntake,
@@ -149,7 +149,7 @@ public class FrontRedAutoOld extends NextFTCOpMode {
 
     @Override
     public void onWaitForStart() {
-        flywheel.setHoodGoalPos(1247);
+        //flywheel.setHoodGoalPos(1247);
         flywheel.update();
         telemetry.addData("pose", PedroComponent.follower().getPose());
         telemetry.update();

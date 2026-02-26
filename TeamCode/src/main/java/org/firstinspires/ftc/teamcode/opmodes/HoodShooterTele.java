@@ -195,17 +195,17 @@ public class HoodShooterTele extends NextFTCOpMode {
 
         // hood manual jog while dpad held, then latch current as goal
         gUpOrDown.whenBecomesFalse(() -> {
-            flywheel.setHoodGoalPos(flywheel.getHoodPos());
-            flywheel.setHoodPower(0);
+            //flywheel.setHoodGoalPos(flywheel.getHoodPos());
+            //flywheel.setHoodPower(0);
         });
 
-        gUp.whenTrue(() -> flywheel.setHoodPower(0.1));
-        gDown.whenTrue(() -> flywheel.setHoodPower(-0.1));
+        //gUp.whenTrue(() -> flywheel.setHoodPower(0.1));
+        //gDown.whenTrue(() -> flywheel.setHoodPower(-0.1));
 
 
         // hood step in encoder ticks with A/B
-        g1A.whenBecomesTrue(() -> flywheel.setHoodGoalPos(flywheel.getHoodGoal() + 250));
-        g1B.whenBecomesTrue(() -> flywheel.setHoodGoalPos(flywheel.getHoodGoal() - 250));
+        //g1A.whenBecomesTrue(() -> flywheel.setHoodGoalPos(flywheel.getHoodGoal() + 250));
+        //g1B.whenBecomesTrue(() -> flywheel.setHoodGoalPos(flywheel.getHoodGoal() - 250));
 
 
         // left trigger: flipper open/close
@@ -291,8 +291,8 @@ public class HoodShooterTele extends NextFTCOpMode {
         telemetry.addData("highest looptime (ms)", highestLooptime);
         telemetry.addData("Flywheel target RPM", FLYWHEEL_VEL);
         telemetry.addData("Flywheel actual vel", flywheel.getVel());
-        telemetry.addData("Hood pos (ticks)", flywheel.getHoodPos());
-        telemetry.addData("Hood goal (ticks)", flywheel.getHoodGoal());
+        //telemetry.addData("Hood pos (ticks)", flywheel.getHoodPos());
+        //telemetry.addData("Hood goal (ticks)", flywheel.getHoodGoal());
         telemetry.addData("odo", aimbot.getCurrentPose());
 
         /*telemetry.addData("Target X from limelight", limelight.getTargetX());

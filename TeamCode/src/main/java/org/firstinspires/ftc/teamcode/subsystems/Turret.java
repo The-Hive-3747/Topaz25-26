@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -19,7 +20,8 @@ import dev.nextftc.ftc.ActiveOpMode;
 
 @Configurable
 public class Turret implements Component {
-    DcMotorEx turret;
+    CRServo turretLeft, turretRight;
+    DcMotor thruTurret;
     private TouchSensor limitSwitch;
     Pose currentPose;
     Vector currentVelocity;
@@ -51,8 +53,12 @@ public class Turret implements Component {
 
     @Override
     public void preInit() {
-        limitSwitch = ActiveOpMode.hardwareMap().get(TouchSensor.class, "limitSwitch");
-        turret = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "turret");
+        //limitSwitch = ActiveOpMode.hardwareMap().get(TouchSensor.class, "limitSwitch");
+        turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
+        turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
+        thruTurret = ActiveOpMode.hardwareMap().get(DcMotor.class, "intake");
+
+        thruTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     @Override
@@ -65,8 +71,8 @@ public class Turret implements Component {
     }
 
     public void zeroTurret() {
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        thruTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        thruTurret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void update() {
@@ -108,7 +114,7 @@ public class Turret implements Component {
             turretPower = 0;
         }*/
 
-        turret.setPower(turretPower);
+        thruTurret.setPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
@@ -116,7 +122,7 @@ public class Turret implements Component {
         ActiveOpMode.telemetry().addData("TURRET angle", this.getTurretAngle());
         ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
         ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
-        ActiveOpMode.telemetry().addData("TURRET vel", turret.getVelocity());
+        //ActiveOpMode.telemetry().addData("TURRET vel", thruTurret.getVelocity());
 
 
 
@@ -185,7 +191,7 @@ public class Turret implements Component {
      * IN DEGREES
      */
     public double getTurretAngle() {
-        return ((double) turret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
+        return ((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
     }
 
     /**

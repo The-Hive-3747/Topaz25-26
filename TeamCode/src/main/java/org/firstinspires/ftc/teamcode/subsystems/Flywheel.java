@@ -23,7 +23,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 // This is a component file for the flywheel / shooter.
 public class Flywheel implements Component {
 
-    DcMotorEx flywheelBottom, flywheelTop, intakeMotor;
+    DcMotorEx flywheelRight, flywheelLeft, intakeMotor;
     static double correct, flywheelVel, targetVel, currentRPM;
     static int countPerRevolution = 8192;
     public double convertedVel;
@@ -33,36 +33,44 @@ public class Flywheel implements Component {
     ControlSystem largeFlywheelPID;
     Servo flipper;
     CRServo leftFireServo, sideWheelServo;
-    Hood hood;
+    //Hood hood;
     double autoTargetVel = 2200; //UPDATED TO RPM
-    public static double FLYWHEEL_PID_KP = 0.002655, FLYWHEEL_PID_KV = 0.000245, FLYWHEEL_PID_KS = 0.135, FLYWHEEL_PID_KD = 1, FLYWHEEL_PID_KI = 0;
+    public static double FLYWHEEL_PID_KP = 0.002655;
+    public static double FLYWHEEL_PID_KV = 0;//0.000245;
+    public static double FLYWHEEL_PID_KS = 0.05;//0.135;
+    public static double FLYWHEEL_PID_KD = 1;
+    public static double FLYWHEEL_PID_KI = 0;
     double targetAdjust = 0;
     double READY_VEL_THRESHOLD = 200; // UPDATED TO RPM
     public static double AUTON_SHOOT_VEL = 2200; //UPDATED TO RPM
     @Override
     public void postInit() { // this runs AFTER the init, it runs just once
         //this needs to be forward in order to use the hood PID. correction is in set power
-        flywheelBottom = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flywheelBottom");
-        flywheelBottom.setDirection(DcMotorSimple.Direction.REVERSE);
-        flywheelTop = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flywheelTop");
-        flywheelTop.setDirection(DcMotorEx.Direction.FORWARD);
-        intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "transfer");
-        leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "left_firewheel");
+        flywheelRight = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelRight");
+        flywheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
+        flywheelLeft.setDirection(DcMotorEx.Direction.REVERSE);
+        //intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "transfer");
+        leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
         leftFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        sideWheelServo = ActiveOpMode.hardwareMap().get(CRServo.class, "side-wheel");
+        //sideWheelServo = ActiveOpMode.hardwareMap().get(CRServo.class, "side-wheel");
 
-        intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        flywheelBottom.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        flywheelTop.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-
-        flywheelTop.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheelTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        flywheelRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        flywheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 
-        flipper = ActiveOpMode.hardwareMap().get(Servo.class, "flipper");
-        hood = new Hood(intakeMotor);
-        hood.init();
+        flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
+        //flipper = ActiveOpMode.hardwareMap().get(Servo.class, "flipper");
+        //hood = new Hood(intakeMotor);
+        //hood = new Hood(flywheelRight);
+        //hood.init();
 
 
         // a control system is NextFTC's way to build.. control systems!
@@ -81,17 +89,17 @@ public class Flywheel implements Component {
      * self-explanatory, resets the hood encoder
      */
     public void resetHoodEncoder() {
-        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void increaseHood() {
+    /*public void increaseHood() {
         hood.increaseHood();
-    }
+    }*/
 
-    public void decreaseHood(){
+    /*public void decreaseHood(){
         hood.decreaseHood();
-    }
+    }*/
 
     public void increase(){
         targetAdjust += 5;
@@ -125,8 +133,8 @@ public class Flywheel implements Component {
      */
     public void setPower(double power) {
         //this is to correct the flywheel direction
-        flywheelBottom.setPower(power);
-        flywheelTop.setPower(power);
+        flywheelRight.setPower(power);
+        flywheelLeft.setPower(power);
     }
 
     /**
@@ -134,7 +142,7 @@ public class Flywheel implements Component {
      * @return double: current in milliamps
      */
     public double getCurrent() {
-        return flywheelTop.getCurrent(CurrentUnit.MILLIAMPS) + flywheelBottom.getCurrent(CurrentUnit.MILLIAMPS);
+        return flywheelLeft.getCurrent(CurrentUnit.MILLIAMPS) + flywheelRight.getCurrent(CurrentUnit.MILLIAMPS);
     }
 
 
@@ -143,7 +151,7 @@ public class Flywheel implements Component {
      * @return motor power
      */
     public double getPower() {
-        return flywheelTop.getPower();
+        return flywheelRight.getPower();
 
     }
 
@@ -160,7 +168,7 @@ public class Flywheel implements Component {
         // (delta means difference between)
 
         currentTime = flywheelVelocityTimer.seconds();
-        currentPosition = flywheelTop.getCurrentPosition();
+        currentPosition = flywheelRight.getCurrentPosition();
         deltaPosition = currentPosition - pastPosition;
         deltaTime = currentTime - pastTime;
 
@@ -216,7 +224,7 @@ public class Flywheel implements Component {
         //}
         this.setPower(correct);
 
-        hood.update();
+        //hood.update();
 
         ActiveOpMode.telemetry().addData("flywheel power", correct);
         ActiveOpMode.telemetry().addData("flywheel vel", flywheelVel);
@@ -238,7 +246,7 @@ public class Flywheel implements Component {
     // so everything becomes easier when the hood is owned by the flywheel
 
     // HOOD METHODS
-    public double getHoodPos() {
+    /*public double getHoodPos() {
         return hood.getHoodPosition();
     }
 
@@ -256,7 +264,7 @@ public class Flywheel implements Component {
 
     public void enableHoodPid() {
         hood.enableHoodPID();
-    }
+    }*/
     public Command startFlywheel = new InstantCommand(
             () -> this.setTargetVel(autoTargetVel)
     );

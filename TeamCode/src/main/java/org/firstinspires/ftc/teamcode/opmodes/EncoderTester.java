@@ -26,7 +26,7 @@ public class EncoderTester extends NextFTCOpMode {
         flywheelRight = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelRight");
         //flywheelRight.setDirection(DcMotorEx.Direction.FORWARD);
         //turret = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "turret");
-        intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "transfer");
+        intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "intake");
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "frontColor");
         distanceSensor = hardwareMap.get(DistanceSensor.class,"frontColor");
 

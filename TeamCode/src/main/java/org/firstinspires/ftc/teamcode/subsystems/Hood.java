@@ -37,7 +37,7 @@ public class Hood{
     }
 
     public void init() {
-        hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hoodServo");
+        hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         hood.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
