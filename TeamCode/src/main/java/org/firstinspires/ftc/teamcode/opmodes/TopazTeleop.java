@@ -68,7 +68,7 @@ public class TopazTeleop extends NextFTCOpMode {
     private double relocalizeBreak = 1000;
     private double highestLooptime = 0;
     //private LimelightComponent limelightComponent;
-    double FLYWHEEL_VEL = 2000;//= 1300; // IN RPM
+    double FLYWHEEL_VEL = 4000; //2000;//= 1300; // IN RPM
     double HOOD_POS;
     double INTAKE_POWER = 0.9;
     double INTAKE_SHOOTING_POWER = 0.65;
@@ -182,7 +182,6 @@ public class TopazTeleop extends NextFTCOpMode {
 
         Button gUp = button(() -> gamepad2.dpad_up || gamepad1.dpad_up);
         Button gDown = button(() -> gamepad2.dpad_down || gamepad1.dpad_down);
-        Button gUpOrDown = gUp.or(gDown);
 
         Button g1Right = button(() -> gamepad1.dpad_right);
         Button g1Left = button(() -> gamepad1.dpad_left);
@@ -310,6 +309,15 @@ public class TopazTeleop extends NextFTCOpMode {
 
         });
 
+        gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200);
+        gDown.whenBecomesTrue(() -> {
+                if (FLYWHEEL_VEL - 200 < 0) {
+            FLYWHEEL_VEL = 0;
+        } else {
+            FLYWHEEL_VEL -= 200;
+        }
+        });
+
         //g1X.whenBecomesTrue(() -> relocalizeButton());
 
 
@@ -333,6 +341,7 @@ public class TopazTeleop extends NextFTCOpMode {
         } else {
             flywheel.setTargetVel(0);
         }
+
 
         /*if(intakeMotor.getCurrent(CurrentUnit.MILLIAMPS) > THREE_BALL_CURRENT){
             intakeMotor.setPower(0);
@@ -384,6 +393,8 @@ public class TopazTeleop extends NextFTCOpMode {
         );*/
         //Drawing.drawDebug(follower);
 
+        Drawing.drawOnlyCurrent(follower);
+
         if (looptime.milliseconds() > highestLooptime) {
             highestLooptime = looptime.milliseconds();
         }
@@ -396,10 +407,15 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
         panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
         panelsTelemetry.addData("flywheel power", flywheel.getPower());
+        panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
+        panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
+
 
 
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());
         //telemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        telemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
+        telemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
         telemetry.addData("looptime (ms)", looptime.milliseconds());
         telemetry.addData("highest looptime (ms)", highestLooptime);
         telemetry.addData("pose", follower.getPose());

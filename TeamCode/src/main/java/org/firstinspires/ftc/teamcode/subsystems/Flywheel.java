@@ -35,14 +35,14 @@ public class Flywheel implements Component {
     CRServo leftFireServo, sideWheelServo;
     //Hood hood;
     double autoTargetVel = 2200; //UPDATED TO RPM
-    public static double FLYWHEEL_PID_KP = 0.002655;
-    public static double FLYWHEEL_PID_KV = 0;//0.000245;
-    public static double FLYWHEEL_PID_KS = 0.05;//0.135;
+    public static double FLYWHEEL_PID_KP = 0.00055;
+    public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
+    public static double FLYWHEEL_PID_KS = 0.07; //JEM: 0.05;//0.135;
     public static double FLYWHEEL_PID_KD = 1;
     public static double FLYWHEEL_PID_KI = 0;
     double targetAdjust = 0;
     double READY_VEL_THRESHOLD = 200; // UPDATED TO RPM
-    public static double AUTON_SHOOT_VEL = 2200; //UPDATED TO RPM
+    public static double AUTON_SHOOT_VEL = 3400; //2200 //UPDATED TO RPM
     @Override
     public void postInit() { // this runs AFTER the init, it runs just once
         //this needs to be forward in order to use the hood PID. correction is in set power
@@ -144,6 +144,12 @@ public class Flywheel implements Component {
     public double getCurrent() {
         return flywheelLeft.getCurrent(CurrentUnit.MILLIAMPS) + flywheelRight.getCurrent(CurrentUnit.MILLIAMPS);
     }
+    public double getCurrentLeft() {
+        return flywheelLeft.getCurrent(CurrentUnit.MILLIAMPS);
+    }
+    public double getCurrentRight() {
+        return flywheelRight.getCurrent(CurrentUnit.MILLIAMPS);
+    }
 
 
     /**
@@ -168,7 +174,7 @@ public class Flywheel implements Component {
         // (delta means difference between)
 
         currentTime = flywheelVelocityTimer.seconds();
-        currentPosition = flywheelRight.getCurrentPosition();
+        currentPosition = flywheelLeft.getCurrentPosition();
         deltaPosition = currentPosition - pastPosition;
         deltaTime = currentTime - pastTime;
 
@@ -178,7 +184,7 @@ public class Flywheel implements Component {
         pastPosition = currentPosition;
         pastTime = currentTime;
 
-        return convertedVel;
+        return -convertedVel;
     }
 
 
@@ -282,7 +288,7 @@ public class Flywheel implements Component {
     public Command shootAllThree = new LambdaCommand()
             .setUpdate(() -> {
                 if (shotTimer.seconds() > 1.7){//1.5 1.3 1.0
-                    flipper.setPosition(0.1);
+                    //flipper.setPosition(0.1);
                     return;
                 }
                 currentRPM = this.getVel();

@@ -50,13 +50,13 @@ public class AutoPaths {
         }
         shootingPose = mirror(new Pose(54.25, 88.75));
         intake1StartPose = mirror(new Pose(51.25, 79.75)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = mirror(new Pose(24.25, 79.75)); //6//x:16 y:82//x: 16 :78
+        intake1EndPose = mirror(new Pose(28.25, 79.75)); //6//x:16 y:82//x: 16 :78
         openGateStartPose = mirror(new Pose(22, 74)); //78//x:35
         openGateEndPose = mirror(new Pose(14, 74));//x:18
         intake2StartPose = mirror(new Pose(51.25, 57.75));//y:58//y: 61
-        intake2EndPose = mirror(new Pose(14.25, 57.75));//x:15 x:8 y:58//x: 9 y:61
+        intake2EndPose = mirror(new Pose(18.25, 57.75));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = mirror(new Pose(56.25, 33.75));//y:38//y: 32
-        intake3EndPose = mirror(new Pose(14.25, 33.75));//x:8 y:38//y: 32
+        intake3EndPose = mirror(new Pose(18.25, 33.75));//x:8 y:38//y: 32
         parkPose = mirror(new Pose(36.25, 78.25));
         toShootCurvePose = mirror(new Pose(86.25,70.75));
         lastShootingPose = mirror(new Pose(50, 106));
@@ -69,7 +69,7 @@ public class AutoPaths {
             intakeAngle = mirrorHeading(Math.toRadians(180));
             lastShootAngle = convertHeading90(Math.toRadians(0));
         } else {
-            shootAngle = Math.toRadians(230);
+            shootAngle = Math.toRadians(135); //230
             parkAngle = mirrorHeading(Math.toRadians(180));
             startAngle = Math.toRadians(90);
             intakeAngle = mirrorHeading(Math.toRadians(180));

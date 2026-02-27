@@ -19,12 +19,13 @@ import dev.nextftc.ftc.ActiveOpMode;
 public class Intake implements Component {
     DcMotor intakeMotor, agitator;
     DistanceSensor frontColor, rightColor, leftColor;
+    ElapsedTime shotTimer = new ElapsedTime();
     double INTAKE_POWER = 0.9;
     double INTAKE_SHOOTING_POWER = 0.9;
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
     double FIRE_POWER = 0.9;
-    double AGITATOR_POWER = 0.5;
+    double AGITATOR_POWER = 0.2;
     double RAIL_UP = 0.5;
     double RAIL_DOWN = 1;
     double INTAKE_POWER_REVERSED = -0.9;
@@ -54,22 +55,7 @@ public class Intake implements Component {
 
     }
 
-    public Command startIntake = new InstantCommand(
-            () -> intakeMotor.setPower(INTAKE_POWER)
-    );
-    public Command slowIntake = new InstantCommand(
-            () -> intakeMotor.setPower(INTAKE_SHOOTING_POWER)
-    );
-    public Command fastIntake = new InstantCommand(
-            () -> intakeMotor.setPower(INTAKE_FAST)
-    );
-    public Command startTransfer = new InstantCommand(
-            () -> {
-                leftFireServo.setPower(FIRE_POWER);
-                rightFireServo.setPower(FIRE_POWER);
-                agitator.setPower(AGITATOR_POWER);
-            }
-    );
+
     public void startRailDex() {
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
@@ -98,14 +84,51 @@ public class Intake implements Component {
         intakeReversed=true;
     }
 
+    public void railDown(){
+        rail.setPosition(RAIL_DOWN);
+    }
+
     public Command stopIntake = new InstantCommand(
-            () -> intakeMotor.setPower(0)
+            () -> stopIntake()
     );
     public Command stopTransfer = new InstantCommand(
             () -> {
                 leftFireServo.setPower(0);
                 rightFireServo.setPower(0);
             }
+    );
+    public Command startIntake = new InstantCommand(
+            () -> startIntake()
+    );
+    public Command slowIntake = new InstantCommand(
+            () -> intakeMotor.setPower(INTAKE_SHOOTING_POWER)
+    );
+    public Command fastIntake = new InstantCommand(
+            () -> intakeMotor.setPower(INTAKE_FAST)
+    );
+    public Command startTransfer = new InstantCommand(
+            () -> {
+                leftFireServo.setPower(FIRE_POWER);
+                rightFireServo.setPower(FIRE_POWER);
+                agitator.setPower(AGITATOR_POWER);
+            }
+    );
+    public Command shootAllThree = new LambdaCommand()
+            .setStart(() ->{
+                shotTimer.reset();
+                railDown();
+                startRailDex();
+            })
+            .setUpdate(() -> {
+            })
+            .setStop(interrupted -> {
+                //flipper.setPosition(0.52);
+                resetRailDex();
+            })
+            .setIsDone(() -> (shotTimer.seconds() > 1.75)); //2.2 2
+
+    public Command resetRailDex = new InstantCommand(
+            () -> resetRailDex()
     );
 
 

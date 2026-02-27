@@ -146,10 +146,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             // Once the correct motors move in the correct direction re-comment this code.
 
             
-            frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // X gamepad
+            /*frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // X gamepad
             backLeftPower   = gamepad1.a ? 1.0 : 0.0;  // A gamepad
             frontRightPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
-            backRightPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
+            backRightPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad*/
 
 
             // Send calculated power to wheels
