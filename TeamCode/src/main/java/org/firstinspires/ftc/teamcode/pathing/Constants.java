@@ -22,7 +22,7 @@ public class Constants {
             .useSecondaryDrivePIDF(true)
             .lateralZeroPowerAcceleration(-67.77)//-67.76//-32.41//-77.91//-68.71 //-37.32) //-87.57
             .forwardZeroPowerAcceleration(-26.75)//-28.28//-66.10//-45.59//-48.13 //-52.34
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.2,0,0.01,0.03))//(.75,0.0,0.1,0.001))//(0.53, 0, 0.08, 0))//(0.55, 0, 0.005, 0)//(0.03, 0, 0, 0))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.3,0,0.01,0.03))//(.75,0.0,0.1,0.001))//(0.53, 0, 0.08, 0))//(0.55, 0, 0.005, 0)//(0.03, 0, 0, 0))
             .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.15,0,0.01,0.015))//(0.15,0,0.05,0))//(0.2, 0, 0.012, 0))//(0.2, 0, 0.001, 0)//(0.1, 0, 0.01, 0))//just a guess
             //.translationalPIDFCoefficients(new PIDFCoefficients(0.4,0,0.06,0.09))//(.75,0.0,0.1,0.001))//(0.53, 0, 0.08, 0))//(0.55, 0, 0.005, 0)//(0.03, 0, 0, 0))
             //.secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.6,0,0.02,0.001))//(0.15,0,0.05,0))//(0.2, 0, 0.012, 0))//(0.2, 0, 0.001, 0)//(0.1, 0, 0.01, 0))//just a guess
@@ -40,7 +40,7 @@ public class Constants {
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .maxPower(0.8)
+            .maxPower(1.0)
             .rightFrontMotorName("frontRightMotor")
             .rightRearMotorName("backRightMotor")
             .leftRearMotorName("backLeftMotor")

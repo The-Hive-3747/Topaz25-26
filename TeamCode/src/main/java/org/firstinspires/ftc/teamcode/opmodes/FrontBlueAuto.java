@@ -94,10 +94,10 @@ public class FrontBlueAuto extends NextFTCOpMode {
                         //turret.setTurretOff,
                         //turret.setTurretAuto,
                         //turret.setTurretFixed,
-
-                        new FollowPath(toShootFromStart)
+                        new FollowPath(toShootFromStart),
+                        intake.railDownAuto
                 ),
-                new Delay(3.5),
+                new Delay(1.5),
                 new ParallelGroup(
                         //turret.setTurretAuto,
                         //flywheel.resetShotTimer,
@@ -105,19 +105,23 @@ public class FrontBlueAuto extends NextFTCOpMode {
                         //intake.startTransfer,
                         //intake.slowIntake
                 ),
+                //new Delay(5.0),
                 new ParallelGroup(
-                        intake.resetRailDex,
-                        new FollowPath(lineUpForIntake1)
-                        //intake.startIntake
+                        intake.firewheelsOff,
+                        //intake.resetRailDex,
+                        new FollowPath(lineUpForIntake1),
                         //intake.stopTransfer,
-                        //intake.startIntake
+                        intake.startIntake
                         //intake.fastIntake
                 ),
-                new FollowPath(intake1),
-                //intake.stopIntake,
+                new ParallelGroup(
+                  intake.startIntake,
+                        new FollowPath(intake1)
+                ),
                 new Delay(1),
+                //new Delay(0.5),
                 new FollowPath(toShootFromIntake1),
-                new Delay(0.5),
+                intake.stopIntake,
                 new ParallelGroup(
                         //flywheel.resetShotTimer,
                         intake.shootAllThree
@@ -125,17 +129,18 @@ public class FrontBlueAuto extends NextFTCOpMode {
                         //intake.slowIntake
                 ),
                 new ParallelGroup(
-                        intake.resetRailDex,
-                        new FollowPath(lineUpForIntake2)
-                        //intake.startIntake
+                        intake.firewheelsOff,
+                        //intake.resetRailDex,
+                        new FollowPath(lineUpForIntake2),
+                        intake.startIntake
                         //intake.stopTransfer,
                         //intake.startTransfer
                         //intake.fastIntake
                 ),
-                new Delay(0.2),
+                //new Delay(0.2),
                 new FollowPath(intake2),
-                //intake.stopIntake,
                 new Delay(1),
+                intake.stopIntake,
                 new FollowPath(toShootFromIntake2),
                 new Delay(0.3),
                 new ParallelGroup(
@@ -144,15 +149,17 @@ public class FrontBlueAuto extends NextFTCOpMode {
                         //intake.startTransfer,
                         //intake.slowIntake
                 ),
+                //intake.startIntake,
                 new ParallelGroup(
-                        intake.resetRailDex,
-                        new FollowPath(lineUpForIntake3)
-                        //intake.startIntake
+                        intake.firewheelsOff,
+                        //intake.resetRailDex,
+                        new FollowPath(lineUpForIntake3),
+                        intake.startIntake
                 ),
-                new Delay(0.2),
+                //new Delay(0.2),
                 new FollowPath(intake3), //setFlywheelVelFinal),
-                //intake.stopIntake,
-                new Delay(0.3),
+                new Delay(1),
+                intake.stopIntake,
                 new FollowPath(toShootFromIntake3),
                 new Delay(0.3),
                 new ParallelGroup(
@@ -162,10 +169,12 @@ public class FrontBlueAuto extends NextFTCOpMode {
                         //intake.slowIntake
                 ),
                 new ParallelGroup(
+                        intake.firewheelsOff,
                         /*new InstantCommand(
                                 () -> flywheel.setHoodGoalPos(0)
                         ),*/
                         //turret.setTurretForward,
+                        //intake.resetRailDex,
                         flywheel.stopFlywheel,
                         //intake.stopIntake,
                         //intake.stopTransfer,
@@ -190,6 +199,7 @@ public class FrontBlueAuto extends NextFTCOpMode {
         //turret.zeroTurret();
         flywheel.resetHoodEncoder();
         FLYWHEEL_ON = true;
+        //intake.startIntake();
         autonomous.schedule();
     }
     @Override

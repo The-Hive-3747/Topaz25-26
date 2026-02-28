@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
@@ -68,7 +69,7 @@ public class TopazTeleop extends NextFTCOpMode {
     private double relocalizeBreak = 1000;
     private double highestLooptime = 0;
     //private LimelightComponent limelightComponent;
-    double FLYWHEEL_VEL = 4000; //2000;//= 1300; // IN RPM
+    double FLYWHEEL_VEL = 3200; //4000; //2000;//= 1300; // IN RPM
     double HOOD_POS;
     double INTAKE_POWER = 0.9;
     double INTAKE_SHOOTING_POWER = 0.65;
@@ -87,6 +88,11 @@ public class TopazTeleop extends NextFTCOpMode {
     private double slowModeMultiplier = 1;
     double FLIPPER_FIRE_POS = 0.1;
     double FLIPPER_NO_FIRE_POS = 0.52;
+    double POSE_ONE_VEL;
+    double POSE_ONE_HOOD;
+    double POSE_TWO_VEL;
+    double POSE_TWO_HOOD;
+
     private GoBildaPrismDriver prism;
     Follower follower;
     public Alliance alliance;
@@ -178,7 +184,6 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2Y = button(() -> gamepad2.y);
         Button g2B = button(() -> gamepad2.b);
         g2A = button(() -> gamepad2.a);
-        Button g2RT = button(() -> gamepad2.right_trigger > 0.1);
 
         Button gUp = button(() -> gamepad2.dpad_up || gamepad1.dpad_up);
         Button gDown = button(() -> gamepad2.dpad_down || gamepad1.dpad_down);
@@ -192,6 +197,7 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g1X = button(() -> gamepad1.x);
         Button g1Y = button(() -> gamepad1.y);
 
+        Button g2RT = button(() -> gamepad2.right_trigger > 0.1);
         Button g1LT = button(() -> gamepad1.left_trigger > 0.1);
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
@@ -200,13 +206,17 @@ public class TopazTeleop extends NextFTCOpMode {
 
         //g1X.whenBecomesTrue(() -> odoTurret.resetTurret());
 
-        g1LT.toggleOnBecomesTrue()
+        g2LT.toggleOnBecomesTrue()
                 .whenBecomesTrue(() ->{
                     FLYWHEEL_ON = true;
-                    intake.stopIntake();
+                    //intake.stopIntake();
                     intake.startRailDex();
-                })
-                .whenBecomesFalse(() -> intake.resetRailDex());
+                });
+                //.whenBecomesFalse(() -> intake.resetRailDex());
+        g2RT.toggleOnBecomesTrue()
+                .whenBecomesTrue( () -> intake.reverseIntake())
+                .whenBecomesFalse(() -> intake.stopReverseIntake());
+
         //g1Right.whenBecomesTrue(() -> turret.turretStateForward());
 
         //g1Left.whenBecomesTrue(() -> turret.turretStateBackward());
@@ -218,12 +228,19 @@ public class TopazTeleop extends NextFTCOpMode {
         g1RT.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> slowModeMultiplier = 0.5)
                 .whenBecomesFalse(() -> slowModeMultiplier = 1);
-
+        g2B.whenBecomesTrue(() -> intake.turnAgitator());
 
 
         g2Y.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> FLYWHEEL_ON = true)
                 .whenBecomesFalse(() -> FLYWHEEL_ON = false);
+
+        /*g2RT.whenBecomesTrue(() -> {  //preset hood and velocity for position 1
+                flywheel.setTargetVel(POSE_ONE_VEL);
+                        });
+        g2LT.whenBecomesTrue(() -> {  //preset hood and velocity for position 2
+                flywheel.setTargetVel(POSE_TWO_VEL);
+        });*/
 
 
         g2A.toggleOnBecomesTrue()
@@ -304,19 +321,21 @@ public class TopazTeleop extends NextFTCOpMode {
         g2LB.whenBecomesTrue(() -> flywheel.decrease());
         g2RB.whenBecomesTrue(() -> flywheel.increase());
 
+
         g1B.whenBecomesTrue(() -> {
             drive.setOffset(follower.getHeading());
 
         });
 
-        gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200);
+        /*gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200);
         gDown.whenBecomesTrue(() -> {
                 if (FLYWHEEL_VEL - 200 < 0) {
             FLYWHEEL_VEL = 0;
         } else {
             FLYWHEEL_VEL -= 200;
         }
-        });
+        });*/
+
 
         //g1X.whenBecomesTrue(() -> relocalizeButton());
 

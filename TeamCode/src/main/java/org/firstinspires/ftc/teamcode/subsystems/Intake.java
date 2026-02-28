@@ -20,6 +20,8 @@ public class Intake implements Component {
     DcMotor intakeMotor, agitator;
     DistanceSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
+    ElapsedTime intakeTimer = new ElapsedTime();
+    static boolean isIntakeOn = false;
     double INTAKE_POWER = 0.9;
     double INTAKE_SHOOTING_POWER = 0.9;
     double INTAKE_FAST = 1.0;
@@ -29,10 +31,13 @@ public class Intake implements Component {
     double RAIL_UP = 0.5;
     double RAIL_DOWN = 1;
     double INTAKE_POWER_REVERSED = -0.9;
+    double agitatorResetPosDone = 0.0;
     CRServo leftFireServo, rightFireServo, hood;
     Servo rail;
     ElapsedTime intakeRevTimer = new ElapsedTime();
     boolean intakeReversed = false;
+    boolean agitatorResetRequest = false;
+    boolean isShooting = false;
 
 
     @Override
@@ -48,7 +53,9 @@ public class Intake implements Component {
         frontColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "frontColor");
         rightColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "rightColor");
         leftColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "leftColor");
+        isIntakeOn = false;
 
+        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         agitator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -57,12 +64,20 @@ public class Intake implements Component {
 
 
     public void startRailDex() {
+        isShooting = true;
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
-        agitator.setTargetPosition(580);
+        agitator.setTargetPosition(538);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+    }
+    public void reverseIntake() {
+        intakeMotor.setPower(-INTAKE_POWER);
+        rail.setPosition(RAIL_UP);
+    }
+    public void stopReverseIntake() {
+        intakeMotor.setPower(0);
     }
     public void resetRailDex() {
         leftFireServo.setPower(0);
@@ -72,34 +87,97 @@ public class Intake implements Component {
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     public void startIntake() {
+        if (agitator.isBusy()) {
+            return;
+        }
         intakeMotor.setPower(INTAKE_POWER);
         rail.setPosition(RAIL_UP);
         agitator.setTargetPosition(0);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
+    public void floatIntake() {
+        intakeMotor.setPower(INTAKE_POWER);
+        rail.setPosition(RAIL_UP);
+        agitator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        agitator.setPower(0);
+    }
+
     public void stopIntake() {
         intakeMotor.setPower(INTAKE_POWER_REVERSED);
         intakeRevTimer.reset();
         intakeReversed=true;
+    }
+    public void turnAgitator() {
+
+        agitator.setTargetPosition(agitator.getCurrentPosition() + 538/4);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitatorResetRequest = true;
     }
 
     public void railDown(){
         rail.setPosition(RAIL_DOWN);
     }
 
-    public Command stopIntake = new InstantCommand(
-            () -> stopIntake()
-    );
+    public Command stopIntake = new LambdaCommand()
+            .setStart(() -> {
+                isIntakeOn = false;
+                intakeMotor.setPower(INTAKE_POWER_REVERSED);
+                intakeRevTimer.reset();
+                intakeReversed=true;
+            })
+            .setUpdate(() -> {
+                if (intakeReversed && intakeRevTimer.milliseconds() >= REVERSAL_TIME) {
+                    intakeMotor.setPower(0);
+                    intakeReversed = false;
+                    rail.setPosition(RAIL_DOWN);
+                }
+            })
+            .setIsDone(() -> {
+                return !intakeReversed;
+            });
+
     public Command stopTransfer = new InstantCommand(
             () -> {
                 leftFireServo.setPower(0);
                 rightFireServo.setPower(0);
             }
     );
-    public Command startIntake = new InstantCommand(
-            () -> startIntake()
-    );
+    /*public Command startIntake = new LambdaCommand()
+            .setStart(() -> {
+                intakeTimer.reset();
+                startIntake();
+                rail.setPosition(RAIL_UP);
+            })
+            .setUpdate(() -> {
+            })
+            .setStop(interrupted -> {
+                stopIntake();
+            })
+            .setIsDone(() -> intakeTimer.seconds() > 1.0);*/
+    public Command startIntake = new LambdaCommand()
+            //() -> startIntake()
+            .setStart(() -> {
+                //shotTimer.reset();
+                this.isIntakeOn = true;
+                //intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            //intakeMotor.setPower(INTAKE_POWER);
+            rail.setPosition(RAIL_UP);
+            agitator.setTargetPosition(0);
+            agitator.setPower(AGITATOR_POWER);
+            agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            })
+            .setIsDone(() -> {
+                return true; //shotTimer.seconds() > 2.0;
+            })
+            .setUpdate(() -> {
+                //intakeMotor.setPower(INTAKE_POWER);
+            })
+            .setStop((interrupted) -> {
+                //intakeMotor.setPower(INTAKE_POWER);
+            });
+
     public Command slowIntake = new InstantCommand(
             () -> intakeMotor.setPower(INTAKE_SHOOTING_POWER)
     );
@@ -113,9 +191,13 @@ public class Intake implements Component {
                 agitator.setPower(AGITATOR_POWER);
             }
     );
+    public Command railDownAuto = new InstantCommand(
+            () -> rail.setPosition(RAIL_DOWN)
+    );
     public Command shootAllThree = new LambdaCommand()
             .setStart(() ->{
                 shotTimer.reset();
+                isShooting = true;
                 railDown();
                 startRailDex();
             })
@@ -123,9 +205,16 @@ public class Intake implements Component {
             })
             .setStop(interrupted -> {
                 //flipper.setPosition(0.52);
-                resetRailDex();
+                //resetRailDex();
             })
-            .setIsDone(() -> (shotTimer.seconds() > 1.75)); //2.2 2
+            .setIsDone(() -> (shotTimer.seconds() > 2.0)); //2.2 2
+
+    public Command firewheelsOff = new InstantCommand(
+            () -> {
+                leftFireServo.setPower(0);
+                rightFireServo.setPower(0);
+            }
+    );
 
     public Command resetRailDex = new InstantCommand(
             () -> resetRailDex()
@@ -140,10 +229,26 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("right color", rightColor.getDistance(DistanceUnit.INCH));
         ActiveOpMode.telemetry().addData("left color", frontColor.getDistance(DistanceUnit.INCH));
 
+        if (isShooting && !agitator.isBusy()){
+            isShooting = false;
+            agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
+        if (isIntakeOn){
+            intakeMotor.setPower(INTAKE_POWER);
+        }
+
         if (intakeReversed && intakeRevTimer.milliseconds() >= REVERSAL_TIME) {
             intakeMotor.setPower(0);
             intakeReversed = false;
             rail.setPosition(RAIL_DOWN);
+        }
+        if (agitatorResetRequest && !agitator.isBusy()) {
+            agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            agitator.setTargetPosition(0);
+            agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            agitator.setPower(0);
+            agitatorResetRequest = false;
         }
     }
 }

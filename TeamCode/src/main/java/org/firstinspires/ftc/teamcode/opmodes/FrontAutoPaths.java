@@ -45,25 +45,25 @@ public class FrontAutoPaths {
             startingPose = new Pose(34.5, 135.8); //Y:131.5 // X AND Y ARE UPDATED TO THE REAL WORLD
             startAngle = Math.toRadians(-85.05); //-84.7
         } else {
-            startingPose = new Pose(110.5, 131.5); // X AND Y ARE UPDATED TO THE REAL WORLD
-            startAngle = Math.toRadians(-96.5);
+            startingPose = new Pose(109.5, 135.8); // X AND Y ARE UPDATED TO THE REAL WORLD
+            startAngle = Math.toRadians(-94.95); //-96.5
         }
         shootingPose = convert(new Pose(54.25, 88.75));
-        intake1StartPose = convert(new Pose(51.25, 79.75)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = convert(new Pose(32.25, 79.75)); //6//x:16 y:82//x: 16 :78
+        intake1StartPose = convert(new Pose(51.25, 81.75)); //y:81 34//y:82//x: 47 y:78
+        intake1EndPose = convert(new Pose(27.25, 81.75)); //6//x:16 y:82//x: 16 :78
         openGateStartPose = convert(new Pose(22, 74)); //78//x:35
         openGateEndPose = convert(new Pose(14, 74));//x:18
-        intake2StartPose = convert(new Pose(51.25, 57.75));//y:58//y: 61
-        intake2EndPose = convert(new Pose(22.25, 57.75));//x:15 x:8 y:58//x: 9 y:61
+        intake2StartPose = convert(new Pose(51.25, 56.75));//y:58//y: 61
+        intake2EndPose = convert(new Pose(17.25, 56.75));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = convert(new Pose(56.25, 33.75));//y:38//y: 32
-        intake3EndPose = convert(new Pose(22.25, 33.75));//x:8 y:38//y: 32
+        intake3EndPose = convert(new Pose(17.25, 33.75));//x:8 y:38//y: 32
         parkPose = convert(new Pose(36.25, 78.25));
         toShootCurvePose = convert(new Pose(86.25,70.75));
         lastShootingPose = convert(new Pose(50, 106));
         moveAutoEnd = convert(new Pose( 10, 8.62));
 
         if (alliance == Alliance.RED) {
-            shootAngle = convertHeading90(Math.toRadians(40));
+            shootAngle = Math.toRadians(50); //convertHeading90(Math.toRadians(40));
             parkAngle = convertHeading180(Math.toRadians(180));
             intakeAngle = convertHeading180(Math.toRadians(180));
             lastShootAngle = convertHeading90(Math.toRadians(0));
@@ -144,7 +144,7 @@ public class FrontAutoPaths {
                         new BezierLine(intake2StartPose, intake2EndPose)
                 )
                 .setConstantHeadingInterpolation(intakeAngle)
-                .setVelocityConstraint(0.75)
+                //.setVelocityConstraint(0.75)
                 .build();
 
         toShootFromIntake2 = follower

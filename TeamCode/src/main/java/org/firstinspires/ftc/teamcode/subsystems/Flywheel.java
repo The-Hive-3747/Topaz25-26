@@ -33,7 +33,7 @@ public class Flywheel implements Component {
     ControlSystem largeFlywheelPID;
     Servo flipper;
     CRServo leftFireServo, sideWheelServo;
-    //Hood hood;
+    Hood hood;
     double autoTargetVel = 2200; //UPDATED TO RPM
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
@@ -42,7 +42,7 @@ public class Flywheel implements Component {
     public static double FLYWHEEL_PID_KI = 0;
     double targetAdjust = 0;
     double READY_VEL_THRESHOLD = 200; // UPDATED TO RPM
-    public static double AUTON_SHOOT_VEL = 3400; //2200 //UPDATED TO RPM
+    public static double AUTON_SHOOT_VEL = 3000;//3400; //2200 //UPDATED TO RPM
     @Override
     public void postInit() { // this runs AFTER the init, it runs just once
         //this needs to be forward in order to use the hood PID. correction is in set power
@@ -69,8 +69,8 @@ public class Flywheel implements Component {
 
         //flipper = ActiveOpMode.hardwareMap().get(Servo.class, "flipper");
         //hood = new Hood(intakeMotor);
-        //hood = new Hood(flywheelRight);
-        //hood.init();
+        hood = new Hood(flywheelRight);
+        hood.init();
 
 
         // a control system is NextFTC's way to build.. control systems!
@@ -89,20 +89,20 @@ public class Flywheel implements Component {
      * self-explanatory, resets the hood encoder
      */
     public void resetHoodEncoder() {
-        flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    /*public void increaseHood() {
+    public void increaseHood() {
         hood.increaseHood();
-    }*/
+    }
 
-    /*public void decreaseHood(){
+    public void decreaseHood(){
         hood.decreaseHood();
-    }*/
+    }
 
     public void increase(){
-        targetAdjust += 5;
+        targetAdjust += 50; //5
         double targetV = targetVel;
         if (targetVel + targetAdjust < 0){
             targetV = 0;
@@ -113,7 +113,7 @@ public class Flywheel implements Component {
     }
 
     public void decrease(){
-        targetAdjust -= 5;
+        targetAdjust -= 50; //5
         double targetV = targetVel;
         if (targetVel + targetAdjust < 0){
             targetV = 0;
