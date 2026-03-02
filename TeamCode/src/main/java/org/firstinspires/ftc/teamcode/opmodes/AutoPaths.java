@@ -9,191 +9,137 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, shootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose, moveAutoEnd;
-    public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3, toEndFromStart;
+    public static Pose startingPose, shootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
+    public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3;
     public static double shootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle;
     public static Alliance alliance;
-    private static Pose mirror(Pose pose) {
+    public static Follower follower;
+
+    /**
+     * this generates all poses & paths. must be called before start of auto.
+     * this should be called AFTER you've set the alliance, starting pose, etc
+     * @param follow PedroPathing follower
+     */
+    public static void generatePaths(Follower follow) {
+        follower = follow;
+
+        if (startingPose == null) {
+            if (alliance == Alliance.BLUE) {
+                startingPose = new Pose(34.5, 131.5, Math.toRadians(-84.7));
+            } else {
+                startingPose = new Pose(110.5, 131.5, Math.toRadians(-96.5));
+            }
+        }
+
+        // DEFINE POSES HERE
+        shootingPose = new Pose(54.25, 88.75, Math.toRadians(40));
+        intake1StartPose = new Pose(51.25, 79.75); //y:81 34//y:82//x: 47 y:78
+        intake1EndPose = new Pose(24.25, 79.75); //6//x:16 y:82//x: 16 :78
+        openGateStartPose = new Pose(22, 74); //78//x:35
+        openGateEndPose = new Pose(14, 74);//x:18
+        intake2StartPose = new Pose(51.25, 57.75);//y:58//y: 61
+        intake2EndPose = new Pose(14.25, 57.75);//x:15 x:8 y:58//x: 9 y:61
+        intake3StartPose = new Pose(56.25, 33.75);//y:38//y: 32
+        intake3EndPose = new Pose(14.25, 33.75);//x:8 y:38//y: 32
+        parkPose = new Pose(36.25, 78.25);
+        toShootCurvePose = new Pose(86.25,70.75);
+        lastShootingPose = new Pose(50, 106);
+
+        // GENERATE PATHS HERE
+        toShootFromStart = generatePath(startingPose, shootingPose);
+        lineUpForIntake1 = generatePath(shootingPose, intake1StartPose);
+        intake1 = generatePath(intake1StartPose, intake1EndPose);
+        lineUpForOpenGate = generatePath(intake1EndPose, openGateStartPose);
+    }
+
+
+    /**
+     * Flips a Pose over the center line.
+     *
+     * @param pose your start pose
+     * @return Pose which has been flipped
+     */
+
+    private static Pose flipOverCenter(Pose pose) {
         if (alliance == Alliance.BLUE) {
             return pose;
         }
-        return pose.mirror();
+
+        // we subtract the x from 144 to flip the x
+        // y stays the same for this game
+        double newPoseX = 144-pose.getX();
+        return new Pose(newPoseX, pose.getY());
     }
 
-    private static double mirrorHeading(double heading) {
-        if (alliance == Alliance.BLUE) {
-            return heading;
-        }
-        return Math.toRadians(Math.toDegrees(heading) - 180);
-    }
-    private static double convertHeading90(double heading) {
-        if (alliance == Alliance.BLUE) {
-            return heading;
-        }
-        return heading - Math.PI/2;
+    /**
+     *
+     * @param heading in degrees
+     * @return heading in radians, flipped 180 degrees
+     */
+    private static double flipHeading180Degrees(double heading) {
+        return Math.toRadians(heading + 180);
     }
 
-    public static Alliance getAlliance() {
-        return alliance;
-    }
-
+    /**
+     * make sure to use this before you use generatePaths()
+     * @param pose start pose, MUST HAVE HEADING
+     */
     public static void setStartPose(Pose pose) {
         startingPose = pose;
     }
 
+    /**
+     * @return Alliance, either blue or red
+     */
+    public static Alliance getAlliance() {
+        return alliance;
+    }
 
-    public static void generatePaths(Follower follower) {
-        if (alliance == Alliance.BLUE) {
-            startingPose = new Pose(63.25, 7.585); // X AND Y ARE UPDATED TO THE REAL WORLD
-        } else {
-            startingPose = new Pose(80.75, 7.085); // X AND Y ARE UPDATED TO THE REAL WORLD
-        }
-        shootingPose = mirror(new Pose(54.25, 88.75));
-        intake1StartPose = mirror(new Pose(51.25, 79.75)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = mirror(new Pose(28.25, 79.75)); //6//x:16 y:82//x: 16 :78
-        openGateStartPose = mirror(new Pose(22, 74)); //78//x:35
-        openGateEndPose = mirror(new Pose(14, 74));//x:18
-        intake2StartPose = mirror(new Pose(51.25, 57.75));//y:58//y: 61
-        intake2EndPose = mirror(new Pose(18.25, 57.75));//x:15 x:8 y:58//x: 9 y:61
-        intake3StartPose = mirror(new Pose(56.25, 33.75));//y:38//y: 32
-        intake3EndPose = mirror(new Pose(18.25, 33.75));//x:8 y:38//y: 32
-        parkPose = mirror(new Pose(36.25, 78.25));
-        toShootCurvePose = mirror(new Pose(86.25,70.75));
-        lastShootingPose = mirror(new Pose(50, 106));
-        moveAutoEnd = mirror(new Pose( 10, 8.62));
-
-        if (alliance == Alliance.RED) {
-            shootAngle = convertHeading90(Math.toRadians(40));
-            parkAngle = mirrorHeading(Math.toRadians(180));
-            startAngle = Math.toRadians(90);
-            intakeAngle = mirrorHeading(Math.toRadians(180));
-            lastShootAngle = convertHeading90(Math.toRadians(0));
-        } else {
-            shootAngle = Math.toRadians(135); //230
-            parkAngle = mirrorHeading(Math.toRadians(180));
-            startAngle = Math.toRadians(90);
-            intakeAngle = mirrorHeading(Math.toRadians(180));
-            lastShootAngle = Math.toRadians(-90);
-        }
-        //shootAngle = convertHeading90(Math.toRadians(40));//135//210//180//0//90//110
-
-
-        toShootFromStart = follower
-                .pathBuilder()
+    /**
+     * generates a PathChain using the heading from pose1 & pose2
+     * @param pose1 the first pose (MUST HAVE HEADING)
+     * @param pose2 the second pose (MUST HAVE HEADING)
+     * @return the built PathChain
+     */
+    public static PathChain generatePath(Pose pose1, Pose pose2) {
+        return follower.pathBuilder()
                 .addPath(
-                        new BezierLine(startingPose, shootingPose)
+                        new BezierLine(pose1, pose2)
                 )
-                .setLinearHeadingInterpolation(startAngle, shootAngle)
+                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
                 .build();
+    }
 
-        lineUpForIntake1 = follower
-                .pathBuilder()
+    /**
+     * generates a PathChain with a constant heading
+     * @param pose1 the first pose
+     * @param pose2 the second pose
+     * @param heading IN RADIANS, the constant heading to be followed
+     * @return the built PathChain
+     */
+    public static PathChain generatePath(Pose pose1, Pose pose2, double heading) {
+        return follower.pathBuilder()
                 .addPath(
-                        new BezierLine(shootingPose, intake1StartPose)
+                        new BezierLine(pose1, pose2)
                 )
-                .setLinearHeadingInterpolation(shootAngle, intakeAngle)
+                .setConstantHeadingInterpolation(heading)
                 .build();
+    }
 
-        intake1 = follower
-                .pathBuilder()
+    /**
+     * generates a PathChain using set headings and poses
+     * @param pose1 the first pose
+     * @param pose2 the second pose
+     * @param heading1 IN RADIANS, the first heading to be followed
+     * @param heading2 IN RADIANS, the second heading to be followed
+     * @return the built PathChain
+     */
+    public static PathChain generatePath(Pose pose1, Pose pose2, double heading1, double heading2) {
+        return follower.pathBuilder()
                 .addPath(
-                        new BezierLine(intake1StartPose, intake1EndPose)
+                        new BezierLine(pose1, pose2)
                 )
-                .setConstantHeadingInterpolation(intakeAngle)
-                .build();
-
-        lineUpForOpenGate = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierCurve(intake1EndPose, openGateStartPose)
-                )
-                .setLinearHeadingInterpolation(intakeAngle, Math.toRadians(-90))
-                .setVelocityConstraint(0.5)
-                .build();
-
-        openGate = follower
-                .pathBuilder()
-                .addPath(new BezierLine(openGateStartPose, openGateEndPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-90))
-                .setVelocityConstraint(0.5)
-                .build();
-
-        toShootFromOpenGate = follower
-                .pathBuilder()
-                .addPath(new BezierCurve(openGateEndPose, toShootCurvePose, shootingPose))
-                .setLinearHeadingInterpolation(Math.toRadians(-90), shootAngle)
-                .build();
-
-        toShootFromIntake1 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(intake1EndPose, shootingPose)
-                )
-                .setLinearHeadingInterpolation(intakeAngle, shootAngle)
-                .build();
-
-        lineUpForIntake2 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(shootingPose, intake2StartPose)
-                )
-                .setLinearHeadingInterpolation(shootAngle, intakeAngle)
-                .build();
-
-        intake2 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(intake2StartPose, intake2EndPose)
-                )
-                .setConstantHeadingInterpolation(intakeAngle)
-                .setVelocityConstraint(0.75)
-                .build();
-
-        toShootFromIntake2 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierCurve(intake2EndPose, toShootCurvePose, shootingPose)
-                )
-                .setLinearHeadingInterpolation(intakeAngle, shootAngle)
-                .build();
-
-        lineUpForIntake3 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(shootingPose, intake3StartPose)
-                )
-                .setLinearHeadingInterpolation(shootAngle, intakeAngle)
-                .build();
-
-        intake3 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(intake3StartPose, intake3EndPose)
-                )
-                .setConstantHeadingInterpolation(intakeAngle)
-                .build();
-
-        toShootFromIntake3 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(intake3EndPose, shootingPose)
-                )
-                .setLinearHeadingInterpolation(intakeAngle, shootAngle)
-                .build();
-        toEndFromStart = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(startingPose, moveAutoEnd)
-                )
-                .setConstantHeadingInterpolation(startAngle)
-                .build();
-
-        park = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(shootingPose, parkPose)
-                )
-                .setLinearHeadingInterpolation(shootAngle, parkAngle)
+                .setLinearHeadingInterpolation(heading1, heading2)
                 .build();
     }
 }
