@@ -25,9 +25,9 @@ public class AutoPaths {
 
         if (startingPose == null) {
             if (alliance == Alliance.BLUE) {
-                startingPose = new Pose(34.5, 131.5, Math.toRadians(-84.7));
+                startingPose = new Pose(34.5, 135.8, Math.toRadians(-85.05));
             } else {
-                startingPose = new Pose(110.5, 131.5, Math.toRadians(-96.5));
+                startingPose = new Pose(109.5, 135.8, Math.toRadians(-94.95));
             }
         }
 
