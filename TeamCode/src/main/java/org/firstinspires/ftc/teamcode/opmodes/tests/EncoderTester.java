@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 @TeleOp(name = "encoder Tester")
-@Disabled
+//@Disabled
 public class EncoderTester extends NextFTCOpMode {
 
     DcMotorEx flywheelLeft, flywheelRight, intakeMotor;
@@ -57,19 +57,16 @@ public class EncoderTester extends NextFTCOpMode {
         telemetry.addData("Front Blue",colors.blue);
         telemetry.addData("flywheelLeft", flywheelLeft.getCurrentPosition());
         telemetry.addData("flywheelRight", flywheelRight.getCurrentPosition());
-        telemetry.addData("flywheel external vel", flywheelLeft.getVelocity());
+        telemetry.addData("flywheel left vel", flywheelLeft.getVelocity());
         telemetry.addData("flywheel external vel W CONVERSION",  ((double) flywheelRight.getVelocity()*60)/8192); // 8192 is CPR
-        telemetry.addData("flywheelTop vel", flywheelRight.getVelocity());
+        telemetry.addData("flywheelRight vel", flywheelRight.getVelocity());
         telemetry.addData("intakeMotor", intakeMotor.getCurrentPosition());
         //telemetry.addData("turret", turret.getCurrentPosition());
 
-        telemetry.addData("port fly bottom", ActiveOpMode.hardwareMap().get("flywheelBottom").getConnectionInfo());
-        telemetry.addData("port fly top", ActiveOpMode.hardwareMap().get("flywheelTop").getConnectionInfo());
-        telemetry.addData("port intake", ActiveOpMode.hardwareMap().get("transfer").getConnectionInfo());
+        telemetry.addData("port fly right", ActiveOpMode.hardwareMap().get("flyWheelRight").getConnectionInfo());
+        telemetry.addData("port fly left", ActiveOpMode.hardwareMap().get("flyWheelLeft").getConnectionInfo());
 
         telemetry.addData("Motor turret", "Turret encoder");
-        telemetry.addData("Motor flywheel top", "Empty");
-        telemetry.addData("Motor flywheel bottom", "Flywheel bottom encoder");
         telemetry.addData("Motor transfer", "Hood encoder");
 
         telemetry.update();

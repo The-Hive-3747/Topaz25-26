@@ -20,7 +20,7 @@
  *   SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.tests;
 
 
 import static org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver.LayerHeight;

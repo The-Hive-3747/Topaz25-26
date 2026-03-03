@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.tests;
 
 import static dev.nextftc.bindings.Bindings.button;
 

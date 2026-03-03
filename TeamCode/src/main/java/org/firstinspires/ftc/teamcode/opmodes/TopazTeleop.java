@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.opmodes.auto.AutoPaths;
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
@@ -202,7 +203,8 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
 
-
+        gUp.whenBecomesTrue(() -> flywheel.increaseHood());
+        gDown.whenBecomesTrue(() -> flywheel.decreaseHood());
 
         //g1X.whenBecomesTrue(() -> odoTurret.resetTurret());
 
@@ -269,9 +271,9 @@ public class TopazTeleop extends NextFTCOpMode {
                 });*/
 
         g1A.whenBecomesTrue(() -> {
-            FrontAutoPathsOld.alliance = alliance;
-            FrontAutoPathsOld.generatePaths(follower);
-            Pose resetPose = new Pose(FrontAutoPathsOld.startingPose.getX(), FrontAutoPathsOld.startingPose.getY(), FrontAutoPathsOld.startAngle);
+            AutoPaths.alliance = alliance;
+            AutoPaths.generatePaths(follower);
+            Pose resetPose = new Pose(AutoPaths.startingPose.getX(), AutoPaths.startingPose.getY(), AutoPaths.startAngle);
             follower.setPose(resetPose);
         });
 
@@ -430,6 +432,7 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
 
+        telemetry.addData("hood pose", flywheel.getHoodPosition());
 
 
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());

@@ -282,18 +282,22 @@ public class Turret implements Component {
             .setIsDone(() -> true);
     public Command setTurretFixedLastRed = new LambdaCommand()
             .setStart(() -> {
-                setFixedAngle(AUTON_RED_SHOOT_ANGLE_LAST);
+                setFixedAngle(Alliance.RED);
             })
             .setIsDone(() -> true);
 
     public Command setTurretFixedLastBlue = new LambdaCommand()
             .setStart(() -> {
-                setFixedAngle(AUTON_BLUE_SHOOT_ANGLE_LAST);
+                setFixedAngle(Alliance.BLUE);
             })
             .setIsDone(() -> true);
 
-    public void setFixedAngle(double deg) {
-        FIXED_ANGLE = new KineticState(deg);
+    public void setFixedAngle(Alliance alliance) {
+        if (alliance == Alliance.BLUE) {
+            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE);
+        } else {
+            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE);
+        }
     }
     public void setTurretStateoff(){ currentState = turretState.OFF;}
     public void setTurretStateAuto(){ currentState = turretState.AUTO;}
