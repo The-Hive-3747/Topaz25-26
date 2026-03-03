@@ -17,6 +17,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
 //@Disabled
 @TeleOp(name= "motor test")
+@Disabled
 public class motorTest extends NextFTCOpMode {
     {
         addComponents(

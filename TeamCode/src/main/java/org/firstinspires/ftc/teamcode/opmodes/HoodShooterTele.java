@@ -5,6 +5,7 @@ import static dev.nextftc.bindings.Bindings.button;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,6 +34,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name="hood shooter tele with new flywheel")
+@Disabled
 public class HoodShooterTele extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(HoodShooterTele.class);
 

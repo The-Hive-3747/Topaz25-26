@@ -250,6 +250,7 @@ public class TopazTeleop extends NextFTCOpMode {
                 })
                 .whenBecomesFalse(() -> {
                     intake.stopIntake();
+                    intake.resetRailDex();
                     isIntakeOn = false;
                 });
 

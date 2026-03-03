@@ -47,9 +47,9 @@ public class BackRedAuto extends AutoTemplate {
                 ),
                 new FollowPath(intake2),
                 new Delay(1),
-                intake.stopIntake,
                 new FollowPath(toShootFromIntake2),
                 new Delay(0.3),
+                intake.stopIntake,
                 new ParallelGroup(
                         intake.shootAllThree
                 ),
@@ -60,9 +60,9 @@ public class BackRedAuto extends AutoTemplate {
                 ),
                 new FollowPath(intake3),
                 new Delay(1.3),
-                intake.stopIntake,
                 new FollowPath(toShootFromIntake3),
                 new Delay(0.3),
+                intake.stopIntake,
                 new ParallelGroup(
                         intake.shootAllThree
                 ),

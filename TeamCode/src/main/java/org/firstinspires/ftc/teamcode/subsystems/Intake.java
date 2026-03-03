@@ -87,14 +87,17 @@ public class Intake implements Component {
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     public void startIntake() {
-        if (agitator.isBusy()) {
+        /*if (agitator.isBusy()) {
             return;
-        }
+        }*/
         intakeMotor.setPower(INTAKE_POWER);
         rail.setPosition(RAIL_UP);
         agitator.setTargetPosition(0);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftFireServo.setPower(0);
+        rightFireServo.setPower(0);
+
     }
     public void floatIntake() {
         intakeMotor.setPower(INTAKE_POWER);
