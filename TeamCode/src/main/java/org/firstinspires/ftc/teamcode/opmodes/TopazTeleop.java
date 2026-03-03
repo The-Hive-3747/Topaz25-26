@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.opmodes.auto.AutoPaths;
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
@@ -269,9 +270,9 @@ public class TopazTeleop extends NextFTCOpMode {
                 });*/
 
         g1A.whenBecomesTrue(() -> {
-            FrontAutoPathsOld.alliance = alliance;
-            FrontAutoPathsOld.generatePaths(follower);
-            Pose resetPose = new Pose(FrontAutoPathsOld.startingPose.getX(), FrontAutoPathsOld.startingPose.getY(), FrontAutoPathsOld.startAngle);
+            AutoPaths.alliance = alliance;
+            AutoPaths.generatePaths(follower);
+            Pose resetPose = new Pose(AutoPaths.startingPose.getX(), AutoPaths.startingPose.getY(), AutoPaths.startAngle);
             follower.setPose(resetPose);
         });
 

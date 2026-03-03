@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.utilities.Alliance;
 public class FrontRedAuto extends AutoTemplate {
     @Override
     public void initAuto() {
-        super.startPose = new Pose(63.25, 7.585,90);
+        super.startPose = new Pose(109.5, 135.8, Math.toRadians(-94.95));
         super.alliance = Alliance.RED;
 
 

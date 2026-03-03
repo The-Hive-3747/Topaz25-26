@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.utilities.Alliance;
 public class BackRedAuto extends AutoTemplate {
     @Override
     public void initAuto() {
-        super.startPose = new Pose(80.75, 7.085,90);
+        super.startPose = new Pose(80.75, 7.085,Math.toRadians(90));
         super.alliance = Alliance.RED;
 
         // if we do anything custom with paths, we should override this:

@@ -24,7 +24,7 @@ public class AutoPaths {
         follower = follow;
 
         // DEFINE ANGLES HERE
-        if (parkAngle == 0.0d) { //checking for null because doubles cant be null
+        if (parkAngle == 0.0d) { //checking for null with 0.0d because doubles cant be null
             parkAngle = flipHeading180Degrees(180);
         }
         if (alliance == Alliance.BLUE) {
@@ -47,17 +47,17 @@ public class AutoPaths {
         if (parkPose == null) {
             parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
-        frontShootingPose = new Pose(54.25, 88.75, closeShootAngle);
-        intake1StartPose = new Pose(51.25, 79.75, intakeAngle); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = new Pose(27.25, 79.75, intakeAngle); //6//x:16 y:82//x: 16 :78
-        openGateStartPose = new Pose(22, 74, openGateAngle); //78//x:35
-        openGateEndPose = new Pose(14, 74, openGateAngle);//x:18
-        intake2StartPose = new Pose(53, 57.75, intakeAngle);//y:58//y: 61
-        intake2EndPose = new Pose(17.25, 57.75, intakeAngle);//x:15 x:8 y:58//x: 9 y:61
-        intake3StartPose = new Pose(56.25, 33.75, intakeAngle);//y:38//y: 32
-        intake3EndPose = new Pose(17.25, 33.75, intakeAngle);//x:8 y:38//y: 32
-        parkPose = new Pose(36.25, 78.25, parkAngle);
-        toShootCurvePose = new Pose(86.25,70.75);
+        frontShootingPose = flipOverCenter(new Pose(54.25, 88.75, closeShootAngle));
+        intake1StartPose = flipOverCenter(new Pose(51.25, 79.75, intakeAngle)); //y:81 34//y:82//x: 47 y:78
+        intake1EndPose = flipOverCenter(new Pose(27.25, 79.75, intakeAngle)); //6//x:16 y:82//x: 16 :78
+        openGateStartPose = flipOverCenter(new Pose(22, 74, openGateAngle)); //78//x:35
+        openGateEndPose = flipOverCenter(new Pose(14, 74, openGateAngle));//x:18
+        intake2StartPose = flipOverCenter(new Pose(53, 57.75, intakeAngle));//y:58//y: 61
+        intake2EndPose = flipOverCenter(new Pose(17.25, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
+        intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
+        intake3EndPose = flipOverCenter(new Pose(17.25, 33.75, intakeAngle));//x:8 y:38//y: 32
+        parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
+        toShootCurvePose = flipOverCenter(new Pose(86.25,70.75));
 
         // GENERATE PATHS HERE
         toShootFromStart = generatePath(startingPose, frontShootingPose);
@@ -84,7 +84,7 @@ public class AutoPaths {
 
     /**
      * Flips a Pose over the center line.
-     *
+     * MAKE SURE YOUR POSE HAS A HEADING. THE HEADING WILL BE KEPT THE SAME
      * @param pose your start pose
      * @return Pose which has been flipped
      */
@@ -96,15 +96,18 @@ public class AutoPaths {
         // we subtract the x from 144 to flip the x
         // y stays the same for this game
         double newPoseX = 144-pose.getX();
-        return new Pose(newPoseX, pose.getY());
+
+        return new Pose(newPoseX, pose.getY(), pose.getHeading());
     }
 
     /**
-     *
      * @param heading in degrees
      * @return heading in radians, flipped 180 degrees
      */
     private static double flipHeading180Degrees(double heading) {
+        if (alliance == Alliance.BLUE) {
+            return Math.toRadians(heading);
+        }
         return Math.toRadians(heading + 180);
     }
 

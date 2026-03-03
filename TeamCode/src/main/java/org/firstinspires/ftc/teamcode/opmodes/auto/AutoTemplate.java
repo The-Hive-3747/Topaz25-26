@@ -35,10 +35,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 flywheel = new Flywheel(),
-                intake = new Intake(),
-                aimbot = new Aimbot(),
-                turret = new Turret(),
-                light = new Light()
+                intake = new Intake()
+                //aimbot = new Aimbot(),
+                //turret = new Turret()
+                //light = new Light()
         );
     }
     protected CommandGroup autonomousCommands;
@@ -87,11 +87,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         follower.setStartingPose(startPose);
         follower.update();
 
-        turret.setAlliance(alliance);
-        turret.setFixedAngle(alliance);
-        aimbot.setAlliance(alliance);
+        //turret.setAlliance(alliance);
+        //turret.setFixedAngle(alliance);
+        //aimbot.setAlliance(alliance);
 
-        turretLights = new TurretLights(hardwareMap, telemetry);
+        //turretLights = new TurretLights(hardwareMap, telemetry);
 
         // TODO: ADD TURRET LIGHTS
         /*
@@ -161,7 +161,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             );
         }
 
-        turret.zeroTurret();
+        //turret.zeroTurret();
     }
 
     @Override
@@ -179,7 +179,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onUpdate() {
         //turret.setCurrentPose(PedroComponent.follower().getPose(), PedroComponent.follower().getVelocity());
-        turret.update();
+        //turret.update();
         follower.update();
 
         //aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
