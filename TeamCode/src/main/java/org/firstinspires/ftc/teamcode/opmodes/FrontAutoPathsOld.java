@@ -8,23 +8,25 @@ import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
-public class AutoPaths {
-    public static Pose startingPose, shootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose, moveAutoEnd;
-    public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3, toEndFromStart;
-    public static double shootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle;
+public class FrontAutoPathsOld {
+    public static Pose startingPose, shootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose;
+    public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3;
+    public static double shootAngle, parkAngle, startAngle, intakeAngle;
     public static Alliance alliance;
-    private static Pose mirror(Pose pose) {
+    private static Pose convert(Pose pose) {
         if (alliance == Alliance.BLUE) {
             return pose;
         }
-        return pose.mirror();
+
+        double newPoseX = 144-pose.getX();
+        return new Pose(newPoseX, pose.getY());
     }
 
-    private static double mirrorHeading(double heading) {
+    private static double convertHeading180(double heading) {
         if (alliance == Alliance.BLUE) {
             return heading;
         }
-        return Math.toRadians(Math.toDegrees(heading) - 180);
+        return heading - Math.PI;
     }
     private static double convertHeading90(double heading) {
         if (alliance == Alliance.BLUE) {
@@ -37,46 +39,33 @@ public class AutoPaths {
         return alliance;
     }
 
-    public static void setStartPose(Pose pose) {
-        startingPose = pose;
-    }
-
 
     public static void generatePaths(Follower follower) {
         if (alliance == Alliance.BLUE) {
-            startingPose = new Pose(63.25, 7.585); // X AND Y ARE UPDATED TO THE REAL WORLD
+            startingPose = new Pose(21, 120);
         } else {
-            startingPose = new Pose(80.75, 7.085); // X AND Y ARE UPDATED TO THE REAL WORLD
+            startingPose = new Pose(125, 122);
         }
-        shootingPose = mirror(new Pose(54.25, 88.75));
-        intake1StartPose = mirror(new Pose(51.25, 79.75)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = mirror(new Pose(28.25, 79.75)); //6//x:16 y:82//x: 16 :78
-        openGateStartPose = mirror(new Pose(22, 74)); //78//x:35
-        openGateEndPose = mirror(new Pose(14, 74));//x:18
-        intake2StartPose = mirror(new Pose(51.25, 57.75));//y:58//y: 61
-        intake2EndPose = mirror(new Pose(18.25, 57.75));//x:15 x:8 y:58//x: 9 y:61
-        intake3StartPose = mirror(new Pose(56.25, 33.75));//y:38//y: 32
-        intake3EndPose = mirror(new Pose(18.25, 33.75));//x:8 y:38//y: 32
-        parkPose = mirror(new Pose(36.25, 78.25));
-        toShootCurvePose = mirror(new Pose(86.25,70.75));
-        lastShootingPose = mirror(new Pose(50, 106));
-        moveAutoEnd = mirror(new Pose( 10, 8.62));
+        shootingPose = convert(new Pose(48, 90));
+        intake1StartPose = convert(new Pose(45, 82)); //34
+        intake1EndPose = convert(new Pose(16, 82)); //6
+        openGateStartPose = convert(new Pose(35, 74)); //78
+        openGateEndPose = convert(new Pose(18, 74));
+        intake2StartPose = convert(new Pose(45, 58));
+        intake2EndPose = convert(new Pose(8, 58));
+        intake3StartPose = convert(new Pose(50, 38));
+        intake3EndPose = convert(new Pose(8, 38));
+        parkPose = convert(new Pose(30, 80));
+        toShootCurvePose = convert(new Pose(80,72));
 
-        if (alliance == Alliance.RED) {
-            shootAngle = convertHeading90(Math.toRadians(40));
-            parkAngle = mirrorHeading(Math.toRadians(180));
-            startAngle = Math.toRadians(90);
-            intakeAngle = mirrorHeading(Math.toRadians(180));
-            lastShootAngle = convertHeading90(Math.toRadians(0));
+        shootAngle = convertHeading90(Math.toRadians(135));
+        parkAngle = convertHeading180(Math.toRadians(180));
+        if (alliance == Alliance.BLUE) {
+            startAngle = Math.toRadians(143);
         } else {
-            shootAngle = Math.toRadians(135); //230
-            parkAngle = mirrorHeading(Math.toRadians(180));
-            startAngle = Math.toRadians(90);
-            intakeAngle = mirrorHeading(Math.toRadians(180));
-            lastShootAngle = Math.toRadians(-90);
+            startAngle = Math.toRadians(39);
         }
-        //shootAngle = convertHeading90(Math.toRadians(40));//135//210//180//0//90//110
-
+        intakeAngle = convertHeading180(Math.toRadians(180));
 
         toShootFromStart = follower
                 .pathBuilder()
@@ -91,7 +80,7 @@ public class AutoPaths {
                 .addPath(
                         new BezierLine(shootingPose, intake1StartPose)
                 )
-                .setLinearHeadingInterpolation(shootAngle, intakeAngle)
+                .setLinearHeadingInterpolation(startAngle, intakeAngle)
                 .build();
 
         intake1 = follower
@@ -107,29 +96,21 @@ public class AutoPaths {
                 .addPath(
                         new BezierCurve(intake1EndPose, openGateStartPose)
                 )
-                .setLinearHeadingInterpolation(intakeAngle, Math.toRadians(-90))
+                .setLinearHeadingInterpolation(intakeAngle, Math.toRadians(90))
                 .setVelocityConstraint(0.5)
                 .build();
 
         openGate = follower
                 .pathBuilder()
                 .addPath(new BezierLine(openGateStartPose, openGateEndPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-90))
+                .setConstantHeadingInterpolation(Math.toRadians(90))
                 .setVelocityConstraint(0.5)
                 .build();
 
         toShootFromOpenGate = follower
                 .pathBuilder()
                 .addPath(new BezierCurve(openGateEndPose, toShootCurvePose, shootingPose))
-                .setLinearHeadingInterpolation(Math.toRadians(-90), shootAngle)
-                .build();
-
-        toShootFromIntake1 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(intake1EndPose, shootingPose)
-                )
-                .setLinearHeadingInterpolation(intakeAngle, shootAngle)
+                .setConstantHeadingInterpolation(Math.toRadians(90))
                 .build();
 
         lineUpForIntake2 = follower
@@ -146,7 +127,6 @@ public class AutoPaths {
                         new BezierLine(intake2StartPose, intake2EndPose)
                 )
                 .setConstantHeadingInterpolation(intakeAngle)
-                .setVelocityConstraint(0.75)
                 .build();
 
         toShootFromIntake2 = follower
@@ -180,13 +160,7 @@ public class AutoPaths {
                 )
                 .setLinearHeadingInterpolation(intakeAngle, shootAngle)
                 .build();
-        toEndFromStart = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(startingPose, moveAutoEnd)
-                )
-                .setConstantHeadingInterpolation(startAngle)
-                .build();
+
 
         park = follower
                 .pathBuilder()
@@ -195,5 +169,32 @@ public class AutoPaths {
                 )
                 .setLinearHeadingInterpolation(shootAngle, parkAngle)
                 .build();
+    }
+
+    public PathChain getToShootFromStart() { return toShootFromStart; }
+    public PathChain getLineUpForIntake1() { return lineUpForIntake1; }
+
+    public static PathChain getIntake1() {
+        return intake1;
+    }
+
+    public static PathChain getLineUpForIntake2() {
+        return lineUpForIntake2;
+    }
+
+    public static PathChain getIntake2() {
+        return intake2;
+    }
+
+    public static PathChain getOpenGate() {
+        return openGate;
+    }
+
+    public static PathChain getToShootFromIntake2() {
+        return toShootFromIntake2;
+    }
+
+    public static PathChain getPark() {
+        return park;
     }
 }
