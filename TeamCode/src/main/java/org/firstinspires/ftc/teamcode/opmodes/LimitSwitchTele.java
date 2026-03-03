@@ -5,6 +5,7 @@ import static dev.nextftc.bindings.Bindings.button;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -35,6 +36,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name="limit switch")
+@Disabled
 public class LimitSwitchTele extends NextFTCOpMode {
     TouchSensor limitSwitch;
     boolean hasBeenPressed = false;

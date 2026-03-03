@@ -140,9 +140,9 @@ public class FrontBlueAuto extends NextFTCOpMode {
                 //new Delay(0.2),
                 new FollowPath(intake2),
                 new Delay(1),
-                intake.stopIntake,
                 new FollowPath(toShootFromIntake2),
                 new Delay(0.3),
+                intake.stopIntake,
                 new ParallelGroup(
                         //flywheel.resetShotTimer,
                         intake.shootAllThree
@@ -159,9 +159,9 @@ public class FrontBlueAuto extends NextFTCOpMode {
                 //new Delay(0.2),
                 new FollowPath(intake3), //setFlywheelVelFinal),
                 new Delay(1),
-                intake.stopIntake,
                 new FollowPath(toShootFromIntake3),
                 new Delay(0.3),
+                intake.stopIntake,
                 new ParallelGroup(
                         //flywheel.resetShotTimer,
                         intake.shootAllThree

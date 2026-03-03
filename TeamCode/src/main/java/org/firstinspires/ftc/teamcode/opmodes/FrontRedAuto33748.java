@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.opmodes.BackAutoPaths.*;
+import static org.firstinspires.ftc.teamcode.opmodes.FrontAutoPaths.*;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -32,8 +32,8 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import com.pedropathing.follower.Follower;
 import dev.nextftc.ftc.NextFTCOpMode;
 
-@Autonomous(name = "back red auto")
-public class BackRedAuto extends NextFTCOpMode {
+@Autonomous(name = "front red auto 33748")
+public class FrontRedAuto33748 extends NextFTCOpMode {
     {
         addComponents(
                 new PedroComponent(Constants::createFollower),
@@ -62,8 +62,8 @@ public class BackRedAuto extends NextFTCOpMode {
     @Override
     public void onInit() {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        BackAutoPaths.alliance = Alliance.RED;
-        BackAutoPaths.generatePaths(PedroComponent.follower());
+        FrontAutoPaths.alliance = Alliance.RED;
+        FrontAutoPaths.generatePaths(PedroComponent.follower());
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(startingPose.getX(), startingPose.getY(), startAngle));
@@ -147,25 +147,6 @@ public class BackRedAuto extends NextFTCOpMode {
                         //flywheel.resetShotTimer,
                         intake.shootAllThree
                         //intake.startTransfer,
-                        //intake.slowIntake
-                ),
-                //intake.startIntake,
-                new ParallelGroup(
-                        intake.firewheelsOff,
-                        //intake.resetRailDex,
-                        new FollowPath(lineUpForIntake3),
-                        intake.startIntake
-                ),
-                //new Delay(0.2),
-                new FollowPath(intake3), //setFlywheelVelFinal),
-                new Delay(1.3),
-                new FollowPath(toShootFromIntake3),
-                new Delay(0.3),
-                intake.stopIntake,
-                new ParallelGroup(
-                        //flywheel.resetShotTimer,
-                        intake.shootAllThree
-                        //intake.startIntake
                         //intake.slowIntake
                 ),
                 new ParallelGroup(

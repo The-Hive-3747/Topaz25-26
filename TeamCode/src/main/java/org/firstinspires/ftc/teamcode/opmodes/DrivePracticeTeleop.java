@@ -4,6 +4,7 @@ import static dev.nextftc.bindings.Bindings.button;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @TeleOp(name="drive practice")
+@Disabled
 public class DrivePracticeTeleop extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(DrivePracticeTeleop.class);
 
