@@ -50,7 +50,7 @@ public class Flywheel implements Component {
         flywheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
         flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
         flywheelLeft.setDirection(DcMotorEx.Direction.REVERSE);
-        //intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "transfer");
+
         leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
         leftFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
         //sideWheelServo = ActiveOpMode.hardwareMap().get(CRServo.class, "side-wheel");
@@ -66,12 +66,8 @@ public class Flywheel implements Component {
         flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
-        //flipper = ActiveOpMode.hardwareMap().get(Servo.class, "flipper");
-        //hood = new Hood(intakeMotor);
-        hood = new Hood(flywheelRight);
+        hood = new Hood(flywheelLeft);
         hood.init();
-
 
         // a control system is NextFTC's way to build.. control systems!
         largeFlywheelPID = ControlSystem.builder()
@@ -95,6 +91,10 @@ public class Flywheel implements Component {
 
     public void increaseHood() {
         hood.increaseHood();
+    }
+
+    public double getHoodPosition() {
+        return hood.getHoodPosition();
     }
 
     public void decreaseHood(){
@@ -174,7 +174,7 @@ public class Flywheel implements Component {
         // (delta means difference between)
 
         currentTime = flywheelVelocityTimer.seconds();
-        currentPosition = flywheelLeft.getCurrentPosition();
+        currentPosition = flywheelRight.getCurrentPosition();
         deltaPosition = currentPosition - pastPosition;
         deltaTime = currentTime - pastTime;
 
@@ -230,7 +230,7 @@ public class Flywheel implements Component {
         //}
         this.setPower(correct);
 
-        //hood.update();
+        hood.update();
 
         ActiveOpMode.telemetry().addData("flywheel power", correct);
         ActiveOpMode.telemetry().addData("flywheel vel", flywheelVel);

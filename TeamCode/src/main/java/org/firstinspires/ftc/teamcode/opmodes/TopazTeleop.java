@@ -203,7 +203,8 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
 
-
+        gUp.whenBecomesTrue(() -> flywheel.increaseHood());
+        gDown.whenBecomesTrue(() -> flywheel.decreaseHood());
 
         //g1X.whenBecomesTrue(() -> odoTurret.resetTurret());
 
@@ -431,6 +432,7 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
 
+        telemetry.addData("hood pose", flywheel.getHoodPosition());
 
 
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());

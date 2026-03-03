@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import dev.nextftc.core.components.Component;
+
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,19 +17,19 @@ import dev.nextftc.core.subsystems.Subsystem;
 
 import dev.nextftc.ftc.ActiveOpMode;
 
+@Configurable
 public class Hood{
 
-    private double HOOD_MAX_POS = 5000;
+    private static double HOOD_MAX_POS = 8858;
     private double HOOD_MIN_POS = 0;
-    private double HOOD_INCREMENT = 20;
+    private static double HOOD_INCREMENT = 100;
     public static double AUTON_HOOD_POS = 1353;//1453
     private double power = 0;
-    private double angle, rotations, offset, lastAngle;
     double hoodAdjust = 0.0;
     public boolean allowPID = true;
 
-    private static double HOOD_P = 0.0006;//0.0012;
-    //private static double HOOD_D = 0.014;
+    private static double HOOD_P = 0.00024;//0.0012;
+    private static double HOOD_D = 1;
     private KineticState goal;
 
     ControlSystem hoodPID;
@@ -46,7 +48,7 @@ public class Hood{
         goal = new KineticState(0);
 
         hoodPID = ControlSystem.builder()
-                .posPid(HOOD_P)
+                .posPid(HOOD_P, 0, HOOD_D)
                 .build();
         hoodPID.setGoal(goal); // set default goal to 0
 
@@ -106,9 +108,5 @@ public class Hood{
         ActiveOpMode.telemetry().addData("hoodPos", this.getHoodPosition());
         ActiveOpMode.telemetry().addData("hoodAllowed", allowPID);
         ActiveOpMode.telemetry().addData("Hood Goal", getGoal());
-        /*
-        ActiveOpMode.telemetry().addData("hoodPower", power);
-        ActiveOpMode.telemetry().addData("hoodGoal", hoodPID.getGoal());
-        ActiveOpMode.telemetry().addData("hoodPos", this.getHoodPosition());*/
     }
 }
