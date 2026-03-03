@@ -26,6 +26,7 @@ import dev.nextftc.ftc.*;
 //Use the customized Drawing class, not the default
 //import org.firstinspires.ftc.teamcode.pathing.Drawing;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.opmodes.auto.AutoPaths;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.TurretLights;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
@@ -264,9 +265,9 @@ public class NextFTCTeleOp extends NextFTCOpMode {
                 });
 
         g1A.whenBecomesTrue(() -> {
-            FrontAutoPathsOld.alliance = alliance;
-            FrontAutoPathsOld.generatePaths(follower);
-            Pose resetPose = new Pose(FrontAutoPathsOld.startingPose.getX(), FrontAutoPathsOld.startingPose.getY(), FrontAutoPathsOld.startAngle);
+            AutoPaths.alliance = alliance;
+            AutoPaths.generatePaths(follower);
+            Pose resetPose = new Pose(AutoPaths.startingPose.getX(), AutoPaths.startingPose.getY(), AutoPaths.startAngle);
             follower.setPose(resetPose);
         });
 
