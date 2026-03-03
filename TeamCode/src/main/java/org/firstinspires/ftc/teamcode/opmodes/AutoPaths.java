@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -9,9 +8,9 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, shootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
+    public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
     public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3;
-    public static double shootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle;
+    public static double closeShootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle;
     public static Alliance alliance;
     public static Follower follower;
 
@@ -30,9 +29,17 @@ public class AutoPaths {
                 startingPose = new Pose(109.5, 135.8, Math.toRadians(-94.95));
             }
         }
+        // DEFINE ANGLES HERE
+        if (alliance == Alliance.BLUE) {
+            closeShootAngle = Math.toRadians(135); //convertHeading90(Math.toRadians(40));
+            parkAngle = Math.toRadians(0);
+            intakeAngle = Math.toRadians(0);
+        } else {
+
+        }
 
         // DEFINE POSES HERE
-        shootingPose = new Pose(54.25, 88.75, Math.toRadians(40));
+        frontShootingPose = new Pose(54.25, 88.75, closeShootAngle);
         intake1StartPose = new Pose(51.25, 79.75); //y:81 34//y:82//x: 47 y:78
         intake1EndPose = new Pose(24.25, 79.75); //6//x:16 y:82//x: 16 :78
         openGateStartPose = new Pose(22, 74); //78//x:35
@@ -46,8 +53,8 @@ public class AutoPaths {
         lastShootingPose = new Pose(50, 106);
 
         // GENERATE PATHS HERE
-        toShootFromStart = generatePath(startingPose, shootingPose);
-        lineUpForIntake1 = generatePath(shootingPose, intake1StartPose);
+        toShootFromStart = generatePath(startingPose, frontShootingPose);
+        lineUpForIntake1 = generatePath(frontShootingPose, intake1StartPose);
         intake1 = generatePath(intake1StartPose, intake1EndPose);
         lineUpForOpenGate = generatePath(intake1EndPose, openGateStartPose);
     }
