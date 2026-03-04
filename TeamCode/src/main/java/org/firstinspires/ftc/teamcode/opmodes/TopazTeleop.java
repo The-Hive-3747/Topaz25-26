@@ -191,8 +191,8 @@ public class TopazTeleop extends NextFTCOpMode {
 
         Button g1Right = button(() -> gamepad1.dpad_right);
         Button g1Left = button(() -> gamepad1.dpad_left);
-        Button g2LB = button(() -> gamepad2.left_bumper);
-        Button g2RB = button(() -> gamepad2.right_bumper);
+        Button g2LB = button(() -> gamepad2.left_bumper || gamepad1.left_bumper);
+        Button g2RB = button(() -> gamepad2.right_bumper || gamepad1.right_bumper);
         Button g1A = button(() -> gamepad1.a);
         Button g1B = button(() -> gamepad1.b);
         Button g1X = button(() -> gamepad1.x);
@@ -329,6 +329,8 @@ public class TopazTeleop extends NextFTCOpMode {
             drive.setOffset(follower.getHeading());
 
         });
+        /*gUp.whenBecomesTrue(() -> flywheel.increaseHood());
+        gDown.whenBecomesTrue(() -> flywheel.decreaseHood());*/
 
         /*gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200);
         gDown.whenBecomesTrue(() -> {

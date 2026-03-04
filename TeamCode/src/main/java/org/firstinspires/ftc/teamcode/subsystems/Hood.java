@@ -56,8 +56,9 @@ public class Hood{
     }
 
 
+    //got rid of the negative sign in front of hoodEncoder here
     public double getHoodPosition() {
-        return -hoodEncoder.getCurrentPosition();
+        return hoodEncoder.getCurrentPosition();
     }
 
     public void setGoal(double goalPos) {
