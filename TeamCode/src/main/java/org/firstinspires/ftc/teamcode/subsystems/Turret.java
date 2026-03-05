@@ -6,6 +6,7 @@ import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
@@ -44,11 +45,11 @@ public class Turret implements Component {
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
 
-    public static double TURRET_PID_KP = 0.030, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
-    private final double LEFT_TURRET_LIMIT = -140, RIGHT_TURRET_LIMIT = 140;//Left:-100, right:130// Left: -120, Right: 120
-    private double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1;
+    public static double TURRET_PID_KP = 0.017, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
+    private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
+    private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1;
     // 180 deg in ticks
-    public static double TURRET_TICKS_TO_DEGREES = 11579.0/180.0;//90/6100;
+    public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240;//90/6100;
     ControlSystem turretPID;
 
     @Override
@@ -56,6 +57,10 @@ public class Turret implements Component {
         //limitSwitch = ActiveOpMode.hardwareMap().get(TouchSensor.class, "limitSwitch");
         turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
+
+        turretLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        turretRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
         thruTurret = ActiveOpMode.hardwareMap().get(DcMotor.class, "intake");
 
         thruTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -66,6 +71,7 @@ public class Turret implements Component {
         currentState = turretState.AUTO;
         turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
+                .basicFF(0, 0, TURRET_PID_KS)
                 .build();
         turretGoalNotInLimits = 0;
     }
@@ -73,6 +79,11 @@ public class Turret implements Component {
     public void zeroTurret() {
         thruTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         thruTurret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void setTurretPower(double power) {
+        turretLeft.setPower(power);
+        turretRight.setPower(power);
     }
 
     public void update() {
@@ -96,15 +107,6 @@ public class Turret implements Component {
             turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
         }
 
-        /*if (limitSwitch.isPressed() && turret.getVelocity()>0) {
-            if (!hasBeenReset) {
-                this.zeroTurret();
-                hasBeenReset = true;
-                turretPressedAndReset = true;
-            }
-        } else if (hasBeenReset) {
-            hasBeenReset = false;
-        }*/
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
@@ -114,7 +116,7 @@ public class Turret implements Component {
             turretPower = 0;
         }*/
 
-        thruTurret.setPower(turretPower);
+        this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
@@ -191,7 +193,7 @@ public class Turret implements Component {
      * IN DEGREES
      */
     public double getTurretAngle() {
-        return ((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
+        return -((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
     }
 
     /**

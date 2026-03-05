@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -16,6 +17,7 @@ import dev.nextftc.ftc.NextFTCOpMode;
 @TeleOp(name = "encoder Tester")
 //@Disabled
 public class EncoderTester extends NextFTCOpMode {
+    CRServo turretLeft, turretRight;
 
     DcMotorEx flywheelLeft, flywheelRight, intakeMotor;
     NormalizedColorSensor colorSensor;
@@ -31,6 +33,8 @@ public class EncoderTester extends NextFTCOpMode {
         intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "intake");
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "frontColor");
         distanceSensor = hardwareMap.get(DistanceSensor.class,"frontColor");
+        turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
+        turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
 
 
         flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -61,6 +65,17 @@ public class EncoderTester extends NextFTCOpMode {
         telemetry.addData("flywheel external vel W CONVERSION",  ((double) flywheelRight.getVelocity()*60)/8192); // 8192 is CPR
         telemetry.addData("flywheelRight vel", flywheelRight.getVelocity());
         telemetry.addData("intakeMotor", intakeMotor.getCurrentPosition());
+
+        if (gamepad1.a) {
+            turretLeft.setPower(1);
+        } else {
+            turretLeft.setPower(0);
+        }
+        if (gamepad1.b) {
+            turretRight.setPower(1);
+        } else {
+            turretRight.setPower(0);
+        }
         //telemetry.addData("turret", turret.getCurrentPosition());
 
         telemetry.addData("port fly right", ActiveOpMode.hardwareMap().get("flyWheelRight").getConnectionInfo());
