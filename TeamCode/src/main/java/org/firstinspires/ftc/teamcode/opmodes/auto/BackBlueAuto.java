@@ -9,8 +9,9 @@ import org.firstinspires.ftc.teamcode.utilities.Alliance;
 public class BackBlueAuto extends AutoTemplate {
     @Override
     public void initAuto() {
-        super.startPose = new Pose(63.25, 7.585,Math.toRadians(90));
-        super.alliance = Alliance.BLUE;
+        startAsBlue();
+        startAtBack();
+        shootAllThreeAtFront(1);
 
 
         // if we do anything custom with paths, we should override this:
