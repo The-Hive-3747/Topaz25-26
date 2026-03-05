@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
     public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
-    public static PathChain toShootFromStart, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3, toShootAtFrontFromLastPose;
+    public static PathChain toShootFromStart, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2FromLastPose, intake2, toShootFromIntake2, parkAtFrontFromLastPose, openGate, toShootFromOpenGate, lineUpForIntake3FromLastPose, intake3, toShootFromIntake3, toShootAtFrontFromLastPose;
     public static double closeShootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
@@ -70,17 +70,17 @@ public class AutoPaths {
         openGate = generatePath(openGateStartPose, openGateEndPose);
         toShootFromOpenGate = generatePathCurve(openGateEndPose, toShootCurvePose, frontShootingPose);
 
-        lineUpForIntake2 = generatePath(frontShootingPose, intake2StartPose);
+        lineUpForIntake2FromLastPose = generatePath(AutoTemplate.lastPose, intake2StartPose);
         intake2 = generatePath(intake2StartPose, intake2EndPose);
         toShootFromIntake2 = generatePath(intake2EndPose, frontShootingPose);
 
-        lineUpForIntake3 = generatePath(frontShootingPose, intake3StartPose);
+        lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
         intake3 = generatePath(intake3StartPose, intake3EndPose);
         toShootFromIntake3 = generatePath(intake3EndPose, frontShootingPose);
 
         toShootAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontShootingPose);
 
-        park = generatePath(frontShootingPose, parkPose);
+        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, parkPose);
     }
 
 

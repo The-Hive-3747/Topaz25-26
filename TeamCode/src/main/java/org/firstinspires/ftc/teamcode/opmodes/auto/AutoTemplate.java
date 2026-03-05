@@ -213,7 +213,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = frontShootingPose;
     }
 
-    protected void intake2(double delayAfterIntake) {
+    protected void intake1(double delayAfterIntake) {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
@@ -227,6 +227,49 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 ),
                 new Delay(delayAfterIntake)
         ));
-        lastPose = frontShootingPose;
+        lastPose = intake1EndPose;
+    }
+
+    protected void intake2(double delayAfterIntake) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        intake.firewheelsOff,
+                        new FollowPath(lineUpForIntake2FromLastPose),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intake1)
+                ),
+                new Delay(delayAfterIntake)
+        ));
+        lastPose = intake2EndPose;
+    }
+
+    protected void intake3(double delayAfterIntake) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        intake.firewheelsOff,
+                        new FollowPath(lineUpForIntake3FromLastPose),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intake1)
+                ),
+                new Delay(delayAfterIntake)
+        ));
+        lastPose = intake3EndPose;
+    }
+
+    protected void parkAtFront() {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new ParallelGroup(
+                intake.firewheelsOff,
+                flywheel.stopFlywheel,
+                new FollowPath(parkAtFrontFromLastPose)
+        ));
     }
 }
