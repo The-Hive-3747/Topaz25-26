@@ -50,8 +50,8 @@ public class TopazTeleop extends NextFTCOpMode {
                 BindingsComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower),
                 aimbot = new Aimbot(),
-                turret = new Turret()
-                //limelight = new Relocalization()
+                turret = new Turret(),
+                limelight = new Relocalization()
                 //limelightComponent = new LimelightComponent(),
                 //dataLogger = new DataLogger(telemetry)
         );
@@ -63,7 +63,7 @@ public class TopazTeleop extends NextFTCOpMode {
     FieldCentricDrive drive;
     Aimbot aimbot;
     Turret turret;
-    //Relocalization limelight;
+    Relocalization limelight;
     Flywheel  flywheel;
     //TurretLights turretLights;
     private ElapsedTime looptime;
@@ -392,7 +392,13 @@ public class TopazTeleop extends NextFTCOpMode {
         BindingManager.update();
         flywheel.update();
         intake.update();
-        turret.setCurrentPose(follower.getPose(), follower.getVelocity());
+
+        if (limelight.isDataFresh()) {
+            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+        } else {
+            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        }
+
 
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
         // turret.shootOnTheMove(follower.getVelocity());

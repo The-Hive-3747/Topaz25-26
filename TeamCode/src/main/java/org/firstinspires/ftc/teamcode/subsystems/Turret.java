@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
+import org.firstinspires.ftc.teamcode.vision.limelight.LimelightComponent;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -24,7 +25,7 @@ public class Turret implements Component {
     CRServo turretLeft, turretRight;
     DcMotor thruTurret;
     private TouchSensor limitSwitch;
-    Pose currentPose;
+    Pose currentPose, limelightPose;
     Vector currentVelocity;
     public enum turretState {
         OFF,
@@ -37,7 +38,9 @@ public class Turret implements Component {
     private double fieldCentricGoalAngle, goalX, goalY, turretPower, turretGoalNotInLimits, heading;
     private KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
+    private KineticState angleAfterOffset = new KineticState(0);
     private KineticState FIXED_LAST_ANGLE = new KineticState(-60);
+    public static double turretOffset = 0;
     public static double AUTON_RED_SHOOT_ANGLE = -94; //-92 -95
     public static double AUTON_RED_SHOOT_ANGLE_LAST = -60;
     public static double AUTON_BLUE_SHOOT_ANGLE_LAST = 60;
@@ -89,11 +92,9 @@ public class Turret implements Component {
     public void update() {
         if (currentState == turretState.AUTO) {
             turretPID.setGoal(getAutoAimGoalAngle());
-            //turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
+            angleAfterOffset = new KineticState((2*getTurretGoal())- turretOffset);
         } else if (currentState == turretState.FORWARD) {
             turretPID.setGoal(ZERO_ANGLE);
-            //turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
-
         } else if (currentState == turretState.FIXED){  //This is the autonomous fixed position for shooting
           turretPID.setGoal(FIXED_ANGLE);
         } else {
@@ -136,7 +137,6 @@ public class Turret implements Component {
      */
     public KineticState getAutoAimGoalAngle() {
         if (currentPose != null) {
-
             fieldCentricGoalAngle = Math.atan2((goalY - this.currentPose.getY()), (goalX - this.currentPose.getX())); // IN RADS
             turretGoalNotInLimits = Math.toDegrees(normalizeAngle(fieldCentricGoalAngle - this.currentPose.getHeading() + Math.PI));
             return new KineticState(this.putInTurretLimits(turretGoalNotInLimits));
@@ -167,9 +167,10 @@ public class Turret implements Component {
      * @param pose: sets the current pose, used for auto-aim calculations
      *            NEEDS TO BE DONE EVERY LOOP
      */
-    public void setCurrentPose(Pose pose, Vector velocity) {
+    public void setCurrentPose(Pose pose, Vector velocity, double offset) {
         this.currentPose = pose;
         this.currentVelocity = velocity;
+        this.turretOffset = offset;
     }
 
     /**
