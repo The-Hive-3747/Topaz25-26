@@ -6,13 +6,9 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
-import org.firstinspires.ftc.teamcode.subsystems.TurretLights;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
-import org.firstinspires.ftc.teamcode.utilities.Light;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
@@ -29,8 +25,6 @@ import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import java.util.Timer;
 
 import dev.nextftc.ftc.NextFTCOpMode;
 
@@ -161,20 +155,16 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void startAsBlue() {
         alliance = Alliance.BLUE;
-        autonomousCommands = autonomousCommands.then(
-                new InstantCommand(() -> AutoPaths.alliance = alliance ),
-                new InstantCommand(() -> turret.setAlliance(alliance) ),
-                new InstantCommand(() -> turret.setFixedAngle(alliance))
-        );
+        AutoPaths.alliance = alliance;
+        turret.setAlliance(alliance);
+        turret.setFixedAngle(alliance);
     }
 
     protected void startAsRed() {
         alliance = Alliance.RED;
-        autonomousCommands = autonomousCommands.then(new ParallelGroup(
-                new InstantCommand(() -> AutoPaths.alliance = alliance ),
-                new InstantCommand(() -> turret.setAlliance(alliance) ),
-                new InstantCommand(() -> turret.setFixedAngle(alliance))
-        ));
+        AutoPaths.alliance = alliance;
+        turret.setAlliance(alliance);
+        turret.setFixedAngle(alliance);
     }
 
     protected void startAtBack() {
@@ -183,10 +173,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         } else {
             startPose = new Pose(63.25, 7.585,Math.toRadians(90));
         }
-        autonomousCommands = autonomousCommands.then(new ParallelGroup(
-                new InstantCommand(() -> AutoPaths.setStartPose(startPose)),
-                new InstantCommand(() -> lastPose = startPose)
-        ));
+        AutoPaths.setStartPose(startPose);
+        lastPose = startPose;
     }
 
     protected void startAtFront() {
@@ -195,38 +183,50 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         } else {
             startPose = new Pose(34.5, 135.8,Math.toRadians(-85.05));
         }
-        autonomousCommands = autonomousCommands.and(new ParallelGroup(
-                new InstantCommand(() -> AutoPaths.setStartPose(startPose)),
-                new InstantCommand(() -> lastPose = startPose)
-        ));
+        AutoPaths.setStartPose(startPose);
+        lastPose = startPose;
     }
 
     protected void startAtCustomPose(Pose pose) {
         startPose = pose;
-        new ParallelGroup(
-                new InstantCommand(() -> AutoPaths.setStartPose(startPose)),
-                new InstantCommand(() -> lastPose = startPose)
-        ).schedule();
+        AutoPaths.setStartPose(startPose);
+        lastPose = startPose;
     }
 
     protected void turnFlywheelOn() {
-        startAimbotFlywheel.schedule();
+        autonomousCommands = autonomousCommands.then(startAimbotFlywheel);
     }
 
-    protected void shootAllThreeAtFront(double wait) {
-        looptimer.reset();
+    protected void shootAllThreeAtFront(double delayBeforeShot) {
         AutoPaths.generatePaths(follower);
-        telemetry.addData("time to gen", looptimer.milliseconds());
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
             new ParallelGroup(
                 startAimbotFlywheel,
-                new FollowPath(toShootFromStart),
+                new FollowPath(toShootAtFrontFromLastPose),
                 intake.railDownAuto
             ),
-                new Delay(wait),
+                new Delay(delayBeforeShot),
                 new ParallelGroup(
                         intake.shootAllThree
                 )
         ));
+        lastPose = frontShootingPose;
+    }
+
+    protected void intake2(double delayAfterIntake) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        intake.firewheelsOff,
+                        new FollowPath(lineUpForIntake1FromLastPose),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intake1)
+                ),
+                new Delay(delayAfterIntake)
+        ));
+        lastPose = frontShootingPose;
     }
 }
