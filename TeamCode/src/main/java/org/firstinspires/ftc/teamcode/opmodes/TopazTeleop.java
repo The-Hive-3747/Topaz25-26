@@ -48,8 +48,8 @@ public class TopazTeleop extends NextFTCOpMode {
                 drive = new FieldCentricDrive(),
                 intake = new Intake(),
                 BindingsComponent.INSTANCE,
-                new PedroComponent(Constants::createFollower)
-                //aimbot = new Aimbot()
+                new PedroComponent(Constants::createFollower),
+                aimbot = new Aimbot()
                 //turret = new Turret(),
                 //limelight = new Relocalization()
                 //limelightComponent = new LimelightComponent(),
@@ -61,7 +61,7 @@ public class TopazTeleop extends NextFTCOpMode {
     //Turret turret;
     Intake intake;
     FieldCentricDrive drive;
-    //Aimbot aimbot;
+    Aimbot aimbot;
     //Relocalization limelight;
     Flywheel  flywheel;
     //TurretLights turretLights;
@@ -177,9 +177,7 @@ public class TopazTeleop extends NextFTCOpMode {
         }
 
         //turret.setAlliance(alliance);
-        //aimbot.setAlliance(alliance);
-
-
+        aimbot.setAlliance(alliance);
 
         Button g2X = button(() -> gamepad2.x);
         Button g2Y = button(() -> gamepad2.y);
@@ -208,12 +206,12 @@ public class TopazTeleop extends NextFTCOpMode {
 
         //g1X.whenBecomesTrue(() -> odoTurret.resetTurret());
 
-        g2LT.toggleOnBecomesTrue()
-                .whenBecomesTrue(() ->{
-                    FLYWHEEL_ON = true;
-                    //intake.stopIntake();
-                    intake.startRailDex();
-                });
+        //g2LT.toggleOnBecomesTrue()
+        g2LT.whenBecomesTrue(() ->{
+            FLYWHEEL_ON = true;
+            //intake.stopIntake();
+            intake.startRailDex();
+        });
                 //.whenBecomesFalse(() -> intake.resetRailDex());
         g2RT.toggleOnBecomesTrue()
                 .whenBecomesTrue( () -> intake.reverseIntake())
@@ -270,12 +268,12 @@ public class TopazTeleop extends NextFTCOpMode {
                     isIntakeReversed = false;
                 });*/
 
-        g1A.whenBecomesTrue(() -> {
+        /*g1A.whenBecomesTrue(() -> {
             AutoPaths.alliance = alliance;
             AutoPaths.generatePaths(follower);
             Pose resetPose = new Pose(AutoPaths.startingPose.getX(), AutoPaths.startingPose.getY(), AutoPaths.startAngle);
             follower.setPose(resetPose);
-        });
+        });*/
 
         /*g2X.toggleOnBecomesTrue() //firewheels on
                 .whenBecomesTrue(() -> {
@@ -290,7 +288,7 @@ public class TopazTeleop extends NextFTCOpMode {
                 });*/
 
 
-        /*g2RT.whenTrue(() -> {
+        /*g2RT.whenTrue(() -> { //OLD FLIPPER SHOOT
                 got3Balls = false;
                 fireWhenReady = false;
                 intakeMotor.setPower(INTAKE_SHOOTING_POWER);
@@ -302,7 +300,7 @@ public class TopazTeleop extends NextFTCOpMode {
                     isFlipperOn = false;
                 });
 
-        g2B.whenBecomesTrue(() -> {
+        g2B.whenBecomesTrue(() -> { //
             fireWhenReady = true;
             intakeMotor.setPower(INTAKE_SHOOTING_POWER);
             })
@@ -313,12 +311,12 @@ public class TopazTeleop extends NextFTCOpMode {
 
 
 
-        /*gUpOrDown.whenBecomesFalse(() -> {
+        /*gUpOrDown.whenBecomesFalse(() -> { //HOOD ENCODER
                     flywheel.setHoodPower(0);
                     //flywheel.resetHoodEncoder();
                 });*/
 
-        //gUp.whenBecomesTrue(() -> flywheel.increaseHood());
+        //gUp.whenBecomesTrue(() -> flywheel.increaseHood()); //OLD HOOD INCREASE
         //gDown.whenBecomesTrue(() -> flywheel.decreaseHood());
 
         g2LB.whenBecomesTrue(() -> flywheel.decrease());
@@ -327,12 +325,9 @@ public class TopazTeleop extends NextFTCOpMode {
 
         g1B.whenBecomesTrue(() -> {
             drive.setOffset(follower.getHeading());
-
         });
-        /*gUp.whenBecomesTrue(() -> flywheel.increaseHood());
-        gDown.whenBecomesTrue(() -> flywheel.decreaseHood());*/
 
-        /*gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200);
+        /*gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200); //OLD FLYWHEEL INCREASE
         gDown.whenBecomesTrue(() -> {
                 if (FLYWHEEL_VEL - 200 < 0) {
             FLYWHEEL_VEL = 0;
@@ -341,9 +336,7 @@ public class TopazTeleop extends NextFTCOpMode {
         }
         });*/
 
-
         //g1X.whenBecomesTrue(() -> relocalizeButton());
-
 
         //g1LT.whenBecomesTrue(() -> turretLights.redAlliance());
 
@@ -355,11 +348,11 @@ public class TopazTeleop extends NextFTCOpMode {
         follower.update();
         //dataLogger.update();
 
-        /*aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
+        aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
         FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
-        flywheel.setHoodGoalPos(HOOD_POS);*/
+        flywheel.setHoodGoalPos(HOOD_POS);
         if (FLYWHEEL_ON) {
             flywheel.setTargetVel(FLYWHEEL_VEL);
         } else {
@@ -435,8 +428,6 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
 
         telemetry.addData("hood pose", flywheel.getHoodPosition());
-
-
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());
         //telemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
         telemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());

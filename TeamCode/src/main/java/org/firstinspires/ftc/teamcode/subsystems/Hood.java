@@ -28,8 +28,9 @@ public class Hood{
     double hoodAdjust = 0.0;
     public boolean allowPID = true;
 
-    private static double HOOD_P = 0.00024;//0.0012;
-    private static double HOOD_D = 1;
+    private static double HOOD_P = 0.00058;//0.0012;
+    private static double HOOD_D = 0;//1;
+    private static double HOOD_I = 0.0;
     private KineticState goal;
 
     ControlSystem hoodPID;
@@ -48,7 +49,7 @@ public class Hood{
         goal = new KineticState(0);
 
         hoodPID = ControlSystem.builder()
-                .posPid(HOOD_P, 0, HOOD_D)
+                .posPid(HOOD_P, HOOD_I, HOOD_D)
                 .build();
         hoodPID.setGoal(goal); // set default goal to 0
 
@@ -58,8 +59,8 @@ public class Hood{
 
     //got rid of the negative sign in front of hoodEncoder here
     public double getHoodPosition() {
-        return hoodEncoder.getCurrentPosition();
-    }
+        return -hoodEncoder.getCurrentPosition();
+    } //direction of encoder is reversed
 
     public void setGoal(double goalPos) {
         enableHoodPID();
@@ -86,12 +87,10 @@ public class Hood{
     }
 
     public void increaseHood(){
-        hoodAdjust += HOOD_INCREMENT;
-        setGoal(getGoal());
+        setGoal(getGoal() + HOOD_INCREMENT);
     }
     public void decreaseHood(){
-        hoodAdjust -= HOOD_INCREMENT;
-        setGoal(getGoal());
+        setGoal(getGoal() - HOOD_INCREMENT);
     }
 
 

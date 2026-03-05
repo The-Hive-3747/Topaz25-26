@@ -66,7 +66,7 @@ public class Flywheel implements Component {
         flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        hood = new Hood(flywheelLeft);
+        hood = new Hood(flywheelRight);
         hood.init();
 
         // a control system is NextFTC's way to build.. control systems!
@@ -174,7 +174,7 @@ public class Flywheel implements Component {
         // (delta means difference between)
 
         currentTime = flywheelVelocityTimer.seconds();
-        currentPosition = flywheelRight.getCurrentPosition();
+        currentPosition = flywheelLeft.getCurrentPosition();
         deltaPosition = currentPosition - pastPosition;
         deltaTime = currentTime - pastTime;
 
@@ -252,7 +252,7 @@ public class Flywheel implements Component {
     // so everything becomes easier when the hood is owned by the flywheel
 
     // HOOD METHODS
-    /*public double getHoodPos() {
+    public double getHoodPos() {
         return hood.getHoodPosition();
     }
 
@@ -270,7 +270,7 @@ public class Flywheel implements Component {
 
     public void enableHoodPid() {
         hood.enableHoodPID();
-    }*/
+    }
     public Command startFlywheel = new InstantCommand(
             () -> this.setTargetVel(autoTargetVel)
     );

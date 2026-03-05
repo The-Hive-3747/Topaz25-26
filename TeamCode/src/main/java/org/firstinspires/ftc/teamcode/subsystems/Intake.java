@@ -27,7 +27,7 @@ public class Intake implements Component {
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
     double FIRE_POWER = 0.9;
-    double AGITATOR_POWER = 0.2;
+    double AGITATOR_POWER = 0.2;//0.6;
     double RAIL_UP = 0.5;
     double RAIL_DOWN = 1;
     double INTAKE_POWER_REVERSED = -0.9;

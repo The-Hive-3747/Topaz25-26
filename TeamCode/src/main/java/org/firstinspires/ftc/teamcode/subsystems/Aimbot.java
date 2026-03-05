@@ -44,7 +44,28 @@ public class Aimbot implements Component{
 
     AimbotValues[] aimbotValues = { //These are all the actual values from tests on field, must be
                                     // in order of distance from least to greatest
-            new AimbotValues(16.5, 2057, 0), //vel: 850//
+            new AimbotValues(16, 2800, 0),
+            new AimbotValues(23.5, 2800, 1200),
+            new AimbotValues(29, 3000, 1600),
+            new AimbotValues(34, 3150, 2400),
+            new AimbotValues(39, 3150, 2700),
+            new AimbotValues(44, 3150, 3400),
+            new AimbotValues(48, 3125, 4400),
+            new AimbotValues(54, 3100, 4800),
+            new AimbotValues(59, 3250, 5100),
+            new AimbotValues(65, 3250, 5700),
+            new AimbotValues(69, 3250, 6100),
+            new AimbotValues(75, 3250, 6400),
+            new AimbotValues(79, 3250, 6400),
+            new AimbotValues(87, 3450, 6400), //v: 3350 h: 6500
+            new AimbotValues(117, 3950, 7400),//v: 3850
+            new AimbotValues(120, 4050, 7400),//v: 3900
+            new AimbotValues(128, 4200, 7500), //v: 4050
+            new AimbotValues(136, 4300, 7700), //v: 4100
+
+
+            /*
+            new AimbotValues(23.5, 2800, 2200), //vel: 850//
             new AimbotValues(21.5, 2057, 0), //vel: 950//
             new AimbotValues(26.5, 2057, 0), //vel: 950//v: 950
             new AimbotValues(31.5, 2057, 0), //v: 950 h:727//v:1000
@@ -61,7 +82,7 @@ public class Aimbot implements Component{
             new AimbotValues(121.5, 3057, 2500), //v: 1400 h: 1500//v: 1440, h:1835//h:1940//v:1460, h:1965
             new AimbotValues(126.5, 3057, 2000), //v: 1450 h: 2000//v: 1440, h:1835//h:1950//v:1460, h:1975
             new AimbotValues(131.5, 3142, 1750), //v: 1500 h: 2000//v: 1440, h:1835//v: 1480, h:1960
-
+*/
             /*new AimbotValues(16.5, 850, 0), //vel: 850//
             new AimbotValues(21.5, 1050, 518), //vel: 950//
             new AimbotValues(26.5, 1050, 300), //vel: 950//v: 950

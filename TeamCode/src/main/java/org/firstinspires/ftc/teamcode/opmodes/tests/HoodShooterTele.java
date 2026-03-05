@@ -15,6 +15,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
+import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
@@ -34,26 +36,32 @@ import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name="hood shooter tele with new flywheel")
-@Disabled
+//@Disabled
 public class HoodShooterTele extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(HoodShooterTele.class);
-
     {
         addComponents(
                 flywheel = new Flywheel(),
+                drive = new FieldCentricDrive(),
+                intake = new Intake(),
                 BindingsComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower),
-                limelight = new LimelightComponent(),
                 //drive = new FieldCentricDrive(),
                 aimbot = new Aimbot(),
                 relocalization = new Relocalization(),
                 dataLog = new DataLogger(telemetry)
-
         );
     }
+    //Relocalization limelight;
+    //DataLogger dataLogger;
+    //Turret turret;
+    Intake intake;
+    FieldCentricDrive drive;
+    //Aimbot aimbot;
+    //Relocalization limelight;
+    Flywheel  flywheel;
     DataLogger dataLog;
     Relocalization relocalization;
-    Flywheel flywheel;
     Aimbot aimbot;
     //FieldCentricDrive drive;
     LimelightComponent limelight;
