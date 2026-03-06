@@ -86,6 +86,7 @@ public class TopazTeleop extends NextFTCOpMode {
     private boolean isFlipperOn = false;
     private boolean got3Balls = false;
     private boolean isRelocalized = false;
+    private boolean limelightRelocalized = false;
     int FLYWHEEL_STEP = 50;
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
@@ -400,11 +401,12 @@ public class TopazTeleop extends NextFTCOpMode {
         intake.update();
 
         if (limelight.isDataFresh()) {
+            limelightRelocalized = true;
             limelightCorrection = limelight.getPedroPose().getHeading();
             turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
         } else {
-            limelightCorrection = 0.0;
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+            //limelightCorrection = 0.0;
+            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
         }
 
 
@@ -441,6 +443,7 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
 
         telemetry.addData("limelight correction", limelightCorrection);
+        telemetry.addData("limelight relocalized", limelightRelocalized);
         telemetry.addData("hood pose", flywheel.getHoodPosition());
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());
         //telemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
