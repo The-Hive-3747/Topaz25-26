@@ -15,7 +15,7 @@ import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.extensions.pedro.FollowPath;
 
-@Autonomous(name = "disconnect auto blue")
+@Autonomous(name = "disconnect auto blue OLD DO NOT RUN")
 public class DisconnectAutoBlue extends AutoTemplate {
     Pose disconnectShootPose = new Pose(71.8,20.5, Math.toRadians(51.7));
     Pose humanIntakePose = new Pose(127.7 ,11.4, Math.toRadians(-3.3));
@@ -24,8 +24,8 @@ public class DisconnectAutoBlue extends AutoTemplate {
     public void initAuto() {
         super.alliance = Alliance.BLUE;
         super.startPose = new Pose(63.25, 7.585,Math.toRadians(90));
-        super.parkAngle = Math.toRadians(0);
-        super.parkPose = new Pose(36.25, 78.25, parkAngle);
+        //super.parkAngle = Math.toRadians(0);
+        //super.parkPose = new Pose(36.25, 78.25, parkAngle);
 
         PathChain startToBackShoot = generatePath(startPose, disconnectShootPose);
         PathChain backShootToHuman = generatePath(disconnectShootPose, humanIntakePose);

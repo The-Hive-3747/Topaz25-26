@@ -9,9 +9,9 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
-    public static PathChain toShootFromStart, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2FromLastPose, intake2, toShootFromIntake2, parkAtFrontFromLastPose, openGate, toShootFromOpenGate, lineUpForIntake3FromLastPose, intake3, toShootFromIntake3, toShootAtFrontFromLastPose;
-    public static double closeShootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle, openGateAngle;
+    public static Pose startingPose, closeShootingPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
+    public static PathChain toShootFromStart, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, toShootFromIntake1, lineUpForIntake2FromLastPose, intake2, toShootFromIntake2, parkAtFrontFromLastPose, openGate, toShootFromOpenGate, lineUpForIntake3FromLastPose, intake3, toShootFromIntake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose;
+    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
 
@@ -33,6 +33,7 @@ public class AutoPaths {
             closeShootAngle = Math.toRadians(50); //convertHeading90(Math.toRadians(40));
         }*/
         closeShootAngle = flipHeading180Degrees(180);
+        shootAngle = flipHeading180Degrees(180);
         intakeAngle = flipHeading180Degrees(180);
         openGateAngle = Math.toRadians(90);
 
@@ -48,7 +49,8 @@ public class AutoPaths {
         if (parkPose == null) {
             parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
-        frontShootingPose = flipOverCenter(new Pose(54.25, 88.75, closeShootAngle));
+        closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
+        farShootingPose = flipOverCenter(new Pose(71.8, 20.5, shootAngle));
         intake1StartPose = flipOverCenter(new Pose(51.25, 79.75, intakeAngle)); //y:81 34//y:82//x: 47 y:78
         intake1EndPose = flipOverCenter(new Pose(27.25, 79.75, intakeAngle)); //6//x:16 y:82//x: 16 :78
         openGateStartPose = flipOverCenter(new Pose(22, 74, openGateAngle)); //78//x:35
@@ -57,29 +59,22 @@ public class AutoPaths {
         intake2EndPose = flipOverCenter(new Pose(17.25, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
         intake3EndPose = flipOverCenter(new Pose(17.25, 33.75, intakeAngle));//x:8 y:38//y: 32
-        parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
-        toShootCurvePose = flipOverCenter(new Pose(86.25,70.75));
 
         // GENERATE PATHS HERE
-        toShootFromStart = generatePath(startingPose, frontShootingPose);
-
         lineUpForIntake1FromLastPose = generatePath(AutoTemplate.lastPose, intake1StartPose);
         intake1 = generatePath(intake1StartPose, intake1EndPose);
-        toShootFromIntake1 = generatePath(intake1EndPose, frontShootingPose);
 
-        lineUpForOpenGate = generatePath(intake1EndPose, openGateStartPose);
+        lineUpForOpenGateFromLastPose = generatePath(AutoTemplate.lastPose, openGateStartPose);
         openGate = generatePath(openGateStartPose, openGateEndPose);
-        toShootFromOpenGate = generatePathCurve(openGateEndPose, toShootCurvePose, frontShootingPose);
 
         lineUpForIntake2FromLastPose = generatePath(AutoTemplate.lastPose, intake2StartPose);
         intake2 = generatePath(intake2StartPose, intake2EndPose);
-        toShootFromIntake2 = generatePath(intake2EndPose, frontShootingPose);
 
         lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
         intake3 = generatePath(intake3StartPose, intake3EndPose);
-        toShootFromIntake3 = generatePath(intake3EndPose, frontShootingPose);
 
-        toShootAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontShootingPose);
+        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
+        toShootAtFarFromLastPose = generatePath(AutoTemplate.lastPose, farShootingPose);
 
         parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, parkPose);
     }

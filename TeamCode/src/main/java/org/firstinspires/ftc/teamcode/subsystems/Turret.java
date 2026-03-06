@@ -5,12 +5,10 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
-import org.firstinspires.ftc.teamcode.vision.limelight.LimelightComponent;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -19,7 +17,6 @@ import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
-import kotlin.time.Instant;
 
 @Configurable
 public class Turret implements Component {
@@ -40,12 +37,9 @@ public class Turret implements Component {
     private KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
     private KineticState angleAfterOffset = new KineticState(0);
-    private KineticState FIXED_LAST_ANGLE = new KineticState(-60);
     public static double turretOffset = 0;
-    public static double AUTON_RED_SHOOT_ANGLE = -135; //-92 -95
-    public static double AUTON_RED_SHOOT_ANGLE_LAST = -60;
-    public static double AUTON_BLUE_SHOOT_ANGLE_LAST = 60;
-    public static double AUTON_BLUE_SHOOT_ANGLE = 135;
+    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -135; //-92 -95
+    public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 135;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
 
@@ -113,11 +107,6 @@ public class Turret implements Component {
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
 
-        // Don't do this if you've already calculated. This causes windup
-        /*if (Math.abs(getTurretAngle() - turretGoal) < TURRET_ANGLE_DEADZONE) {
-            turretPower = 0;
-        }*/
-
         this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
@@ -127,10 +116,6 @@ public class Turret implements Component {
         ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
         ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
         //ActiveOpMode.telemetry().addData("TURRET vel", thruTurret.getVelocity());
-
-
-
-        //ActiveOpMode.telemetry().addData("turret voltage draw", turret.getCurrent(CurrentUnit.MILLIAMPS));
     }
 
     /**
@@ -145,8 +130,6 @@ public class Turret implements Component {
             return ZERO_ANGLE;
         }
     }
-
-
 
     /**
      *
@@ -184,11 +167,9 @@ public class Turret implements Component {
         turretPID.setGoal(new KineticState(goal));
     }
 
-
     public turretState getTurretState() {
         return currentState;
     }
-
 
     /**
      *
@@ -269,34 +250,8 @@ public class Turret implements Component {
     public Command setTurretAuto = new InstantCommand(
             () -> currentState = turretState.AUTO
     );
-    public Command setTurretOff = new LambdaCommand()
-            .setStart(() -> {
-                currentState = turretState.OFF;
-            })
-            .setIsDone(() -> true);
-    public Command setTurretForward = new LambdaCommand()
-            .setStart(() -> {
-                currentState = turretState.FORWARD;
-            })
-            .setIsDone(() -> true);
-    //Using this state for the autonomous shooting for a fixed position
-    public Command setTurretFixed = new LambdaCommand()
-            .setStart(() -> {
-                currentState = turretState.FIXED;
-            })
-            .setIsDone(() -> true);
-    public Command setTurretFixedLastRed = new LambdaCommand()
-            .setStart(() -> {
-                setFixedAngle(Alliance.RED);
-            })
-            .setIsDone(() -> true);
-
-    public Command setTurretFixedLastBlue = new LambdaCommand()
-            .setStart(() -> {
-                setFixedAngle(Alliance.BLUE);
-            })
-            .setIsDone(() -> true);
-
+    public Command setTurretOff = new InstantCommand(() -> currentState = turretState.OFF);
+    public Command setTurretForward = new InstantCommand(() -> currentState = turretState.FORWARD);
     public Command setTurretForTeleop = new InstantCommand(
             () -> setTurretAngle(0)
     );
@@ -304,11 +259,21 @@ public class Turret implements Component {
             () -> setTurretAngle(180)
     );
 
-    public void setFixedAngle(Alliance alliance) {
+    public void setFixedAngleClose(Alliance alliance) {
+        currentState = turretState.FIXED;
         if (alliance == Alliance.BLUE) {
-            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE);
+            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
         } else {
-            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE);
+            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_CLOSE);
+        }
+    }
+
+    public void setFixedAngleFar(Alliance alliance) {
+        currentState = turretState.FIXED;
+        if (alliance == Alliance.BLUE) {
+            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
+        } else {
+            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_CLOSE);
         }
     }
 

@@ -129,34 +129,35 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             () -> FLYWHEEL_ON = true
     );
 
-    protected void setTurret180() {
+    protected void setTurretFixedClose() {
         turret.setAlliance(alliance);
-        turret.setFixedAngle(alliance);
-        autonomousCommands = autonomousCommands.then(
-                turret.setTurretFixed
-        );
+        turret.setFixedAngleClose(alliance);
     }
 
+    protected void setTurretFixedFar() {
+        turret.setAlliance(alliance);
+        turret.setFixedAngleFar(alliance);
+    }
 
     protected void startAsBlue() {
         alliance = Alliance.BLUE;
         AutoPaths.alliance = alliance;
         turret.setAlliance(alliance);
-        turret.setFixedAngle(alliance);
+        turret.setFixedAngleClose(alliance);
     }
 
     protected void startAsRed() {
         alliance = Alliance.RED;
         AutoPaths.alliance = alliance;
         turret.setAlliance(alliance);
-        turret.setFixedAngle(alliance);
+        turret.setFixedAngleClose(alliance);
     }
 
     protected void startAtBack() {
         if (alliance == Alliance.RED) {
-            startPose = new Pose(80.75, 7.085,Math.toRadians(90));
+            startPose = new Pose(80.75, 7.085,Math.toRadians(0));
         } else {
-            startPose = new Pose(63.25, 7.585,Math.toRadians(90));
+            startPose = new Pose(63.25, 7.585,Math.toRadians(180));
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
@@ -198,11 +199,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         );
     }
 
-    protected void shootAllThreeAtFront(double delayBeforeShot) {
+    protected void shootAllThreeAtClose(double delayBeforeShot) {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
             new ParallelGroup(
-                new FollowPath(toShootAtFrontFromLastPose),
+                new FollowPath(toShootAtCloseFromLastPose),
                 intake.railDownAuto
             ),
                 new Delay(delayBeforeShot),
@@ -210,7 +211,22 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         intake.shootAllThree
                 )
         ));
-        lastPose = frontShootingPose;
+        lastPose = closeShootingPose;
+    }
+
+    protected void shootAllThreeAtFar(double delayBeforeShot) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        new FollowPath(toShootAtFarFromLastPose),
+                        intake.railDownAuto
+                ),
+                new Delay(delayBeforeShot),
+                new ParallelGroup(
+                        intake.shootAllThree
+                )
+        ));
+        lastPose = farShootingPose;
     }
 
     protected void intake1(double delayAfterIntake) {

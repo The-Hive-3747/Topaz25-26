@@ -2,21 +2,21 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "front red auto")
+@Autonomous(name = "front red auto / shoots close", group = "default")
 public class FrontRedAuto extends AutoTemplate {
     @Override
     public void initAuto() {
         startAsRed();
         startAtFront();
-        setTurret180();
+        setTurretFixedClose();
         turnFlywheelOnForFront();
-        shootAllThreeAtFront(1);
+        shootAllThreeAtClose(1);
         intake1(0.5);
-        shootAllThreeAtFront(0);
+        shootAllThreeAtClose(0);
         intake2(0.5);
-        shootAllThreeAtFront(0);
+        shootAllThreeAtClose(0);
         intake3(0.5);
-        shootAllThreeAtFront(0);
+        shootAllThreeAtClose(0);
         parkAtFront();
     }
 }
