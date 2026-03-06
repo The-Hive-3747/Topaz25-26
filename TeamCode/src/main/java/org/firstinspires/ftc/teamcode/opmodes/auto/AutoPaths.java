@@ -9,8 +9,8 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose, backStartPose;
-    public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3;
+    public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
+    public static PathChain toShootFromStart, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2FromLastPose, intake2, toShootFromIntake2, parkAtFrontFromLastPose, openGate, toShootFromOpenGate, lineUpForIntake3FromLastPose, intake3, toShootFromIntake3, toShootAtFrontFromLastPose;
     public static double closeShootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
@@ -27,11 +27,12 @@ public class AutoPaths {
         if (parkAngle == 0.0d) { //checking for null with 0.0d because doubles cant be null
             parkAngle = flipHeading180Degrees(180);
         }
-        if (alliance == Alliance.BLUE) {
+        /*if (alliance == Alliance.BLUE) {
             closeShootAngle = Math.toRadians(135); //convertHeading90(Math.toRadians(40));
         } else {
             closeShootAngle = Math.toRadians(50); //convertHeading90(Math.toRadians(40));
-        }
+        }*/
+        closeShootAngle = flipHeading180Degrees(180);
         intakeAngle = flipHeading180Degrees(180);
         openGateAngle = Math.toRadians(90);
 
@@ -47,7 +48,6 @@ public class AutoPaths {
         if (parkPose == null) {
             parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
-        backStartPose = flipOverCenter(new Pose(63.25, 7.585,Math.toRadians(90)));
         frontShootingPose = flipOverCenter(new Pose(54.25, 88.75, closeShootAngle));
         intake1StartPose = flipOverCenter(new Pose(51.25, 79.75, intakeAngle)); //y:81 34//y:82//x: 47 y:78
         intake1EndPose = flipOverCenter(new Pose(27.25, 79.75, intakeAngle)); //6//x:16 y:82//x: 16 :78
@@ -63,7 +63,7 @@ public class AutoPaths {
         // GENERATE PATHS HERE
         toShootFromStart = generatePath(startingPose, frontShootingPose);
 
-        lineUpForIntake1 = generatePath(frontShootingPose, intake1StartPose);
+        lineUpForIntake1FromLastPose = generatePath(AutoTemplate.lastPose, intake1StartPose);
         intake1 = generatePath(intake1StartPose, intake1EndPose);
         toShootFromIntake1 = generatePath(intake1EndPose, frontShootingPose);
 
@@ -71,15 +71,17 @@ public class AutoPaths {
         openGate = generatePath(openGateStartPose, openGateEndPose);
         toShootFromOpenGate = generatePathCurve(openGateEndPose, toShootCurvePose, frontShootingPose);
 
-        lineUpForIntake2 = generatePath(frontShootingPose, intake2StartPose);
+        lineUpForIntake2FromLastPose = generatePath(AutoTemplate.lastPose, intake2StartPose);
         intake2 = generatePath(intake2StartPose, intake2EndPose);
         toShootFromIntake2 = generatePath(intake2EndPose, frontShootingPose);
 
-        lineUpForIntake3 = generatePath(frontShootingPose, intake3StartPose);
+        lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
         intake3 = generatePath(intake3StartPose, intake3EndPose);
         toShootFromIntake3 = generatePath(intake3EndPose, frontShootingPose);
 
-        park = generatePath(frontShootingPose, parkPose);
+        toShootAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontShootingPose);
+
+        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, parkPose);
     }
 
 
@@ -110,10 +112,6 @@ public class AutoPaths {
             return Math.toRadians(heading);
         }
         return Math.toRadians(heading + 180);
-    }
-
-    public static void setFollower(Follower follow){
-        follower = follow;
     }
 
     /**

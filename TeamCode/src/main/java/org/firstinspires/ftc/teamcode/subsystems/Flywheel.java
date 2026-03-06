@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -15,7 +14,6 @@ import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
-import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -23,18 +21,17 @@ import dev.nextftc.ftc.ActiveOpMode;
 // This is a component file for the flywheel / shooter.
 public class Flywheel implements Component {
 
-    DcMotorEx flywheelRight, flywheelLeft, intakeMotor;
-    static double correct, flywheelVel, targetVel, currentRPM;
+    DcMotorEx flywheelRight, flywheelLeft;
+    static double correct, flywheelVel, targetVel;
     static int countPerRevolution = 8192;
     public double convertedVel;
     double currentPosition, pastPosition = 0, currentTime, pastTime = 0, deltaTime, deltaPosition;
-    private ElapsedTime shotTimer = new ElapsedTime();
-    private ElapsedTime flywheelVelocityTimer = new ElapsedTime();
+    private final ElapsedTime flywheelVelocityTimer = new ElapsedTime();
     ControlSystem largeFlywheelPID;
-    Servo flipper;
-    CRServo leftFireServo, sideWheelServo;
+    CRServo leftFireServo;
     Hood hood;
-    double autoTargetVel = 2200; //UPDATED TO RPM
+    public static double autoTargetVelFront = 2200; //UPDATED TO RPM
+    public static double autoTargetVelBack = 2200; //UPDATED TO RPM
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
     public static double FLYWHEEL_PID_KS = 0.07; //JEM: 0.05;//0.135;
@@ -42,7 +39,7 @@ public class Flywheel implements Component {
     public static double FLYWHEEL_PID_KI = 0;
     double targetAdjust = 0;
     double READY_VEL_THRESHOLD = 200; // UPDATED TO RPM
-    public static double AUTON_SHOOT_VEL = 3000;//3400; //2200 //UPDATED TO RPM
+
     @Override
     public void postInit() { // this runs AFTER the init, it runs just once
         //this needs to be forward in order to use the hood PID. correction is in set power
@@ -53,12 +50,9 @@ public class Flywheel implements Component {
 
         leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
         leftFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        //sideWheelServo = ActiveOpMode.hardwareMap().get(CRServo.class, "side-wheel");
 
-        //intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         flywheelRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         flywheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
 
         flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -97,33 +91,33 @@ public class Flywheel implements Component {
         return hood.getHoodPosition();
     }
 
-    public void decreaseHood(){
+    public void decreaseHood() {
         hood.decreaseHood();
     }
 
-    public void increase(){
+    public void increase() {
         targetAdjust += 50; //5
         double targetV = targetVel;
-        if (targetVel + targetAdjust < 0){
+        if (targetVel + targetAdjust < 0) {
             targetV = 0;
-        }else{
+        } else {
             targetV = targetVel + targetAdjust;
         }
         largeFlywheelPID.setGoal(new KineticState(0, targetV));
     }
 
-    public void decrease(){
+    public void decrease() {
         targetAdjust -= 50; //5
         double targetV = targetVel;
-        if (targetVel + targetAdjust < 0){
+        if (targetVel + targetAdjust < 0) {
             targetV = 0;
-        }else{
+        } else {
             targetV = targetVel + targetAdjust;
         }
         largeFlywheelPID.setGoal(new KineticState(0, targetV));
     }
 
-    public boolean readyToShoot(){
+    public boolean readyToShoot() {
         return Math.abs(targetVel + targetAdjust - getVel()) <= READY_VEL_THRESHOLD;
     }
 
@@ -144,9 +138,11 @@ public class Flywheel implements Component {
     public double getCurrent() {
         return flywheelLeft.getCurrent(CurrentUnit.MILLIAMPS) + flywheelRight.getCurrent(CurrentUnit.MILLIAMPS);
     }
+
     public double getCurrentLeft() {
         return flywheelLeft.getCurrent(CurrentUnit.MILLIAMPS);
     }
+
     public double getCurrentRight() {
         return flywheelRight.getCurrent(CurrentUnit.MILLIAMPS);
     }
@@ -178,8 +174,7 @@ public class Flywheel implements Component {
         deltaPosition = currentPosition - pastPosition;
         deltaTime = currentTime - pastTime;
 
-        //convertedVel = (flywheelTop.getVelocity()/countPerRevolution) * 60; //to convert to RPM (60 for seconds)
-        convertedVel = ((deltaPosition / deltaTime)/countPerRevolution) * 60; //to convert to RPM (60 for seconds)
+        convertedVel = ((deltaPosition / deltaTime) / countPerRevolution) * 60; //to convert to RPM (60 for seconds)
 
         pastPosition = currentPosition;
         pastTime = currentTime;
@@ -195,15 +190,13 @@ public class Flywheel implements Component {
     public void setTargetVel(double vel) {
         double targetV = vel;
         targetVel = vel;
-        if (targetVel + targetAdjust < 0){
+        if (targetVel + targetAdjust < 0) {
             targetV = 0;
-        }else{
+        } else {
             targetV = targetVel + targetAdjust;
         }
         largeFlywheelPID.setGoal(new KineticState(0, targetV));
     }
-
-
 
 
     // simple update function. telling the controller the robot's current velocity, and it returns a motor power
@@ -225,9 +218,6 @@ public class Flywheel implements Component {
             correct = 0;
         }
 
-        //if(Math.abs(targetVel+targetAdjust-flywheelVel)>11) {
-        //    this.setPower(correct); // set the motor power!
-        //}
         this.setPower(correct);
 
         hood.update();
@@ -235,11 +225,10 @@ public class Flywheel implements Component {
         ActiveOpMode.telemetry().addData("flywheel power", correct);
         ActiveOpMode.telemetry().addData("flywheel vel", flywheelVel);
         ActiveOpMode.telemetry().addData("flywheel target vel", targetVel + targetAdjust);
-        ActiveOpMode.telemetry().addData("Adjust Target By",targetAdjust);
+        ActiveOpMode.telemetry().addData("Adjust Target By", targetAdjust);
     }
 
     /**
-     *
      * @return flywheel goal velocity, in rpm
      */
     public double getFlywheelGoal() {
@@ -271,35 +260,16 @@ public class Flywheel implements Component {
     public void enableHoodPid() {
         hood.enableHoodPID();
     }
-    public Command startFlywheel = new InstantCommand(
-            () -> this.setTargetVel(autoTargetVel)
+
+    public Command startFlywheelFront = new InstantCommand(
+            () -> this.setTargetVel(autoTargetVelFront)
     );
 
+    public Command startFlywheelBack = new InstantCommand(
+            () -> this.setTargetVel(autoTargetVelBack)
+    );
 
     public Command stopFlywheel = new InstantCommand(
             () -> this.setTargetVel(0)
     );
-
-    public Command resetShotTimer = new InstantCommand(
-            () ->  shotTimer.reset()
-    );
-
-
-    public Command shootAllThree = new LambdaCommand()
-            .setUpdate(() -> {
-                if (shotTimer.seconds() > 1.7){//1.5 1.3 1.0
-                    //flipper.setPosition(0.1);
-                    return;
-                }
-                currentRPM = this.getVel();
-                if (this.readyToShoot()) {  //was 200
-                    flipper.setPosition(0.1);
-                } else {
-                    flipper.setPosition(0.52);
-                }
-            })
-            .setStop(interrupted -> {
-                flipper.setPosition(0.52);
-            })
-            .setIsDone(() -> (shotTimer.seconds() > 2.3)); //2.2 2
 }
