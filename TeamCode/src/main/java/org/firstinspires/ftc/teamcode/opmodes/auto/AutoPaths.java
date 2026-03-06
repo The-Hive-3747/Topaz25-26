@@ -9,7 +9,7 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
+    public static Pose startingPose, frontShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose, backStartPose;
     public static PathChain toShootFromStart, lineUpForIntake1, intake1, lineUpForOpenGate, toShootFromIntake1, lineUpForIntake2, intake2, toShootFromIntake2, park, openGate, toShootFromOpenGate, lineUpForIntake3, intake3, toShootFromIntake3;
     public static double closeShootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle, openGateAngle;
     public static Alliance alliance;
@@ -47,6 +47,7 @@ public class AutoPaths {
         if (parkPose == null) {
             parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
+        backStartPose = flipOverCenter(new Pose(63.25, 7.585,Math.toRadians(90)));
         frontShootingPose = flipOverCenter(new Pose(54.25, 88.75, closeShootAngle));
         intake1StartPose = flipOverCenter(new Pose(51.25, 79.75, intakeAngle)); //y:81 34//y:82//x: 47 y:78
         intake1EndPose = flipOverCenter(new Pose(27.25, 79.75, intakeAngle)); //6//x:16 y:82//x: 16 :78
@@ -109,6 +110,10 @@ public class AutoPaths {
             return Math.toRadians(heading);
         }
         return Math.toRadians(heading + 180);
+    }
+
+    public static void setFollower(Follower follow){
+        follower = follow;
     }
 
     /**

@@ -19,6 +19,7 @@ import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
+import kotlin.time.Instant;
 
 @Configurable
 public class Turret implements Component {
@@ -144,6 +145,7 @@ public class Turret implements Component {
             return ZERO_ANGLE;
         }
     }
+
 
 
     /**
@@ -295,6 +297,13 @@ public class Turret implements Component {
             })
             .setIsDone(() -> true);
 
+    public Command setTurretForTeleop = new InstantCommand(
+            () -> setTurretAngle(0)
+    );
+    public Command setTurretForAuto = new InstantCommand(
+            () -> setTurretAngle(180)
+    );
+
     public void setFixedAngle(Alliance alliance) {
         if (alliance == Alliance.BLUE) {
             FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE);
@@ -302,6 +311,7 @@ public class Turret implements Component {
             FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE);
         }
     }
+
     public void setTurretStateoff(){ currentState = turretState.OFF;}
     public void setTurretStateAuto(){ currentState = turretState.AUTO;}
 

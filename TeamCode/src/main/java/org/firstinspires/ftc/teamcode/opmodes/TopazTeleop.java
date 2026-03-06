@@ -71,6 +71,7 @@ public class TopazTeleop extends NextFTCOpMode {
     private double relocalizeBreak = 1000;
     private double highestLooptime = 0;
     //private LimelightComponent limelightComponent;
+    private double limelightCorrection = 0.0;
     double FLYWHEEL_VEL = 3200; //4000; //2000;//= 1300; // IN RPM
     double HOOD_POS;
     double INTAKE_POWER = 0.9;
@@ -327,6 +328,11 @@ public class TopazTeleop extends NextFTCOpMode {
         g1B.whenBecomesTrue(() -> {
             drive.setOffset(follower.getHeading());
         });
+        g1X.whenBecomesTrue(() -> {
+            if (limelight.isDataFresh()) {
+                turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+            }
+        });
 
         /*gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200); //OLD FLYWHEEL INCREASE
         gDown.whenBecomesTrue(() -> {
@@ -388,20 +394,24 @@ public class TopazTeleop extends NextFTCOpMode {
 
 
 
-        //limelight.update();
+        limelight.update();
         BindingManager.update();
         flywheel.update();
         intake.update();
 
         if (limelight.isDataFresh()) {
+            limelightCorrection = limelight.getPedroPose().getHeading();
             turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
         } else {
+            limelightCorrection = 0.0;
             turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
         }
 
 
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
         // turret.shootOnTheMove(follower.getVelocity());
+
+        //turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
 
         turret.update();
 
@@ -430,6 +440,7 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
 
+        telemetry.addData("limelight correction", limelightCorrection);
         telemetry.addData("hood pose", flywheel.getHoodPosition());
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());
         //telemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));

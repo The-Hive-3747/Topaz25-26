@@ -27,9 +27,12 @@ import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import dev.nextftc.ftc.NextFTCOpMode;
 
+
+@Autonomous(name = "Modular Auto")
 public abstract class AutoTemplate extends NextFTCOpMode {
     {
         addComponents(
@@ -54,6 +57,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     TelemetryManager telemetryM;
     Follower follower;
     double FLYWHEEL_VEL, HOOD_POS;
+    double AUTO_TURRET = 180;
     boolean FLYWHEEL_ON = false;
 
 
@@ -66,11 +70,13 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        initAuto();
-
         follower = Constants.createFollower(hardwareMap);
+        AutoPaths.setFollower(follower);
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        initAuto();
+
 
         AutoPaths.alliance = alliance;
         if (startPose != null) {
@@ -156,6 +162,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                     new ParallelGroup(
                             intake.firewheelsOff,
                             flywheel.stopFlywheel,
+                            turret.setTurretForTeleop,
                             new FollowPath(park)
                     )
             );
@@ -174,7 +181,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         flywheel.resetHoodEncoder();
+        setTurretAuto();
         autonomousCommands.schedule();
+    }
+    public void setTurretAuto(){
+        turret.setTurretAngle(AUTO_TURRET);
     }
     @Override
     public void onUpdate() {
