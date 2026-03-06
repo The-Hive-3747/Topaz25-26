@@ -58,10 +58,10 @@ public class Aimbot implements Component{
             new AimbotValues(75, 3250, 6400),
             new AimbotValues(79, 3250, 6400),
             new AimbotValues(87, 3450, 6400), //v: 3350 h: 6500
-            new AimbotValues(117, 3950, 7400),//v: 3850
-            new AimbotValues(120, 4050, 7400),//v: 3900
-            new AimbotValues(128, 4200, 7500), //v: 4050
-            new AimbotValues(136, 4300, 7700), //v: 4100
+            new AimbotValues(117, 4050, 7400),//v: 3850
+            new AimbotValues(120, 4250, 7400),//v: 3900
+            new AimbotValues(128, 4400, 7500), //v: 4050
+            new AimbotValues(136, 4500, 7700), //v: 4100
 
 
             /*
