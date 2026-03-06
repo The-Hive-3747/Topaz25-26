@@ -204,12 +204,7 @@ public class Intake implements Component {
                 railDown();
                 startRailDex();
             })
-            .setUpdate(() -> {
-            })
-            .setStop(interrupted -> {
-                //flipper.setPosition(0.52);
-                //resetRailDex();
-            })
+            .setStop(interrupted -> {})
             .setIsDone(() -> (shotTimer.seconds() > 2.0)); //2.2 2
 
     public Command firewheelsOff = new InstantCommand(

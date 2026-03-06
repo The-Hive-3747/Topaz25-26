@@ -9,6 +9,7 @@ public class FrontRedAuto extends AutoTemplate {
         startAsRed();
         startAtFront();
         setTurret180();
+        turnFlywheelOnForFront();
         shootAllThreeAtFront(1);
         intake1(0.5);
         shootAllThreeAtFront(0);

@@ -27,11 +27,12 @@ public class AutoPaths {
         if (parkAngle == 0.0d) { //checking for null with 0.0d because doubles cant be null
             parkAngle = flipHeading180Degrees(180);
         }
-        if (alliance == Alliance.BLUE) {
+        /*if (alliance == Alliance.BLUE) {
             closeShootAngle = Math.toRadians(135); //convertHeading90(Math.toRadians(40));
         } else {
             closeShootAngle = Math.toRadians(50); //convertHeading90(Math.toRadians(40));
-        }
+        }*/
+        closeShootAngle = flipHeading180Degrees(180);
         intakeAngle = flipHeading180Degrees(180);
         openGateAngle = Math.toRadians(90);
 

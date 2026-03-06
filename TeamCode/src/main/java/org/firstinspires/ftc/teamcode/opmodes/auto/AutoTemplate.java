@@ -34,17 +34,15 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 new PedroComponent(Constants::createFollower),
                 flywheel = new Flywheel(),
                 intake = new Intake(),
-                //aimbot = new Aimbot(),
                 turret = new Turret()
                 //light = new Light()
         );
     }
     protected CommandGroup autonomousCommands;
     protected Alliance alliance = Alliance.BLUE; // default value
-    protected Pose startPose, parkPose;
-    ElapsedTime looptimer = new ElapsedTime();
+    protected Pose startPose;
     public static Pose lastPose;
-    protected double parkAngle;
+    ElapsedTime looptimer = new ElapsedTime();
     Turret turret;
     Flywheel flywheel;
     Intake intake;
@@ -70,13 +68,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         follower = Constants.createFollower(hardwareMap);
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-
-        if (parkPose != null) {
-            AutoPaths.setParkPose(parkPose);
-        }
-        if (parkAngle != 0.0d) {
-            AutoPaths.setParkAngle(parkAngle);
-        }
 
         initAuto();
 
@@ -112,26 +103,15 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
     @Override
     public void onUpdate() {
-        //turret.setCurrentPose(PedroComponent.follower().getPose(), PedroComponent.follower().getVelocity());
         turret.update();
         follower.update();
 
-        //aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
-        //aimbot.update();
-        if (FLYWHEEL_ON) {
-            FLYWHEEL_VEL = Flywheel.AUTON_SHOOT_VEL; //aimbot.getAimbotValues().velocity;
-        } else {
-            FLYWHEEL_VEL = 0;
-        }
-        HOOD_POS = Hood.AUTON_HOOD_POS; //aimbot.getAimbotValues().hoodPos;
-        //flywheel.setHoodGoalPos(HOOD_POS);
-        flywheel.setTargetVel(FLYWHEEL_VEL);
-        //flywheel.setTargetVel(FLYWHEEL_VEL);
-        //flywheel.setTargetVel(0);
+        flywheel.setHoodGoalPos(Hood.AUTON_HOOD_POS);
 
         Drawing.drawOnlyCurrent(follower);
 
         telemetry.addData("pose", follower.getPose());
+
         flywheel.update();
         intake.update();
         telemetry.update();
@@ -198,15 +178,30 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = startPose;
     }
 
-    protected void turnFlywheelOn() {
-        autonomousCommands = autonomousCommands.then(startAimbotFlywheel);
+    protected void delay(double time) {
+        autonomousCommands = autonomousCommands.then(
+                new Delay(time)
+        );
+    }
+
+    protected void turnFlywheelOnForFront() {
+        autonomousCommands = autonomousCommands.then(flywheel.startFlywheelFront);
+    }
+
+    protected void turnFlywheelOnForBack() {
+        autonomousCommands = autonomousCommands.then(flywheel.startFlywheelBack);
+    }
+
+    protected void turnFlywheelOnCustom(double power) {
+        autonomousCommands = autonomousCommands.then(
+                new InstantCommand(() -> flywheel.setTargetVel(power))
+        );
     }
 
     protected void shootAllThreeAtFront(double delayBeforeShot) {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
             new ParallelGroup(
-                startAimbotFlywheel,
                 new FollowPath(toShootAtFrontFromLastPose),
                 intake.railDownAuto
             ),
@@ -270,6 +265,18 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void parkAtFront() {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new ParallelGroup(
+                new InstantCommand(() -> turret.setTurretAngle(0)),
+                intake.firewheelsOff,
+                flywheel.stopFlywheel,
+                new FollowPath(parkAtFrontFromLastPose)
+        ));
+    }
+
+    protected void parkAtCustomPose(Pose park) {
+        AutoPaths.setParkPose(park);
+        AutoPaths.setParkAngle(park.getHeading());
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
                 new InstantCommand(() -> turret.setTurretAngle(0)),

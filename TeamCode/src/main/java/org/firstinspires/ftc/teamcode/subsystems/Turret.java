@@ -42,10 +42,10 @@ public class Turret implements Component {
     private KineticState angleAfterOffset = new KineticState(0);
     private KineticState FIXED_LAST_ANGLE = new KineticState(-60);
     public static double turretOffset = 0;
-    public static double AUTON_RED_SHOOT_ANGLE = 180; //-92 -95
+    public static double AUTON_RED_SHOOT_ANGLE = -135; //-92 -95
     public static double AUTON_RED_SHOOT_ANGLE_LAST = -60;
     public static double AUTON_BLUE_SHOOT_ANGLE_LAST = 60;
-    public static double AUTON_BLUE_SHOOT_ANGLE = 180;
+    public static double AUTON_BLUE_SHOOT_ANGLE = 135;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
 
