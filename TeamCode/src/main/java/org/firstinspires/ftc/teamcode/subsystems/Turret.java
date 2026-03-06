@@ -6,9 +6,11 @@ import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
+import org.firstinspires.ftc.teamcode.vision.limelight.LimelightComponent;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -17,13 +19,14 @@ import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
+import kotlin.time.Instant;
 
 @Configurable
 public class Turret implements Component {
     CRServo turretLeft, turretRight;
     DcMotor thruTurret;
     private TouchSensor limitSwitch;
-    Pose currentPose;
+    Pose currentPose, limelightPose;
     Vector currentVelocity;
     public enum turretState {
         OFF,
@@ -36,19 +39,21 @@ public class Turret implements Component {
     private double fieldCentricGoalAngle, goalX, goalY, turretPower, turretGoalNotInLimits, heading;
     private KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
+    private KineticState angleAfterOffset = new KineticState(0);
     private KineticState FIXED_LAST_ANGLE = new KineticState(-60);
-    public static double AUTON_RED_SHOOT_ANGLE = 179; //-92 -95
+    public static double turretOffset = 0;
+    public static double AUTON_RED_SHOOT_ANGLE = 180; //-92 -95
     public static double AUTON_RED_SHOOT_ANGLE_LAST = -60;
     public static double AUTON_BLUE_SHOOT_ANGLE_LAST = 60;
-    public static double AUTON_BLUE_SHOOT_ANGLE = 179;
+    public static double AUTON_BLUE_SHOOT_ANGLE = 180;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
 
-    public static double TURRET_PID_KP = 0.030, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
-    private final double LEFT_TURRET_LIMIT = -140, RIGHT_TURRET_LIMIT = 140;//Left:-100, right:130// Left: -120, Right: 120
-    private double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1;
+    public static double TURRET_PID_KP = 0.017, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
+    private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
+    private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1;
     // 180 deg in ticks
-    public static double TURRET_TICKS_TO_DEGREES = 11579.0/180.0;//90/6100;
+    public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240;//90/6100;
     ControlSystem turretPID;
 
     @Override
@@ -56,6 +61,10 @@ public class Turret implements Component {
         //limitSwitch = ActiveOpMode.hardwareMap().get(TouchSensor.class, "limitSwitch");
         turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
+
+        turretLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        turretRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
         thruTurret = ActiveOpMode.hardwareMap().get(DcMotor.class, "intake");
 
         thruTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -66,6 +75,7 @@ public class Turret implements Component {
         currentState = turretState.AUTO;
         turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
+                .basicFF(0, 0, TURRET_PID_KS)
                 .build();
         turretGoalNotInLimits = 0;
     }
@@ -75,14 +85,17 @@ public class Turret implements Component {
         thruTurret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    public void setTurretPower(double power) {
+        turretLeft.setPower(power);
+        turretRight.setPower(power);
+    }
+
     public void update() {
         if (currentState == turretState.AUTO) {
             turretPID.setGoal(getAutoAimGoalAngle());
-            //turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
+            angleAfterOffset = new KineticState((2*getTurretGoal())- turretOffset);
         } else if (currentState == turretState.FORWARD) {
             turretPID.setGoal(ZERO_ANGLE);
-            //turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
-
         } else if (currentState == turretState.FIXED){  //This is the autonomous fixed position for shooting
             turretPID.setGoal(FIXED_ANGLE);
         } else {
@@ -96,15 +109,6 @@ public class Turret implements Component {
             turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
         }
 
-        /*if (limitSwitch.isPressed() && turret.getVelocity()>0) {
-            if (!hasBeenReset) {
-                this.zeroTurret();
-                hasBeenReset = true;
-                turretPressedAndReset = true;
-            }
-        } else if (hasBeenReset) {
-            hasBeenReset = false;
-        }*/
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
@@ -114,7 +118,7 @@ public class Turret implements Component {
             turretPower = 0;
         }*/
 
-        thruTurret.setPower(turretPower);
+        this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
@@ -134,7 +138,6 @@ public class Turret implements Component {
      */
     public KineticState getAutoAimGoalAngle() {
         if (currentPose != null) {
-
             fieldCentricGoalAngle = Math.atan2((goalY - this.currentPose.getY()), (goalX - this.currentPose.getX())); // IN RADS
             turretGoalNotInLimits = Math.toDegrees(normalizeAngle(fieldCentricGoalAngle - this.currentPose.getHeading() + Math.PI));
             return new KineticState(this.putInTurretLimits(turretGoalNotInLimits));
@@ -142,6 +145,7 @@ public class Turret implements Component {
             return ZERO_ANGLE;
         }
     }
+
 
 
     /**
@@ -165,9 +169,10 @@ public class Turret implements Component {
      * @param pose: sets the current pose, used for auto-aim calculations
      *            NEEDS TO BE DONE EVERY LOOP
      */
-    public void setCurrentPose(Pose pose, Vector velocity) {
+    public void setCurrentPose(Pose pose, Vector velocity, double offset) {
         this.currentPose = pose;
         this.currentVelocity = velocity;
+        this.turretOffset = offset;
     }
 
     /**
@@ -191,7 +196,7 @@ public class Turret implements Component {
      * IN DEGREES
      */
     public double getTurretAngle() {
-        return ((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
+        return -((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
     }
 
     /**
@@ -292,6 +297,13 @@ public class Turret implements Component {
             })
             .setIsDone(() -> true);
 
+    public Command setTurretForTeleop = new InstantCommand(
+            () -> setTurretAngle(0)
+    );
+    public Command setTurretForAuto = new InstantCommand(
+            () -> setTurretAngle(180)
+    );
+
     public void setFixedAngle(Alliance alliance) {
         if (alliance == Alliance.BLUE) {
             FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE);
@@ -299,6 +311,7 @@ public class Turret implements Component {
             FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE);
         }
     }
+
     public void setTurretStateoff(){ currentState = turretState.OFF;}
     public void setTurretStateAuto(){ currentState = turretState.AUTO;}
 
