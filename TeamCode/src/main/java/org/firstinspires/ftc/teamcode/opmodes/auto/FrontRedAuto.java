@@ -8,6 +8,7 @@ public class FrontRedAuto extends AutoTemplate {
     public void initAuto() {
         startAsRed();
         startAtFront();
+        setTurret180();
         shootAllThreeAtFront(1);
         intake1(0.5);
         shootAllThreeAtFront(0);

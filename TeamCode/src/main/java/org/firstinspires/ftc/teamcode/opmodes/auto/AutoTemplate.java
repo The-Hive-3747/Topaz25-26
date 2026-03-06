@@ -85,9 +85,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         follower.setStartingPose(startPose);
         follower.update();
 
-        //turret.setAlliance(alliance);
-        //turret.setFixedAngle(alliance);
-
         //turretLights = new TurretLights(hardwareMap, telemetry);
 
         // TODO: ADD TURRET LIGHTS
@@ -98,7 +95,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             turretLights.blueAlliance();
         } */
 
-        //turret.zeroTurret();
+        turret.zeroTurret();
     }
 
     @Override
@@ -116,7 +113,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onUpdate() {
         //turret.setCurrentPose(PedroComponent.follower().getPose(), PedroComponent.follower().getVelocity());
-        //turret.update();
+        turret.update();
         follower.update();
 
         //aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
@@ -151,6 +148,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     public Command startAimbotFlywheel = new InstantCommand(
             () -> FLYWHEEL_ON = true
     );
+
+    protected void setTurret180() {
+        turret.setAlliance(alliance);
+        turret.setFixedAngle(alliance);
+        autonomousCommands = autonomousCommands.then(
+                turret.setTurretFixed
+        );
+    }
 
 
     protected void startAsBlue() {
@@ -240,7 +245,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 ),
                 new ParallelGroup(
                         intake.startIntake,
-                        new FollowPath(intake1)
+                        new FollowPath(intake2)
                 ),
                 new Delay(delayAfterIntake)
         ));
@@ -257,7 +262,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 ),
                 new ParallelGroup(
                         intake.startIntake,
-                        new FollowPath(intake1)
+                        new FollowPath(intake3)
                 ),
                 new Delay(delayAfterIntake)
         ));
@@ -267,6 +272,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void parkAtFront() {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
+                new InstantCommand(() -> turret.setTurretAngle(0)),
                 intake.firewheelsOff,
                 flywheel.stopFlywheel,
                 new FollowPath(parkAtFrontFromLastPose)

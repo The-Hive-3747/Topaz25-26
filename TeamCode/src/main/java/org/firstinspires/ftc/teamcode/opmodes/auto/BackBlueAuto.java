@@ -8,6 +8,7 @@ public class BackBlueAuto extends AutoTemplate {
     public void initAuto() {
         startAsBlue();
         startAtBack();
+        setTurret180();
         shootAllThreeAtFront(1);
         intake1(0.5);
         shootAllThreeAtFront(0);

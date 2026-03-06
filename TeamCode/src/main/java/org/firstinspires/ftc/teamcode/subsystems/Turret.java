@@ -37,10 +37,10 @@ public class Turret implements Component {
     private KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
     private KineticState FIXED_LAST_ANGLE = new KineticState(-60);
-    public static double AUTON_RED_SHOOT_ANGLE = -94; //-92 -95
+    public static double AUTON_RED_SHOOT_ANGLE = 179; //-92 -95
     public static double AUTON_RED_SHOOT_ANGLE_LAST = -60;
     public static double AUTON_BLUE_SHOOT_ANGLE_LAST = 60;
-    public static double AUTON_BLUE_SHOOT_ANGLE = 90;
+    public static double AUTON_BLUE_SHOOT_ANGLE = 179;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
 
@@ -84,7 +84,7 @@ public class Turret implements Component {
             //turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
 
         } else if (currentState == turretState.FIXED){  //This is the autonomous fixed position for shooting
-          turretPID.setGoal(FIXED_ANGLE);
+            turretPID.setGoal(FIXED_ANGLE);
         } else {
             // this is when the TurretState is Off
             turretPower = 0;
