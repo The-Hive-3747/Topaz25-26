@@ -9,12 +9,15 @@ public class BackRedAutoShootsFar extends AutoTemplate {
         startAsRed();
         startAtBack();
         setTurretFixedFar();
+        setHoodPosFar();
+        turnFlywheelOnForBack();
         shootAllThreeAtFar(1);
-        intake1(0.5);
-        shootAllThreeAtFar(0);
-        intake2(0.5);
+        intakeHP(0.2);
         shootAllThreeAtFar(0);
         intake3(0.5);
+        shootAllThreeAtFar(0);
+        intake2(0.5);
+        //intake1(0.5);
         shootAllThreeAtFar(0);
         parkAtFront();
     }

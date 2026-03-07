@@ -30,8 +30,8 @@ public class Flywheel implements Component {
     ControlSystem largeFlywheelPID;
     CRServo leftFireServo;
     Hood hood;
-    public static double autoTargetVelFront = 2200; //UPDATED TO RPM
-    public static double autoTargetVelBack = 2200; //UPDATED TO RPM
+    public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 3050; //UPDATED TO RPM
+    public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 3900; //UPDATED TO RPM
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
     public static double FLYWHEEL_PID_KS = 0.07; //JEM: 0.05;//0.135;
@@ -262,11 +262,11 @@ public class Flywheel implements Component {
     }
 
     public Command startFlywheelFront = new InstantCommand(
-            () -> this.setTargetVel(autoTargetVelFront)
+            () -> this.setTargetVel(FLYWHEEL_AUTO_TARGET_VEL_FRONT)
     );
 
     public Command startFlywheelBack = new InstantCommand(
-            () -> this.setTargetVel(autoTargetVelBack)
+            () -> this.setTargetVel(FLYWHEEL_AUTO_TARGET_VEL_BACK)
     );
 
     public Command stopFlywheel = new InstantCommand(

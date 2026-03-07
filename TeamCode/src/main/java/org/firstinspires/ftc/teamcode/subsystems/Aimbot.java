@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystems;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
+import com.bylazar.telemetry.PanelsTelemetry;
+
 
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
@@ -12,6 +15,8 @@ import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
 public class Aimbot implements Component{
     Pose currentPose = OpModeTransfer.currentPose;
     Vector currentVelocity;
+    TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
     double velocity;
     double percentage;
     double hoodPos;
@@ -32,6 +37,7 @@ public class Aimbot implements Component{
         ActiveOpMode.telemetry().addData("Bot Distance", botDistance);
         ActiveOpMode.telemetry().addData("CURRENT AIM VALUES", currentAimValues.velocity);
         ActiveOpMode.telemetry().addData("CURRENT AIM VALUES", currentAimValues.hoodPos);
+
     }
     
     public void setCurrentPose(Pose pose, Vector velocity) {
@@ -44,24 +50,24 @@ public class Aimbot implements Component{
 
     AimbotValues[] aimbotValues = { //These are all the actual values from tests on field, must be
                                     // in order of distance from least to greatest
-            new AimbotValues(16, 2800, 0),
-            new AimbotValues(23.5, 2800, 1200),
-            new AimbotValues(29, 3000, 1600),
-            new AimbotValues(34, 3150, 2400),
-            new AimbotValues(39, 3150, 2700),
-            new AimbotValues(44, 3150, 3400),
-            new AimbotValues(48, 3125, 4400),
-            new AimbotValues(54, 3100, 4800),
-            new AimbotValues(59, 3250, 5100),
-            new AimbotValues(65, 3250, 5700),
-            new AimbotValues(69, 3250, 6100),
-            new AimbotValues(75, 3250, 6400),
-            new AimbotValues(79, 3250, 6400),
-            new AimbotValues(87, 3450, 6400), //v: 3350 h: 6500
-            new AimbotValues(117, 4050, 7400),//v: 3850
-            new AimbotValues(120, 4250, 7400),//v: 3900
-            new AimbotValues(128, 4400, 7500), //v: 4050
-            new AimbotValues(136, 4500, 7700), //v: 4100
+            new AimbotValues(16, 2700, 0), //v:2800
+            new AimbotValues(23.5, 2700, 1200),//v:2800
+            new AimbotValues(29, 2900, 1600),//v:3000
+            new AimbotValues(34, 3000, 2400), //v:3100
+            new AimbotValues(39, 3025, 2700),//v:3050
+            new AimbotValues(44, 3050, 3400),//v:3150
+            new AimbotValues(48, 3100, 4400),//v:3125
+            new AimbotValues(54, 3100, 4800),//v:3100
+            new AimbotValues(59, 3100, 5100), //v: 3200
+            new AimbotValues(65, 3125, 5700),//v:3150
+            new AimbotValues(69, 3125, 6100),//v:3150
+            new AimbotValues(75, 3150, 6400),//v:3250
+            new AimbotValues(79, 3200, 6400),//v:3150
+            new AimbotValues(87, 3250, 6400), //v: 3350 h: 6500
+            new AimbotValues(117, 3850, 7400),//v: 3800
+            new AimbotValues(120, 3950, 7400),//v: 4050
+            new AimbotValues(128, 4000, 7500), //v: 4100
+            new AimbotValues(136, 4050, 7700), //v: 4200
 
 
             /*
@@ -160,6 +166,7 @@ public class Aimbot implements Component{
             fieldGoalY = 129;
         }
     }
+
 
     public double getBotDistance() {
         //this is math for the distance from bot to goal using hypotenuse of x and y

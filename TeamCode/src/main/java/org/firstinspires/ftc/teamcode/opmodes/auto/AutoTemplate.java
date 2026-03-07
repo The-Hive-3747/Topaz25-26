@@ -42,13 +42,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected Alliance alliance = Alliance.BLUE; // default value
     protected Pose startPose;
     public static Pose lastPose;
-    ElapsedTime looptimer = new ElapsedTime();
+    ElapsedTime initTimer = new ElapsedTime();
+    double timeToInit = 0;
     Turret turret;
     Flywheel flywheel;
     Intake intake;
     TelemetryManager telemetryM;
     Follower follower;
-    double FLYWHEEL_VEL, HOOD_POS;
+    double HOOD_POS;
     boolean FLYWHEEL_ON = false;
 
 
@@ -61,6 +62,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onInit() {
+        customParkPose = false;
+        initTimer.reset();
         autonomousCommands = new SequentialGroup(
                 new InstantCommand(() -> telemetry.addLine())
         );
@@ -87,10 +90,19 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         } */
 
         turret.zeroTurret();
+        timeToInit = initTimer.seconds();
     }
 
     @Override
     public void onWaitForStart() {
+        turret.setTurretStateFixed();
+        turret.update();
+
+        flywheel.setHoodGoalPos(HOOD_POS);
+        flywheel.setTargetVel(0);
+        flywheel.update();
+
+        telemetry.addData("time to init", timeToInit);
         telemetry.addData("pose", follower.getPose());
         telemetry.addData("alliance", alliance);
         telemetry.update();
@@ -99,14 +111,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         autonomousCommands.schedule();
-        flywheel.resetHoodEncoder();
     }
     @Override
     public void onUpdate() {
+        turret.setTurretStateFixed();
         turret.update();
         follower.update();
 
-        flywheel.setHoodGoalPos(Hood.AUTON_HOOD_POS);
+        flywheel.setHoodGoalPos(HOOD_POS);
 
         Drawing.drawOnlyCurrent(follower);
 
@@ -125,10 +137,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         OpModeTransfer.hasBeenTransferred = true;
     }
 
-    public Command startAimbotFlywheel = new InstantCommand(
-            () -> FLYWHEEL_ON = true
-    );
-
     protected void setTurretFixedClose() {
         turret.setAlliance(alliance);
         turret.setFixedAngleClose(alliance);
@@ -137,6 +145,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void setTurretFixedFar() {
         turret.setAlliance(alliance);
         turret.setFixedAngleFar(alliance);
+    }
+
+    protected void setHoodPosClose() {
+        HOOD_POS = Hood.HOOD_AUTON_CLOSE_POS;
+    }
+
+    protected void setHoodPosFar() {
+        HOOD_POS = Hood.HOOD_AUTON_FAR_POS;
     }
 
     protected void startAsBlue() {
@@ -155,9 +171,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void startAtBack() {
         if (alliance == Alliance.RED) {
-            startPose = new Pose(80.75, 7.085,Math.toRadians(0));
+            startPose = new Pose(79, 9.5, Math.toRadians(0));
         } else {
-            startPose = new Pose(63.25, 7.585,Math.toRadians(180));
+            startPose = new Pose(63.25, 9.5,Math.toRadians(180));
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
@@ -165,9 +181,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void startAtFront() {
         if (alliance == Alliance.RED) {
-            startPose = new Pose(109.5, 135.8, Math.toRadians(-94.95));
+            startPose = new Pose(110, 134.25, Math.toRadians(-94.95));
         } else {
-            startPose = new Pose(34.5, 135.8,Math.toRadians(-85.05));
+            startPose = new Pose(34, 135.5,Math.toRadians(-85.05));
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
@@ -179,6 +195,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = startPose;
     }
 
+    protected void firewheelsOff() {
+        intake.turnIsShootingFalse();
+    }
     protected void delay(double time) {
         autonomousCommands = autonomousCommands.then(
                 new Delay(time)
@@ -208,6 +227,23 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             ),
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
+                        new InstantCommand(() -> intake.turnIsShootingTrue()),
+                        intake.shootAllThree
+                )
+        ));
+        lastPose = closeShootingPose;
+    }
+
+    protected void shootAllThreeAtCloseCurved(double delayBeforeShot) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        new FollowPath(toShootAtCloseFromLastPoseCurved),
+                        intake.railDownAuto
+                ),
+                new Delay(delayBeforeShot),
+                new ParallelGroup(
+                        new InstantCommand(() -> intake.turnIsShootingTrue()),
                         intake.shootAllThree
                 )
         ));
@@ -221,6 +257,38 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         new FollowPath(toShootAtFarFromLastPose),
                         intake.railDownAuto
                 ),
+                new Delay(delayBeforeShot),
+                new ParallelGroup(
+                        new InstantCommand(() -> intake.turnIsShootingTrue()),
+                        intake.shootAllThree
+                )
+                // idk what this does commenting it out fr -neset
+                /*,
+                intake.railUpAuto,
+                //this delay is so we can get the rail up in time to reverse any extra balls out
+                new Delay(0.2),
+                intake.reverseIntake,
+                //this delay is for the time of reversing the intake
+                new Delay(0.4),
+                intake.stopIntake*/
+        ));
+        lastPose = farShootingPose;
+    }
+    //use this in case a ball gets stuck in the shooting mechanism
+    /*protected void flywheelJiggle(){
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new FollowPath(farJigglePath),
+                new FollowPath(toShootAtFarFromLastPose)
+        ));
+    }*/
+    protected void shootAllThreeAgainAtFar(double delayBeforeShot) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                /*new ParallelGroup(
+                        //new FollowPath(toShootAtFarFromLastPose),
+                        intake.railDownAuto
+                ),*/
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
                         intake.shootAllThree
@@ -241,7 +309,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         intake.startIntake,
                         new FollowPath(intake1)
                 ),
-                new Delay(delayAfterIntake)
+                new Delay(delayAfterIntake),
+                intake.stopIntake
         ));
         lastPose = intake1EndPose;
     }
@@ -258,7 +327,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         intake.startIntake,
                         new FollowPath(intake2)
                 ),
-                new Delay(delayAfterIntake)
+                new Delay(delayAfterIntake),
+                intake.stopIntake
         ));
         lastPose = intake2EndPose;
     }
@@ -275,23 +345,63 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         intake.startIntake,
                         new FollowPath(intake3)
                 ),
-                new Delay(delayAfterIntake)
+                new Delay(delayAfterIntake),
+                intake.stopIntake
         ));
         lastPose = intake3EndPose;
+    }
+
+    protected void intakeHP(double delayAfterIntake) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        intake.firewheelsOff,
+                        new FollowPath(lineUpForIntakeHPFromLastPose),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intakeHP)
+                ),
+                new Delay(delayAfterIntake),
+                intake.stopIntake
+        ));
+        lastPose = intakeHPEndPose;
+    }
+
+    protected void openGate(double delayAfterOpenGate) {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(
+                new FollowPath(openGate),
+                new Delay(delayAfterOpenGate)
+        );
     }
 
     protected void parkAtFront() {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
-                new InstantCommand(() -> turret.setTurretAngle(0)),
+                new InstantCommand(() -> HOOD_POS = 0),
+                new InstantCommand(() -> turret.setFixedAngleCustom(0)),
                 intake.firewheelsOff,
                 flywheel.stopFlywheel,
                 new FollowPath(parkAtFrontFromLastPose)
         ));
     }
 
+    protected void parkAtBack() {
+        AutoPaths.generatePaths(follower);
+        autonomousCommands = autonomousCommands.then(new ParallelGroup(
+                new InstantCommand(() -> HOOD_POS = 0),
+                new InstantCommand(() -> turret.setFixedAngleCustom(0)),
+                intake.firewheelsOff,
+                flywheel.stopFlywheel,
+                new FollowPath(parkAtBackFromLastPose)
+        ));
+    }
+
     protected void parkAtCustomPose(Pose park) {
-        AutoPaths.setParkPose(park);
+        customParkPose = true;
+        AutoPaths.setFrontParkPose(park);
         AutoPaths.setParkAngle(park.getHeading());
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(

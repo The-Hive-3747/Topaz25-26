@@ -26,8 +26,8 @@ public class Intake implements Component {
     double INTAKE_SHOOTING_POWER = 0.9;
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
-    double FIRE_POWER = 0.9;
-    double AGITATOR_POWER = 0.2;//0.6;
+    double FIRE_POWER = 1;//0.9
+    double AGITATOR_POWER = 0.8;//0.2;//0.6;
     double RAIL_UP = 0.5;
     double RAIL_DOWN = 1;
     double INTAKE_POWER_REVERSED = -0.9;
@@ -71,6 +71,13 @@ public class Intake implements Component {
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+    }
+
+    public void turnIsShootingTrue() {
+        isShooting = true;
+    }
+    public void turnIsShootingFalse() {
+        isShooting = false;
     }
     public void reverseIntake() {
         intakeMotor.setPower(-INTAKE_POWER);
@@ -199,16 +206,20 @@ public class Intake implements Component {
     );
     public Command shootAllThree = new LambdaCommand()
             .setStart(() ->{
+                leftFireServo.setPower(FIRE_POWER);
+                rightFireServo.setPower(FIRE_POWER);
                 shotTimer.reset();
                 isShooting = true;
                 railDown();
                 startRailDex();
             })
             .setStop(interrupted -> {})
-            .setIsDone(() -> (shotTimer.seconds() > 2.0)); //2.2 2
+            //in order to reset agitator fully it needs 2.75 seconds but its usually covered in the driving.
+            .setIsDone(() -> (shotTimer.seconds() > 2.25)); //2 2.2 2
 
     public Command firewheelsOff = new InstantCommand(
             () -> {
+                isShooting = false;
                 leftFireServo.setPower(0);
                 rightFireServo.setPower(0);
             }
@@ -216,6 +227,14 @@ public class Intake implements Component {
 
     public Command resetRailDex = new InstantCommand(
             () -> resetRailDex()
+    );
+
+    public Command railUpAuto = new InstantCommand(
+            () -> rail.setPosition(RAIL_UP)
+    );
+
+    public Command reverseIntake = new InstantCommand(
+            () -> intakeReversed = true
     );
 
 
@@ -230,6 +249,11 @@ public class Intake implements Component {
         if (isShooting && !agitator.isBusy()){
             isShooting = false;
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
+        if(isShooting){
+            leftFireServo.setPower(FIRE_POWER);
+            rightFireServo.setPower(FIRE_POWER);
         }
 
         if (isIntakeOn){

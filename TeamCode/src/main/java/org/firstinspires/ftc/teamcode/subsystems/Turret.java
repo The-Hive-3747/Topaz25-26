@@ -38,16 +38,17 @@ public class Turret implements Component {
     private KineticState FIXED_ANGLE = new KineticState(-95);
     private KineticState angleAfterOffset = new KineticState(0);
     public static double turretOffset = 0;
-    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -135; //-92 -95
-    public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 135;
+    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -138; //-92 -95
+    public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 138;
+    public static double AUTON_RED_SHOOT_ANGLE_FAR = -114; //-92 -95
+    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 114;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
 
     public static double TURRET_PID_KP = 0.017, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1;
-    // 180 deg in ticks
-    public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240;//90/6100;
+    public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
     ControlSystem turretPID;
 
     @Override
@@ -259,6 +260,11 @@ public class Turret implements Component {
             () -> setTurretAngle(180)
     );
 
+    public void setFixedAngleCustom(double angle) {
+        currentState = turretState.FIXED;
+        FIXED_ANGLE = new KineticState(angle);
+    }
+
     public void setFixedAngleClose(Alliance alliance) {
         currentState = turretState.FIXED;
         if (alliance == Alliance.BLUE) {
@@ -271,9 +277,9 @@ public class Turret implements Component {
     public void setFixedAngleFar(Alliance alliance) {
         currentState = turretState.FIXED;
         if (alliance == Alliance.BLUE) {
-            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
+            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_FAR);
         } else {
-            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_CLOSE);
+            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_FAR);
         }
     }
 

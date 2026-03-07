@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 @TeleOp(name = "encoder Tester")
-//@Disabled
+@Disabled
 public class EncoderTester extends NextFTCOpMode {
     CRServo turretLeft, turretRight;
 

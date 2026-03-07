@@ -90,12 +90,6 @@ public class TopazTeleop extends NextFTCOpMode {
     int FLYWHEEL_STEP = 50;
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
-    double FLIPPER_FIRE_POS = 0.1;
-    double FLIPPER_NO_FIRE_POS = 0.52;
-    double POSE_ONE_VEL;
-    double POSE_ONE_HOOD;
-    double POSE_TWO_VEL;
-    double POSE_TWO_HOOD;
 
     private GoBildaPrismDriver prism;
     Follower follower;
@@ -204,8 +198,15 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
 
+
         gUp.whenBecomesTrue(() -> flywheel.increaseHood());
-        gDown.whenBecomesTrue(() -> flywheel.decreaseHood());
+        gDown.whenBecomesTrue(() -> {
+            flywheel.setHoodPower(-0.5);
+        })
+                .whenBecomesFalse(() -> {
+                    flywheel.setHoodPower(0);
+                    flywheel.resetHoodEncoder();
+                });
 
         //g1X.whenBecomesTrue(() -> odoTurret.resetTurret());
 
@@ -271,12 +272,13 @@ public class TopazTeleop extends NextFTCOpMode {
                     isIntakeReversed = false;
                 });*/
 
-        /*g1A.whenBecomesTrue(() -> {
-            AutoPaths.alliance = alliance;
-            AutoPaths.generatePaths(follower);
-            Pose resetPose = new Pose(AutoPaths.startingPose.getX(), AutoPaths.startingPose.getY(), AutoPaths.startAngle);
-            follower.setPose(resetPose);
-        });*/
+        g1A.whenBecomesTrue(() -> {
+            if (alliance == Alliance.RED) {
+                follower.setPose(new Pose(9.5, 9, Math.toRadians(90)));
+            } else {
+                follower.setPose(new Pose(134.5, 9, Math.toRadians(90)));
+            }
+        });
 
         /*g2X.toggleOnBecomesTrue() //firewheels on
                 .whenBecomesTrue(() -> {
@@ -291,36 +293,12 @@ public class TopazTeleop extends NextFTCOpMode {
                 });*/
 
 
-        /*g2RT.whenTrue(() -> { //OLD FLIPPER SHOOT
-                got3Balls = false;
-                fireWhenReady = false;
-                intakeMotor.setPower(INTAKE_SHOOTING_POWER);
-                flipper.setPosition(FLIPPER_FIRE_POS);
-                isFlipperOn = true;
-                })
-                .whenBecomesFalse(() -> {
-                    flipper.setPosition(FLIPPER_NO_FIRE_POS);
-                    isFlipperOn = false;
-                });
-
-        g2B.whenBecomesTrue(() -> { //
-            fireWhenReady = true;
-            intakeMotor.setPower(INTAKE_SHOOTING_POWER);
-            })
-                .whenBecomesFalse(() -> {
-                   fireWhenReady = false;
-                   flipper.setPosition(FLIPPER_NO_FIRE_POS);
-                });*/
-
 
 
         /*gUpOrDown.whenBecomesFalse(() -> { //HOOD ENCODER
                     flywheel.setHoodPower(0);
                     //flywheel.resetHoodEncoder();
                 });*/
-
-        //gUp.whenBecomesTrue(() -> flywheel.increaseHood()); //OLD HOOD INCREASE
-        //gDown.whenBecomesTrue(() -> flywheel.decreaseHood());
 
         g2LB.whenBecomesTrue(() -> flywheel.decrease());
         g2RB.whenBecomesTrue(() -> flywheel.increase());
@@ -441,6 +419,9 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("flywheel power", flywheel.getPower());
         panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
+        panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
+        panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
+
 
         telemetry.addData("limelight correction", limelightCorrection);
         telemetry.addData("limelight relocalized", limelightRelocalized);

@@ -9,13 +9,16 @@ public class BackRedAuto extends AutoTemplate {
         startAsRed();
         startAtBack();
         setTurretFixedClose();
-        shootAllThreeAtClose(1);
-        intake1(0.5);
-        shootAllThreeAtClose(0);
-        intake2(0.5);
-        shootAllThreeAtClose(0);
-        intake3(0.5);
-        shootAllThreeAtClose(0);
+        setHoodPosClose();
+        turnFlywheelOnForFront();
+        shootAllThreeAtClose(0.3);
+        intake1(0.3);
+        openGate(0.2);
+        shootAllThreeAtClose(0.4);
+        intake2(0.3);
+        shootAllThreeAtCloseCurved(0.4);
+        intake3(0.3);
+        shootAllThreeAtClose(0.4);
         parkAtFront();
     }
 }

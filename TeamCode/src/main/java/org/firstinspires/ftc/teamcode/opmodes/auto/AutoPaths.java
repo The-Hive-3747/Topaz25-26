@@ -9,11 +9,12 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, closeShootingPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, parkPose, toShootCurvePose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, lastShootingPose;
-    public static PathChain toShootFromStart, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, toShootFromIntake1, lineUpForIntake2FromLastPose, intake2, toShootFromIntake2, parkAtFrontFromLastPose, openGate, toShootFromOpenGate, lineUpForIntake3FromLastPose, intake3, toShootFromIntake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose;
-    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, lastShootAngle, openGateAngle;
+    public static Pose startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
+    public static PathChain toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, farJigglePath;
+    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
+    public static boolean customParkPose;
 
     /**
      * this generates all poses & paths. must be called before start of auto.
@@ -24,7 +25,7 @@ public class AutoPaths {
         follower = follow;
 
         // DEFINE ANGLES HERE
-        if (parkAngle == 0.0d) { //checking for null with 0.0d because doubles cant be null
+        if (!customParkPose) {
             parkAngle = flipHeading180Degrees(180);
         }
         /*if (alliance == Alliance.BLUE) {
@@ -45,20 +46,24 @@ public class AutoPaths {
                 startingPose = new Pose(109.5, 135.8, Math.toRadians(-94.95));
             }
         }
-
-        if (parkPose == null) {
-            parkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
+        if (!customParkPose) {
+            frontParkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
+        backParkPose = flipOverCenter(new Pose(36.25, 20.5, parkAngle));
         closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
-        farShootingPose = flipOverCenter(new Pose(71.8, 20.5, shootAngle));
-        intake1StartPose = flipOverCenter(new Pose(51.25, 79.75, intakeAngle)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = flipOverCenter(new Pose(27.25, 79.75, intakeAngle)); //6//x:16 y:82//x: 16 :78
-        openGateStartPose = flipOverCenter(new Pose(22, 74, openGateAngle)); //78//x:35
-        openGateEndPose = flipOverCenter(new Pose(14, 74, openGateAngle));//x:18
+        farShootingPose = flipOverCenter(new Pose(55, 21, shootAngle));
+        intakeHPStartPose = flipOverCenter(new Pose(28.5, 10.5, intakeAngle));
+        intakeHPEndPose = flipOverCenter(new Pose(10.5,10.5, intakeAngle));
+        intake1StartPose = flipOverCenter(new Pose(51.25, 80.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
+        intake1EndPose = flipOverCenter(new Pose(27.5, 80.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
+        openGateStartPose = flipOverCenter(new Pose(35, 76, openGateAngle)); //78//x:35
+        openGateEndPose = flipOverCenter(new Pose(18.5, 76, openGateAngle));//x:18
         intake2StartPose = flipOverCenter(new Pose(53, 57.75, intakeAngle));//y:58//y: 61
-        intake2EndPose = flipOverCenter(new Pose(17.25, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
+        intake2EndPose = flipOverCenter(new Pose(18.5, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
-        intake3EndPose = flipOverCenter(new Pose(17.25, 33.75, intakeAngle));//x:8 y:38//y: 32
+        intake3EndPose = flipOverCenter(new Pose(20, 33.75, intakeAngle));//x:18 y:38//y: 32
+        curveIntake2 = flipOverCenter(new Pose(50,72));
+        farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 
         // GENERATE PATHS HERE
         lineUpForIntake1FromLastPose = generatePath(AutoTemplate.lastPose, intake1StartPose);
@@ -73,10 +78,19 @@ public class AutoPaths {
         lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
         intake3 = generatePath(intake3StartPose, intake3EndPose);
 
-        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
-        toShootAtFarFromLastPose = generatePath(AutoTemplate.lastPose, farShootingPose);
+        lineUpForIntakeHPFromLastPose = generatePath(AutoTemplate.lastPose, intakeHPStartPose);
+        intakeHP = generatePath(intakeHPStartPose, intakeHPEndPose);
 
-        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, parkPose);
+        toShootAtCloseFromLastPoseCurved = generatePathCurve(AutoTemplate.lastPose, curveIntake2, closeShootingPose);
+
+        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
+        toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
+
+        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontParkPose);
+        parkAtBackFromLastPose = generatePath(AutoTemplate.lastPose, backParkPose);
+
+        farJigglePath = generatePath(AutoTemplate.lastPose, farJigglePose);
+
     }
 
 
@@ -121,8 +135,8 @@ public class AutoPaths {
      * make sure to use this before you use generatePaths()
      * @param pose park pose, heading not required
      */
-    public static void setParkPose(Pose pose) {
-        parkPose = pose;
+    public static void setFrontParkPose(Pose pose) {
+        frontParkPose = pose;
     }
 
     /**
@@ -152,6 +166,7 @@ public class AutoPaths {
                         new BezierLine(pose1, pose2)
                 )
                 .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+                .setVelocityConstraint(0.9)
                 .build();
     }
 

@@ -36,7 +36,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name="hood shooter tele with new flywheel")
-//@Disabled
+@Disabled
 public class HoodShooterTele extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(HoodShooterTele.class);
     {
