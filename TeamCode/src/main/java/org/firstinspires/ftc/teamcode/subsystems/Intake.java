@@ -18,7 +18,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 
 public class Intake implements Component {
     DcMotor intakeMotor, agitator;
-    DistanceSensor frontColor, rightColor, leftColor;
+    //DistanceSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
     static boolean isIntakeOn = false;
@@ -50,9 +50,9 @@ public class Intake implements Component {
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
-        frontColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "frontColor");
-        rightColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "rightColor");
-        leftColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "leftColor");
+//        frontColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "frontColor");
+//        rightColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "rightColor");
+//        leftColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "leftColor");
         isIntakeOn = false;
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -62,6 +62,10 @@ public class Intake implements Component {
 
     }
 
+    public void runFireWheels() {
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+    }
 
     public void startRailDex() {
         isShooting = true;
@@ -242,9 +246,9 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("left firewheel power", leftFireServo.getPower());
         ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
         ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
-        ActiveOpMode.telemetry().addData("front color", frontColor.getDistance(DistanceUnit.INCH));
-        ActiveOpMode.telemetry().addData("right color", rightColor.getDistance(DistanceUnit.INCH));
-        ActiveOpMode.telemetry().addData("left color", frontColor.getDistance(DistanceUnit.INCH));
+//        ActiveOpMode.telemetry().addData("front color", frontColor.getDistance(DistanceUnit.INCH));
+//        ActiveOpMode.telemetry().addData("right color", rightColor.getDistance(DistanceUnit.INCH));
+//        ActiveOpMode.telemetry().addData("left color", frontColor.getDistance(DistanceUnit.INCH));
 
         if (isShooting && !agitator.isBusy()){
             isShooting = false;

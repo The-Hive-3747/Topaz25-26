@@ -50,7 +50,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     TelemetryManager telemetryM;
     Follower follower;
     double HOOD_POS;
-    boolean FLYWHEEL_ON = false;
+    boolean FIREWHEELS_ON = false;
 
 
     /**
@@ -121,6 +121,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         flywheel.setHoodGoalPos(HOOD_POS);
 
         Drawing.drawOnlyCurrent(follower);
+
+        if (FIREWHEELS_ON) {
+            intake.runFireWheels();
+        }
 
         telemetry.addData("pose", follower.getPose());
 
@@ -227,6 +231,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             ),
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
+                        new InstantCommand(() -> FIREWHEELS_ON=true),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
                         intake.shootAllThree
                 )
@@ -259,6 +264,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 ),
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
+                        new InstantCommand(() -> FIREWHEELS_ON=true),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
                         intake.shootAllThree
                 )
@@ -301,6 +307,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
+                        new InstantCommand(() -> FIREWHEELS_ON=false),
                         intake.firewheelsOff,
                         new FollowPath(lineUpForIntake1FromLastPose),
                         intake.startIntake
@@ -319,6 +326,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
+                        new InstantCommand(() -> FIREWHEELS_ON=false),
                         intake.firewheelsOff,
                         new FollowPath(lineUpForIntake2FromLastPose),
                         intake.startIntake
@@ -337,6 +345,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
+                        new InstantCommand(() -> FIREWHEELS_ON=false),
                         intake.firewheelsOff,
                         new FollowPath(lineUpForIntake3FromLastPose),
                         intake.startIntake
@@ -355,6 +364,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
+                        new InstantCommand(() -> FIREWHEELS_ON=false),
                         intake.firewheelsOff,
                         new FollowPath(lineUpForIntakeHPFromLastPose),
                         intake.startIntake
@@ -380,6 +390,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void parkAtFront() {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
+                new InstantCommand(() -> FIREWHEELS_ON=false),
+                intake.firewheelsOff,
                 new InstantCommand(() -> HOOD_POS = 0),
                 new InstantCommand(() -> turret.setFixedAngleCustom(0)),
                 intake.firewheelsOff,
@@ -391,6 +403,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void parkAtBack() {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
+                new InstantCommand(() -> FIREWHEELS_ON=false),
+                intake.firewheelsOff,
                 new InstantCommand(() -> HOOD_POS = 0),
                 new InstantCommand(() -> turret.setFixedAngleCustom(0)),
                 intake.firewheelsOff,

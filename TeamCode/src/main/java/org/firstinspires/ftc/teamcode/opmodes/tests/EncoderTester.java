@@ -15,14 +15,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 @TeleOp(name = "encoder Tester")
-@Disabled
+//@Disabled
 public class EncoderTester extends NextFTCOpMode {
     CRServo turretLeft, turretRight;
 
     DcMotorEx flywheelLeft, flywheelRight, intakeMotor;
-    NormalizedColorSensor colorSensor;
-    DistanceSensor distanceSensor;
-    NormalizedRGBA colors;
     @Override
     public void onInit() {
         flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
@@ -31,14 +28,12 @@ public class EncoderTester extends NextFTCOpMode {
         //flywheelRight.setDirection(DcMotorEx.Direction.FORWARD);
         //turret = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "turret");
         intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "intake");
-        colorSensor = hardwareMap.get(NormalizedColorSensor.class, "frontColor");
-        distanceSensor = hardwareMap.get(DistanceSensor.class,"frontColor");
         turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
 
 
-        flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -47,34 +42,27 @@ public class EncoderTester extends NextFTCOpMode {
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         //turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        if(colorSensor instanceof SwitchableLight){
-            ((SwitchableLight)colorSensor).enableLight(true);
-        }
-
     }
     @Override
     public void onUpdate() {
-        colors = colorSensor.getNormalizedColors();
-        telemetry.addData("Front Distance (inch)",distanceSensor.getDistance(DistanceUnit.INCH));
-        telemetry.addData("Front Red",colors.red);
-        telemetry.addData("Front Green",colors.green);
-        telemetry.addData("Front Blue",colors.blue);
         telemetry.addData("flywheelLeft", flywheelLeft.getCurrentPosition());
         telemetry.addData("flywheelRight", flywheelRight.getCurrentPosition());
+        telemetry.addData("flywheelLeft p", flywheelLeft.getPower());
+        telemetry.addData("flywheelRight p", flywheelRight.getPower());
         telemetry.addData("flywheel left vel", flywheelLeft.getVelocity());
         telemetry.addData("flywheel external vel W CONVERSION",  ((double) flywheelRight.getVelocity()*60)/8192); // 8192 is CPR
         telemetry.addData("flywheelRight vel", flywheelRight.getVelocity());
         telemetry.addData("intakeMotor", intakeMotor.getCurrentPosition());
 
         if (gamepad1.a) {
-            turretLeft.setPower(1);
+            flywheelLeft.setPower(1);
         } else {
-            turretLeft.setPower(0);
+            flywheelLeft.setPower(0);
         }
         if (gamepad1.b) {
-            turretRight.setPower(1);
+            flywheelRight.setPower(1);
         } else {
-            turretRight.setPower(0);
+            flywheelRight.setPower(0);
         }
         //telemetry.addData("turret", turret.getCurrentPosition());
 

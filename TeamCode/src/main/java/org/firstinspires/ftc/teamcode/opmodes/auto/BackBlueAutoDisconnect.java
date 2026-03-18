@@ -4,22 +4,24 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @Disabled
-@Autonomous(name = "back red auto / rogue", group = "custom")
-public class BackRedAutoRogue extends AutoTemplate {
+@Autonomous(name = "back blue auto / disconnect", group = "custom")
+public class BackBlueAutoDisconnect extends AutoTemplate {
     @Override
     public void initAuto() {
-        startAsRed();
+        startAsBlue();
         startAtBack();
         setTurretFixedFar();
         setHoodPosFar();
         turnFlywheelOnForBack();
-        delay(4);
-        shootAllThreeAtFar(1.5);
+        shootAllThreeAtFar(1.2);
         delay(0.6);
-        intakeHP(1);
+        intakeHP(0.75);
         shootAllThreeAtFar(0.8);
         delay(0.6);
         intake3(0.5);
+        shootAllThreeAtFar(0.8);
+        delay(0.6);
+        intakeHP(0.75);
         shootAllThreeAtFar(0.8);
         delay(0.6);
         parkAtBack();

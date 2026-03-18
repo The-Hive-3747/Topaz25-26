@@ -38,8 +38,8 @@ import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 
-@TeleOp(name="topaz teleop")
-public class TopazTeleop extends NextFTCOpMode {
+@TeleOp(name="topaz teleop set power")
+public class TopazTeleopPOWER extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(TopazTeleop.class);
 
     {
@@ -51,15 +51,13 @@ public class TopazTeleop extends NextFTCOpMode {
                 new PedroComponent(Constants::createFollower),
                 aimbot = new Aimbot(),
                 turret = new Turret(),
-                limelight = new Relocalization(),
+                limelight = new Relocalization()
                 //limelightComponent = new LimelightComponent(),
-                dataLogger = new DataLogger(telemetry)
+                //dataLogger = new DataLogger(telemetry)
         );
     }
-
-
     //Relocalization limelight;
-    DataLogger dataLogger;
+    //DataLogger dataLogger;
     //Turret turret;
     Intake intake;
     FieldCentricDrive drive;
@@ -98,8 +96,8 @@ public class TopazTeleop extends NextFTCOpMode {
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     public ElapsedTime lightTimer = new ElapsedTime();
-    Button g2A;
 
+    Button g2A;
 
     //GraphManager graphManager = PanelsGraph.INSTANCE.getManager();
     double botDistance;
@@ -110,8 +108,6 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
-        dataLogger.addAimbot(aimbot);
-        dataLogger.addTurret(turret);
 
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
@@ -129,15 +125,15 @@ public class TopazTeleop extends NextFTCOpMode {
         g1DDown.whenBecomesTrue(() -> flywheel.resetHoodEncoder());
         g2Back.whenBecomesTrue(() -> turret.zeroTurret());
         g1Back.whenBecomesTrue(() -> {
-                    if (alliance == Alliance.BLUE){
-                        alliance = Alliance.RED;
-                        //turretLights.redAlliance();
-                    } else{
-                        alliance = Alliance.BLUE;
-                        //turretLights.blueAlliance();
-                    }
-                    //turret.setAlliance(alliance);
-                });
+            if (alliance == Alliance.BLUE){
+                alliance = Alliance.RED;
+                //turretLights.redAlliance();
+            } else{
+                alliance = Alliance.BLUE;
+                //turretLights.blueAlliance();
+            }
+            //turret.setAlliance(alliance);
+        });
         looptime = new ElapsedTime();
 
         if (alliance == Alliance.BLUE){
@@ -205,8 +201,8 @@ public class TopazTeleop extends NextFTCOpMode {
 
         gUp.whenBecomesTrue(() -> flywheel.increaseHood());
         gDown.whenBecomesTrue(() -> {
-            flywheel.setHoodPower(-0.5);
-        })
+                    flywheel.setHoodPower(-0.5);
+                })
                 .whenBecomesFalse(() -> {
                     flywheel.setHoodPower(0);
                     flywheel.resetHoodEncoder();
@@ -220,7 +216,7 @@ public class TopazTeleop extends NextFTCOpMode {
             //intake.stopIntake();
             intake.startRailDex();
         });
-                //.whenBecomesFalse(() -> intake.resetRailDex());
+        //.whenBecomesFalse(() -> intake.resetRailDex());
         g2RT.toggleOnBecomesTrue()
                 .whenBecomesTrue( () -> intake.reverseIntake())
                 .whenBecomesFalse(() -> intake.stopReverseIntake());
@@ -230,8 +226,8 @@ public class TopazTeleop extends NextFTCOpMode {
         g1Left.whenBecomesTrue(() -> turret.turretStateBackward());
 
         g1Y.toggleOnBecomesTrue()
-                        .whenBecomesTrue(() -> turret.setTurretStateoff())
-                        .whenBecomesFalse(() -> turret.setTurretStateAuto());
+                .whenBecomesTrue(() -> turret.setTurretStateoff())
+                .whenBecomesFalse(() -> turret.setTurretStateAuto());
 
         g1RT.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> slowModeMultiplier = 0.5)
@@ -253,7 +249,6 @@ public class TopazTeleop extends NextFTCOpMode {
 
         g2A.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> {
-                    //intake.turnIsShootingFalse();
                     intake.startIntake();
                     isIntakeOn = true;
                 })
@@ -337,7 +332,7 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.update(follower.getHeading(), slowModeMultiplier);
         looptime.reset();
         follower.update();
-        dataLogger.update();
+        //dataLogger.update();
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
@@ -345,9 +340,9 @@ public class TopazTeleop extends NextFTCOpMode {
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
         flywheel.setHoodGoalPos(HOOD_POS);
         if (FLYWHEEL_ON) {
-            flywheel.setTargetVel(FLYWHEEL_VEL);
+            flywheel.setPower(0.8);
         } else {
-            flywheel.setTargetVel(0);
+            flywheel.setPower(0);
         }
 
 

@@ -2,18 +2,18 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "front blue auto / shoots close", group = "default")
-public class FrontBlueAuto extends AutoTemplate {
+@Autonomous(name = "front red auto / cubed ets", group = "custom")
+public class FrontRedAutoCubedETs extends AutoTemplate{
     @Override
     public void initAuto() {
-        startAsBlue();
+        startAsRed();
         startAtFront();
         setTurretFixedClose();
         setHoodPosClose();
         turnFlywheelOnForFront();
         shootAllThreeAtClose(0.3);
         intake1(0.5);
-        //openGate(0.2);
+        openGate(0.2);
         shootAllThreeAtClose(0.5);
         intake2(0.5);
         shootAllThreeAtClose(0.5);
