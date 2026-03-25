@@ -60,10 +60,9 @@ public class Hood{
     }
 
 
-    //got rid of the negative sign in front of hoodEncoder here
     public double getHoodPosition() {
-        return -hoodEncoder.getCurrentPosition();
-    } //direction of encoder is reversed
+        return hoodEncoder.getCurrentPosition();
+    }
 
     public void setGoal(double goalPos) {
         enableHoodPID();

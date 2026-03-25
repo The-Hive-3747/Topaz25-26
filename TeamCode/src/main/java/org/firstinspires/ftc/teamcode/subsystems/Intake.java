@@ -2,13 +2,10 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
@@ -17,7 +14,8 @@ import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class Intake implements Component {
-    DcMotor intakeMotor, agitator;
+    DcMotor intakeMotor;
+    DcMotorEx agitator;
     //DistanceSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
@@ -27,7 +25,7 @@ public class Intake implements Component {
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
     double FIRE_POWER = 1;//0.9
-    double AGITATOR_POWER = 0.8;//0.2;//0.6;
+    double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
     double RAIL_UP = 0.5;
     double RAIL_DOWN = 1;
     double INTAKE_POWER_REVERSED = -0.9;
@@ -43,7 +41,7 @@ public class Intake implements Component {
     @Override
     public void postInit() {
         intakeMotor = ActiveOpMode.hardwareMap().get(DcMotor.class, "intake");
-        agitator = ActiveOpMode.hardwareMap().get(DcMotor.class, "agitator"); //312 motor with 537.7 pulses per rev
+        agitator = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "agitator"); //312 motor with 537.7 pulses per rev
         agitator.setDirection(DcMotorSimple.Direction.REVERSE);
         leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
         rightFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelRight");
@@ -76,6 +74,14 @@ public class Intake implements Component {
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
     }
+    public void startRailDexTime(){
+        isShooting = true;
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        //agitator.setTargetPosition(538);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
 
     public void turnIsShootingTrue() {
         isShooting = true;
@@ -96,6 +102,13 @@ public class Intake implements Component {
         agitator.setTargetPosition(0);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    public void startResetRailDex() {
+        leftFireServo.setPower(0);
+        rightFireServo.setPower(0);
+        //agitator.setTargetPosition(0);
+        agitator.setPower(0);
+        //agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     public void startIntake() {
         /*if (agitator.isBusy()) {
@@ -118,6 +131,7 @@ public class Intake implements Component {
     }
 
     public void stopIntake() {
+
         intakeMotor.setPower(INTAKE_POWER_REVERSED);
         intakeRevTimer.reset();
         intakeReversed=true;

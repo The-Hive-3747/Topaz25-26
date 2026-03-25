@@ -7,23 +7,15 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.opmodes.auto.AutoPaths;
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
-import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.subsystems.TurretLights;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
@@ -218,8 +210,11 @@ public class TopazTeleop extends NextFTCOpMode {
         g2LT.whenBecomesTrue(() ->{
             FLYWHEEL_ON = true;
             //intake.stopIntake();
+            intake.railDown();
             intake.startRailDex();
+            //intake.startRailDexTime();
         });
+        g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
                 //.whenBecomesFalse(() -> intake.resetRailDex());
         g2RT.toggleOnBecomesTrue()
                 .whenBecomesTrue( () -> intake.reverseIntake())

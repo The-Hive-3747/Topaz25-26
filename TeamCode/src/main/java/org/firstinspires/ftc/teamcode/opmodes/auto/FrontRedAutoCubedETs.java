@@ -12,12 +12,12 @@ public class FrontRedAutoCubedETs extends AutoTemplate{
         setHoodPosClose();
         turnFlywheelOnForFront();
         shootAllThreeAtClose(0.3);
-        intake1(0.5);
-        openGate(0.2);
+        intake1(0.4);
+        openGate(0.5);
         shootAllThreeAtClose(0.5);
-        intake2(0.5);
+        intake2(0.4);
         shootAllThreeAtClose(0.5);
-        intake3(0.5);
+        intake3(0.4);
         shootAllThreeAtClose(0.5);
         parkAtFront();
     }

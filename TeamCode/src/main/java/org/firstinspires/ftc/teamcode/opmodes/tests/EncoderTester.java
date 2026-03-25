@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -19,7 +20,7 @@ import dev.nextftc.ftc.NextFTCOpMode;
 public class EncoderTester extends NextFTCOpMode {
     CRServo turretLeft, turretRight;
 
-    DcMotorEx flywheelLeft, flywheelRight, intakeMotor;
+    DcMotorEx flywheelLeft, flywheelRight, intakeMotor, agitator;
     @Override
     public void onInit() {
         flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
@@ -31,6 +32,11 @@ public class EncoderTester extends NextFTCOpMode {
         turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
 
+        agitator = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "agitator"); //312 motor with 537.7 pulses per rev
+        agitator.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        agitator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -53,6 +59,7 @@ public class EncoderTester extends NextFTCOpMode {
         telemetry.addData("flywheel external vel W CONVERSION",  ((double) flywheelRight.getVelocity()*60)/8192); // 8192 is CPR
         telemetry.addData("flywheelRight vel", flywheelRight.getVelocity());
         telemetry.addData("intakeMotor", intakeMotor.getCurrentPosition());
+        telemetry.addData("agitator", agitator.getCurrentPosition());
 
         if (gamepad1.a) {
             flywheelLeft.setPower(1);

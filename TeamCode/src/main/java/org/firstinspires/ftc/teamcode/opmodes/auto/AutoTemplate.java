@@ -382,6 +382,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void openGate(double delayAfterOpenGate) {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(
+                intake.stopIntake,
                 new FollowPath(openGate),
                 new Delay(delayAfterOpenGate)
         );
