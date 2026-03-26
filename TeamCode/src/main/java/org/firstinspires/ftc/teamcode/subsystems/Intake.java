@@ -1,15 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
@@ -155,6 +154,24 @@ public class Intake implements Component {
         rail.setPosition(RAIL_DOWN);
     }
 
+    class YCbCr {
+        public double cL = 0;
+        public double cB = 0;
+        public double cR = 0;
+        public YCbCr(double luminance, double cBlue, double cRed){
+            cL = luminance;
+            cB = cBlue;
+            cR = cRed;
+        }
+    }
+    public YCbCr colorConverter(int red, int green, int blue){
+        // math is only good for range of 0-255
+        double cL = (0.299 * red) + (0.587 * green) + (0.114 * blue);
+        double cB = 128 - (0.168736 * red) - (0.331264 * green) + (0.5 * blue);
+        double cR = 128 + (0.5 * red) - (0.418688 * green) - (0.081312 * blue);
+        return new YCbCr(cL, cB, cR);
+    }
+
     public Command stopIntake = new LambdaCommand()
             .setStart(() -> {
                 isIntakeOn = false;
@@ -267,7 +284,7 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("left firewheel power", leftFireServo.getPower());
         ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
         ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
-        ActiveOpMode.telemetry().addData("front color", frontColor.red());
+        ActiveOpMode.telemetry().addData("front color", Color.luminance(Color.rgb(frontColor.red(), frontColor.green(), frontColor.blue())));
         ActiveOpMode.telemetry().addData("right color", rightColor.red());
         ActiveOpMode.telemetry().addData("left color", leftColor.red());
 
