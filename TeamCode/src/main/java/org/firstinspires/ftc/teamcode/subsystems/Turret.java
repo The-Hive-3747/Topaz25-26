@@ -50,7 +50,7 @@ public class Turret implements Component {
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1;
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
-    ControlSystem turretPID;
+    ControlSystem turretPID, turretSecPID;
 
     @Override
     public void preInit() {

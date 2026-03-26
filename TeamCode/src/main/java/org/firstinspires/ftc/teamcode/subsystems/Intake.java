@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
@@ -16,7 +20,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 public class Intake implements Component {
     DcMotor intakeMotor;
     DcMotorEx agitator;
-    //DistanceSensor frontColor, rightColor, leftColor;
+    ColorSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
     static boolean isIntakeOn = false;
@@ -30,6 +34,9 @@ public class Intake implements Component {
     double RAIL_DOWN = 1;
     double INTAKE_POWER_REVERSED = -0.9;
     double agitatorResetPosDone = 0.0;
+    double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
+    double  AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
+    int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_REV_V2;
     CRServo leftFireServo, rightFireServo, hood;
     Servo rail;
     ElapsedTime intakeRevTimer = new ElapsedTime();
@@ -48,12 +55,12 @@ public class Intake implements Component {
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
-//        frontColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "frontColor");
-//        rightColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "rightColor");
-//        leftColor = ActiveOpMode.hardwareMap().get(DistanceSensor.class, "leftColor");
+        frontColor = ActiveOpMode.hardwareMap().get(ColorSensor.class, "frontColor");
+        rightColor = ActiveOpMode.hardwareMap().get(ColorSensor.class, "rightColor");
+        leftColor = ActiveOpMode.hardwareMap().get(ColorSensor.class, "leftColor");
         isIntakeOn = false;
 
-        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
         agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         agitator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -69,7 +76,7 @@ public class Intake implements Component {
         isShooting = true;
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
-        agitator.setTargetPosition(538);
+        agitator.setTargetPosition(AGITATOR_ENC);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -78,7 +85,7 @@ public class Intake implements Component {
         isShooting = true;
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
-        //agitator.setTargetPosition(538);
+        //agitator.setTargetPosition(AGITATOR_ENC);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
@@ -138,7 +145,7 @@ public class Intake implements Component {
     }
     public void turnAgitator() {
 
-        agitator.setTargetPosition(agitator.getCurrentPosition() + 538/4);
+        agitator.setTargetPosition(agitator.getCurrentPosition() + AGITATOR_ENC/4);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         agitatorResetRequest = true;
@@ -260,9 +267,10 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("left firewheel power", leftFireServo.getPower());
         ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
         ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
-//        ActiveOpMode.telemetry().addData("front color", frontColor.getDistance(DistanceUnit.INCH));
-//        ActiveOpMode.telemetry().addData("right color", rightColor.getDistance(DistanceUnit.INCH));
-//        ActiveOpMode.telemetry().addData("left color", frontColor.getDistance(DistanceUnit.INCH));
+        ActiveOpMode.telemetry().addData("front color", frontColor.red());
+        ActiveOpMode.telemetry().addData("right color", rightColor.red());
+        ActiveOpMode.telemetry().addData("left color", leftColor.red());
+
 
         if (isShooting && !agitator.isBusy()){
             isShooting = false;
