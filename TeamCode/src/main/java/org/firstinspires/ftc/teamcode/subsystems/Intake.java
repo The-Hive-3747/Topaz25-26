@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -19,7 +20,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 public class Intake implements Component {
     DcMotor intakeMotor;
     DcMotorEx agitator;
-    ColorSensor frontColor, rightColor, leftColor;
+    NormalizedColorSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
     static boolean isIntakeOn = false;
@@ -54,9 +55,9 @@ public class Intake implements Component {
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
-        frontColor = ActiveOpMode.hardwareMap().get(ColorSensor.class, "frontColor");
-        rightColor = ActiveOpMode.hardwareMap().get(ColorSensor.class, "rightColor");
-        leftColor = ActiveOpMode.hardwareMap().get(ColorSensor.class, "leftColor");
+        frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");
+        rightColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "rightColor");
+        leftColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "leftColor");
         isIntakeOn = false;
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
@@ -163,12 +164,16 @@ public class Intake implements Component {
             cB = cBlue;
             cR = cRed;
         }
+        @Override
+        public String toString() {
+            return "cl:"+ String.format("%.4f",cL)+",cb:"+ String.format("%.4f",cB)+",cr:"+ String.format("%.4f", cR);
+        }
     }
-    public YCbCr colorConverter(int red, int green, int blue){
-        // math is only good for range of 0-255
+    public YCbCr colorConverter(double red, double green, double blue){
+        // math is only good for range of 0-(2^16) like 65,536
         double cL = (0.299 * red) + (0.587 * green) + (0.114 * blue);
-        double cB = 128 - (0.168736 * red) - (0.331264 * green) + (0.5 * blue);
-        double cR = 128 + (0.5 * red) - (0.418688 * green) - (0.081312 * blue);
+        double cB = 0.5 - (0.168736 * red) - (0.331264 * green) + (0.5 * blue);
+        double cR = 0.5 + (0.5 * red) - (0.418688 * green) - (0.081312 * blue);
         return new YCbCr(cL, cB, cR);
     }
 
@@ -284,9 +289,9 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("left firewheel power", leftFireServo.getPower());
         ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
         ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
-        ActiveOpMode.telemetry().addData("front color", Color.luminance(Color.rgb(frontColor.red(), frontColor.green(), frontColor.blue())));
-        ActiveOpMode.telemetry().addData("right color", rightColor.red());
-        ActiveOpMode.telemetry().addData("left color", leftColor.red());
+        /*ActiveOpMode.telemetry().addData("front color", Color.luminance(Color.rgb(frontColor.red(), frontColor.green(), frontColor.blue())));
+        //ActiveOpMode.telemetry().addData("right color", rightColor.red());
+        //ActiveOpMode.telemetry().addData("left color", leftColor.red());*/
 
 
         if (isShooting && !agitator.isBusy()){

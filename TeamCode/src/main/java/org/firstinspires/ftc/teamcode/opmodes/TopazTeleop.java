@@ -7,6 +7,9 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pathing.Constants;
@@ -54,6 +57,9 @@ public class TopazTeleop extends NextFTCOpMode {
     DataLogger dataLogger;
     //Turret turret;
     Intake intake;
+    NormalizedColorSensor frontSensor;
+    NormalizedColorSensor rightSensor;
+    NormalizedColorSensor leftSensor;
     FieldCentricDrive drive;
     Aimbot aimbot;
     Turret turret;
@@ -102,6 +108,10 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
+        frontSensor = hardwareMap.get(NormalizedColorSensor.class, "frontColor");
+        rightSensor = hardwareMap.get(NormalizedColorSensor.class, "rightColor");
+        leftSensor = hardwareMap.get(NormalizedColorSensor.class, "leftColor");
+
 
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
@@ -408,12 +418,26 @@ public class TopazTeleop extends NextFTCOpMode {
             highestLooptime = looptime.milliseconds();
         }
 
+        double frontRed = frontSensor.getNormalizedColors().red;
+        double frontGreen = frontSensor.getNormalizedColors().green;
+        double frontBlue = frontSensor.getNormalizedColors().blue;
+        double rightRed = rightSensor.getNormalizedColors().red;
+        double rightGreen = rightSensor.getNormalizedColors().green;
+        double rightBlue = rightSensor.getNormalizedColors().blue;
+        double leftRed = leftSensor.getNormalizedColors().red;
+        double leftGreen = leftSensor.getNormalizedColors().green;
+        double leftBlue = leftSensor.getNormalizedColors().blue;
+
         //graphManager.addData("flywheel velocity", flywheel.getVel());
         //graphManager.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
         //graphManager.addData("flywheel power", flywheel.getPower());
         //graphManager.update();
 
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        panelsTelemetry.addData("FRONT Ycbcr numbers", intake.colorConverter(frontRed,frontGreen,frontBlue));
+        panelsTelemetry.addData("RIGHT Ycbcr numbers", intake.colorConverter(rightRed, rightGreen, rightBlue));
+        panelsTelemetry.addData("LEFT Ycbcr numbers", intake.colorConverter(leftRed, leftGreen, leftBlue));
+        panelsTelemetry.addData("RGB numbers:",  "Red:"+Double.toString(frontRed)+",Green:"+Double.toString(frontGreen)+",Blue:"+Double.toString(frontBlue));
         panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
         panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
         panelsTelemetry.addData("flywheel power", flywheel.getPower());
