@@ -102,8 +102,6 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
-        dataLogger.addAimbot(aimbot);
-        dataLogger.addTurret(turret);
 
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
@@ -332,6 +330,8 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.update(follower.getHeading(), slowModeMultiplier);
         looptime.reset();
         follower.update();
+        dataLogger.addAimbot(aimbot);
+        dataLogger.addTurret(turret);
         dataLogger.update();
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());

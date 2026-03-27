@@ -81,7 +81,7 @@ public class DataLogger implements Component{
             timeShooting = AgitatorTime.milliseconds();
             try {
                 dataWriter.write(String.format(
-                        "%s, %.1f, %.1f, %.1f, %.1f, %.1f %.1f, %.1f, %.1f, %.1f, %.1f\n",//formatting for botstats?
+                        "%s, %.1f, %.1f, %.1f, %.1f, %.1f, %.1f, %.1f, %.1f, %.1f, %.1f\n",
                         timeStamp,
                         botPosition.getX(),
                         botPosition.getY(),
