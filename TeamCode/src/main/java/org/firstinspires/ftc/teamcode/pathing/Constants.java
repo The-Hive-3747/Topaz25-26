@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(14.2)//14.1//13.8// 11.8// 13.7//V2.5 robot mass //V2 robot mass = 12.65
+            .mass(15.35) //updated for v3 topaz
             .useSecondaryTranslationalPIDF(false)
             .useSecondaryHeadingPIDF(true)
             .useSecondaryDrivePIDF(true)
