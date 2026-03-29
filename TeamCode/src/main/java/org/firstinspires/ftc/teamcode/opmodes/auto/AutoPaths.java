@@ -54,8 +54,8 @@ public class AutoPaths {
         farShootingPose = flipOverCenter(new Pose(55, 21, shootAngle));
         intakeHPStartPose = flipOverCenter(new Pose(28.5, 10.5, intakeAngle));
         intakeHPEndPose = flipOverCenter(new Pose(10.5,10.5, intakeAngle));
-        intake1StartPose = flipOverCenter(new Pose(51.25, 80.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = flipOverCenter(new Pose(27.5, 80.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
+        intake1StartPose = flipOverCenter(new Pose(51.25, 79.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
+        intake1EndPose = flipOverCenter(new Pose(27.5, 79.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
         openGateStartPose = flipOverCenter(new Pose(35, 76, intakeAngle)); //78//x:35
         openGateEndPose = flipOverCenter(new Pose(18.5, 76, intakeAngle));//x:18
         intake2StartPose = flipOverCenter(new Pose(56.25, 57.75, intakeAngle));//y:58//y: 61

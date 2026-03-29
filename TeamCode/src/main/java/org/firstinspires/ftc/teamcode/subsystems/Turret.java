@@ -133,7 +133,7 @@ public class Turret implements Component {
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
-        if (turretPower < TURRET_POWER_MIN) {
+        if (Math.abs(turretPower) < TURRET_POWER_MIN) {
             turretPower = 0;
         }
 

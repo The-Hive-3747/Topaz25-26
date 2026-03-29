@@ -180,7 +180,7 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2X = button(() -> gamepad2.x);
         Button g2Y = button(() -> gamepad2.y);
         Button g2B = button(() -> gamepad2.b);
-        g2A = button(() -> gamepad2.a);
+        g2A = button(() -> gamepad1.a);
 
         Button gUp = button(() -> gamepad2.dpad_up || gamepad1.dpad_up);
         Button gDown = button(() -> gamepad2.dpad_down || gamepad1.dpad_down);
@@ -189,14 +189,14 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g1Left = button(() -> gamepad1.dpad_left);
         Button g2LB = button(() -> gamepad2.left_bumper || gamepad1.left_bumper);
         Button g2RB = button(() -> gamepad2.right_bumper || gamepad1.right_bumper);
-        Button g1A = button(() -> gamepad1.a);
+        Button g1A = button(() -> gamepad2.a);
         Button g1B = button(() -> gamepad1.b);
         Button g1X = button(() -> gamepad1.x);
         Button g1Y = button(() -> gamepad1.y);
 
         Button g2RT = button(() -> gamepad2.right_trigger > 0.1);
         Button g1LT = button(() -> gamepad1.left_trigger > 0.1);
-        Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
+        Button g2LT = button(() -> gamepad1.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
 
 
@@ -398,9 +398,9 @@ public class TopazTeleop extends NextFTCOpMode {
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
         // turret.shootOnTheMove(follower.getVelocity());
 
-        //turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
 
-        //turret.update();
+        turret.update();
 
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,
