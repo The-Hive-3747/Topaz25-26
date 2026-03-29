@@ -55,7 +55,6 @@ public class TopazTeleop extends NextFTCOpMode {
 
     //Relocalization limelight;
     DataLogger dataLogger;
-    //Turret turret;
     Intake intake;
     NormalizedColorSensor frontSensor;
     NormalizedColorSensor rightSensor;
@@ -108,9 +107,7 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
-        frontSensor = hardwareMap.get(NormalizedColorSensor.class, "frontColor");
-        rightSensor = hardwareMap.get(NormalizedColorSensor.class, "rightColor");
-        leftSensor = hardwareMap.get(NormalizedColorSensor.class, "leftColor");
+
 
 
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
@@ -222,7 +219,7 @@ public class TopazTeleop extends NextFTCOpMode {
             intake.startRailDex();
             //intake.startRailDexTime();
         });
-        g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
+        //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
                 //.whenBecomesFalse(() -> intake.resetRailDex());
         g2RT.toggleOnBecomesTrue()
                 .whenBecomesTrue( () -> intake.reverseIntake())
@@ -403,7 +400,7 @@ public class TopazTeleop extends NextFTCOpMode {
 
         //turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
 
-        turret.update();
+        //turret.update();
 
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,
@@ -418,15 +415,7 @@ public class TopazTeleop extends NextFTCOpMode {
             highestLooptime = looptime.milliseconds();
         }
 
-        double frontRed = frontSensor.getNormalizedColors().red;
-        double frontGreen = frontSensor.getNormalizedColors().green;
-        double frontBlue = frontSensor.getNormalizedColors().blue;
-        double rightRed = rightSensor.getNormalizedColors().red;
-        double rightGreen = rightSensor.getNormalizedColors().green;
-        double rightBlue = rightSensor.getNormalizedColors().blue;
-        double leftRed = leftSensor.getNormalizedColors().red;
-        double leftGreen = leftSensor.getNormalizedColors().green;
-        double leftBlue = leftSensor.getNormalizedColors().blue;
+
 
         //graphManager.addData("flywheel velocity", flywheel.getVel());
         //graphManager.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
@@ -434,10 +423,6 @@ public class TopazTeleop extends NextFTCOpMode {
         //graphManager.update();
 
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
-        panelsTelemetry.addData("FRONT Ycbcr numbers", intake.colorConverter(frontRed,frontGreen,frontBlue));
-        panelsTelemetry.addData("RIGHT Ycbcr numbers", intake.colorConverter(rightRed, rightGreen, rightBlue));
-        panelsTelemetry.addData("LEFT Ycbcr numbers", intake.colorConverter(leftRed, leftGreen, leftBlue));
-        panelsTelemetry.addData("RGB numbers:",  "Red:"+Double.toString(frontRed)+",Green:"+Double.toString(frontGreen)+",Blue:"+Double.toString(frontBlue));
         panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
         panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
         panelsTelemetry.addData("flywheel power", flywheel.getPower());

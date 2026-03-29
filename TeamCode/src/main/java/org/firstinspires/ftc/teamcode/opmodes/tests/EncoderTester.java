@@ -33,7 +33,7 @@ public class EncoderTester extends NextFTCOpMode {
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
 
         agitator = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "agitator"); //312 motor with 537.7 pulses per rev
-        agitator.setDirection(DcMotorSimple.Direction.REVERSE);
+//        agitator.setDirection(DcMotorSimple.Direction.REVERSE);
 
         agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         agitator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

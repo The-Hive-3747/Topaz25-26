@@ -45,12 +45,13 @@ public class Turret implements Component {
     public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 114;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
-
+    double botY, botX;
     public static double TURRET_PID_KP = 0.017, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1, TURRET_POWER_MIN = 0.05;
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
     ControlSystem turretPID, turretSecPID;
+
 
     @Override
     public void preInit() {
@@ -104,7 +105,31 @@ public class Turret implements Component {
             turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
             turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
         }
-
+        botY = this.currentPose.getY();
+        botX = this.currentPose.getX();
+        if (botY >=63.5 ) { //New code for turning off/on for launch zones
+            if (botX<72 && botY >= -botX + 135.5) {
+                this.setTurretPower(turretPower);
+            }
+            if (botX>= 72 && botY >= botX - 8.5) {
+                this.setTurretPower(turretPower);
+            }
+            else{
+                currentState = turretState.OFF;
+            }
+        } else if (botY <=32.5) {
+            if (botX<72 && botY <= botX - 39.5) {
+                this.setTurretPower(turretPower);
+            }
+            if (botX >= 72 && botY <= -botX + 104.5) {
+                this.setTurretPower(turretPower);
+            }
+            else {
+                currentState = turretState.OFF;
+            }
+        } else{
+            this.setTurretPower(turretPower);
+        }
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
@@ -112,7 +137,7 @@ public class Turret implements Component {
             turretPower = 0;
         }
 
-        this.setTurretPower(turretPower);
+        //this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
@@ -131,6 +156,8 @@ public class Turret implements Component {
             fieldCentricGoalAngle = Math.atan2((goalY - this.currentPose.getY()), (goalX - this.currentPose.getX())); // IN RADS
             turretGoalNotInLimits = Math.toDegrees(normalizeAngle(fieldCentricGoalAngle - this.currentPose.getHeading() + Math.PI));
             return new KineticState(this.putInTurretLimits(turretGoalNotInLimits));
+
+
         } else {
             return ZERO_ANGLE;
         }
