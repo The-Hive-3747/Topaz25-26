@@ -7,7 +7,6 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 
@@ -53,6 +52,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     double flywheelVel = 0;
     boolean FIREWHEELS_ON = false;
 
+    // Shoot pause/resume
+    protected ElapsedTime shootPauseTimer = null;
+    protected boolean waitingToResume = false;
+    protected double shootPauseDuration = 1; // tune this
+
     // Path building
     protected PathBuilder pathBuilder;
     protected PathChain allPaths;
@@ -84,7 +88,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onWaitForStart() {
-        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
         turret.setTurretStateFixed();
         turret.update();
 
@@ -118,6 +121,13 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             intake.runFireWheels();
         }
 
+        // Resume path following after shoot pause
+        if (waitingToResume && shootPauseTimer != null
+                && shootPauseTimer.seconds() > shootPauseDuration) {
+            waitingToResume = false;
+            follower.resumePathFollowing();
+        }
+
         telemetry.addData("pose", follower.getPose());
         telemetry.addData("chain index", follower.getChainIndex());
 
@@ -132,10 +142,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         OpModeTransfer.alliance = alliance;
         OpModeTransfer.hasBeenTransferred = true;
     }
-
-    // =====================================================
-    // SETUP HELPERS
-    // =====================================================
 
     protected void setTurretFixedClose() {
         turret.setAlliance(alliance);
@@ -300,11 +306,16 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         pathBuilder
                 .addPath(new BezierLine(lastPose, closeShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
+                .addParametricCallback(0.2, this::setTurretFixedClose)
                 .addParametricCallback(0.3, () -> intake.railDown())
-                .addParametricCallback(0.7, () -> {
+                .addParametricCallback(0.5, this::setHoodPosClose)
+                .addParametricCallback(1.0, () -> {
+                    follower.pausePathFollowing();
                     FIREWHEELS_ON = true;
                     intake.turnIsShootingTrue();
                     intake.shootAllThree();
+                    shootPauseTimer = new ElapsedTime();
+                    waitingToResume = true;
                 });
 
         lastPose = closeShootingPose;
@@ -314,11 +325,16 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         pathBuilder
                 .addPath(new BezierCurve(lastPose, curveIntake2, closeShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
+                .addParametricCallback(0.2, this::setTurretFixedClose)
                 .addParametricCallback(0.3, () -> intake.railDown())
-                .addParametricCallback(0.7, () -> {
+                .addParametricCallback(0.5, this::setHoodPosClose)
+                .addParametricCallback(1.0, () -> {
+                    follower.pausePathFollowing();
                     FIREWHEELS_ON = true;
                     intake.turnIsShootingTrue();
                     intake.shootAllThree();
+                    shootPauseTimer = new ElapsedTime();
+                    waitingToResume = true;
                 });
 
         lastPose = closeShootingPose;
@@ -329,11 +345,16 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 .addPath(new BezierLine(lastPose, farShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading())
                 .setVelocityConstraint(0.7)
+                .addParametricCallback(0.2, this::setTurretFixedFar)
                 .addParametricCallback(0.3, () -> intake.railDown())
-                .addParametricCallback(0.7, () -> {
+                .addParametricCallback(0.5, this::setHoodPosFar)
+                .addParametricCallback(1.0, () -> {
+                    follower.pausePathFollowing();
                     FIREWHEELS_ON = true;
                     intake.turnIsShootingTrue();
                     intake.shootAllThree();
+                    shootPauseTimer = new ElapsedTime();
+                    waitingToResume = true;
                 });
 
         lastPose = farShootingPose;
