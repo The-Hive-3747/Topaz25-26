@@ -7,6 +7,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 
@@ -83,6 +84,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onWaitForStart() {
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
         turret.setTurretStateFixed();
         turret.update();
 

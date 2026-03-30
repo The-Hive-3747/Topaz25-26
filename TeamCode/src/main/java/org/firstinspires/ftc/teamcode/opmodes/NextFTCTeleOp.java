@@ -266,7 +266,7 @@ public class NextFTCTeleOp extends NextFTCOpMode {
 
         g1A.whenBecomesTrue(() -> {
             AutoPaths.alliance = alliance;
-            AutoPaths.generatePaths(follower);
+            //AutoPaths.generatePaths(follower);
             Pose resetPose = new Pose(AutoPaths.startingPose.getX(), AutoPaths.startingPose.getY(), AutoPaths.startAngle);
             follower.setPose(resetPose);
         });
