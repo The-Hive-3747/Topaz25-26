@@ -11,14 +11,16 @@ public class FrontRedAuto extends AutoTemplate {
         setTurretFixedClose();
         setHoodPosClose();
         turnFlywheelOnForFront();
-        shootAllThreeAtClose(0.3);
-        intake1(0.4);
-        //openGate(0.2);
-        shootAllThreeAtClose(0.35);
-        intake2(0.4);
-        shootAllThreeAtCloseCurved(0.35);
-        intake3(0.4);
-        shootAllThreeAtClose(0.35);
+
+        beginPathBuilding();
+
+        shootAtClose();
+        intake1();
+        shootAtClose();
+        intake2();
+        shootAtCloseCurved();
+        intake3();
+        shootAtClose();
         parkAtFront();
     }
 }

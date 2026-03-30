@@ -1,44 +1,39 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
-    public static PathChain toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, farJigglePath;
+    public static Pose startingPose, curveIntake2, closeShootingPose, intakeHPStartPose, intakeHPEndPose,
+            farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose,
+            backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose,
+            intake3EndPose, farJigglePose;
+
     public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
     public static boolean customParkPose;
 
     /**
-     * this generates all poses & paths. must be called before start of auto.
-     * this should be called AFTER you've set the alliance, starting pose, etc
+     * Generates all poses. Must be called before building paths.
+     * Call AFTER setting alliance, starting pose, etc.
      * @param follow PedroPathing follower
      */
-    public static void generatePaths(Follower follow) {
+    public static void generatePoses(Follower follow) {
         follower = follow;
 
-        // DEFINE ANGLES HERE
+        // DEFINE ANGLES
         if (!customParkPose) {
             parkAngle = flipHeading180Degrees(180);
         }
-        /*if (alliance == Alliance.BLUE) {
-            closeShootAngle = Math.toRadians(135); //convertHeading90(Math.toRadians(40));
-        } else {
-            closeShootAngle = Math.toRadians(50); //convertHeading90(Math.toRadians(40));
-        }*/
         closeShootAngle = flipHeading180Degrees(180);
         shootAngle = flipHeading180Degrees(180);
         intakeAngle = flipHeading180Degrees(180);
         openGateAngle = Math.toRadians(90);
 
-        // DEFINE POSES HERE
+        // DEFINE POSES
         if (startingPose == null) {
             if (alliance == Alliance.BLUE) {
                 startingPose = new Pose(34.5, 135.8, Math.toRadians(-85.05));
@@ -53,68 +48,35 @@ public class AutoPaths {
         closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
         farShootingPose = flipOverCenter(new Pose(55, 21, shootAngle));
         intakeHPStartPose = flipOverCenter(new Pose(28.5, 10.5, intakeAngle));
-        intakeHPEndPose = flipOverCenter(new Pose(10.5,10.5, intakeAngle));
-        intake1StartPose = flipOverCenter(new Pose(51.25, 80.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = flipOverCenter(new Pose(27.5, 80.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
-        openGateStartPose = flipOverCenter(new Pose(35, 76, intakeAngle)); //78//x:35
-        openGateEndPose = flipOverCenter(new Pose(18.5, 76, intakeAngle));//x:18
-        intake2StartPose = flipOverCenter(new Pose(56.25, 57.75, intakeAngle));//y:58//y: 61
-        intake2EndPose = flipOverCenter(new Pose(18.5, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
-        intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
-        intake3EndPose = flipOverCenter(new Pose(20, 33.75, intakeAngle));//x:18 y:38//y: 32
-        curveIntake2 = flipOverCenter(new Pose(50,72));
-        farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
-
-        // GENERATE PATHS HERE
-        lineUpForIntake1FromLastPose = generatePath(AutoTemplate.lastPose, intake1StartPose);
-        intake1 = generatePath(intake1StartPose, intake1EndPose);
-
-        lineUpForOpenGateFromLastPose = generatePath(AutoTemplate.lastPose, openGateStartPose);
-        openGate = generatePath(openGateStartPose, openGateEndPose);
-
-        lineUpForIntake2FromLastPose = generatePath(AutoTemplate.lastPose, intake2StartPose);
-        intake2 = generatePath(intake2StartPose, intake2EndPose);
-
-        lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
-        intake3 = generatePath(intake3StartPose, intake3EndPose);
-
-        lineUpForIntakeHPFromLastPose = generatePath(AutoTemplate.lastPose, intakeHPStartPose);
-        intakeHP = generatePath(intakeHPStartPose, intakeHPEndPose);
-
-        toShootAtCloseFromLastPoseCurved = generatePathCurve(AutoTemplate.lastPose, curveIntake2, closeShootingPose);
-
-        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
-        toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
-
-        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontParkPose);
-        parkAtBackFromLastPose = generatePath(AutoTemplate.lastPose, backParkPose);
-
-        farJigglePath = generatePath(AutoTemplate.lastPose, farJigglePose);
-
+        intakeHPEndPose = flipOverCenter(new Pose(10.5, 10.5, intakeAngle));
+        intake1StartPose = flipOverCenter(new Pose(51.25, 80.25, intakeAngle));
+        intake1EndPose = flipOverCenter(new Pose(27.5, 80.25, intakeAngle));
+        openGateStartPose = flipOverCenter(new Pose(35, 76, intakeAngle));
+        openGateEndPose = flipOverCenter(new Pose(18.5, 76, intakeAngle));
+        intake2StartPose = flipOverCenter(new Pose(56.25, 57.75, intakeAngle));
+        intake2EndPose = flipOverCenter(new Pose(18.5, 57.75, intakeAngle));
+        intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));
+        intake3EndPose = flipOverCenter(new Pose(20, 33.75, intakeAngle));
+        curveIntake2 = flipOverCenter(new Pose(50, 72));
+        farJigglePose = flipOverCenter(new Pose(55, 17, shootAngle));
     }
 
-
     /**
-     * Flips a Pose over the center line.
-     * MAKE SURE YOUR POSE HAS A HEADING. THE HEADING WILL BE KEPT THE SAME
-     * @param pose your start pose
+     * Flips a Pose over the center line for red alliance.
+     * @param pose your start pose (MUST HAVE HEADING)
      * @return Pose which has been flipped
      */
     private static Pose flipOverCenter(Pose pose) {
         if (alliance == Alliance.BLUE) {
             return pose;
         }
-
-        // we subtract the x from 144 to flip the x
-        // y stays the same for this game
-        double newPoseX = 144-pose.getX();
-
+        double newPoseX = 144 - pose.getX();
         return new Pose(newPoseX, pose.getY(), pose.getHeading());
     }
 
     /**
      * @param heading in degrees
-     * @return heading in radians, flipped 180 degrees
+     * @return heading in radians, flipped 180 degrees for red alliance
      */
     private static double flipHeading180Degrees(double heading) {
         if (alliance == Alliance.BLUE) {
@@ -124,7 +86,7 @@ public class AutoPaths {
     }
 
     /**
-     * make sure to use this before you use generatePaths()
+     * Must be called before generatePoses()
      * @param pose start pose, MUST HAVE HEADING
      */
     public static void setStartPose(Pose pose) {
@@ -132,15 +94,15 @@ public class AutoPaths {
     }
 
     /**
-     * make sure to use this before you use generatePaths()
-     * @param pose park pose, heading not required
+     * Must be called before generatePoses()
+     * @param pose park pose
      */
     public static void setFrontParkPose(Pose pose) {
         frontParkPose = pose;
     }
 
     /**
-     * make sure to use this before you use generatePaths()
+     * Must be called before generatePoses()
      * @param heading park angle, RADIANS
      */
     public static void setParkAngle(double heading) {
@@ -152,88 +114,5 @@ public class AutoPaths {
      */
     public static Alliance getAlliance() {
         return alliance;
-    }
-
-    /**
-     * generates a PathChain using the heading from pose1 & pose2
-     * @param pose1 the first pose (MUST HAVE HEADING)
-     * @param pose2 the second pose (MUST HAVE HEADING)
-     * @return the built PathChain
-     */
-    public static PathChain generatePath(Pose pose1, Pose pose2) {
-        return follower.pathBuilder()
-                .addPath(
-                        new BezierLine(pose1, pose2)
-                )
-                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
-                .setVelocityConstraint(0.9)
-                .build();
-    }
-
-    /**
-     * generates a PathChain with a constant heading
-     * @param pose1 the first pose
-     * @param pose2 the second pose
-     * @param heading IN RADIANS, the constant heading to be followed
-     * @return the built PathChain
-     */
-    public static PathChain generatePath(Pose pose1, Pose pose2, double heading) {
-        return follower.pathBuilder()
-                .addPath(
-                        new BezierLine(pose1, pose2)
-                )
-                .setConstantHeadingInterpolation(heading)
-                .build();
-    }
-
-    /**
-     * generates a PathChain using set headings and poses
-     * @param pose1 the first pose
-     * @param pose2 the second pose
-     * @param heading1 IN RADIANS, the first heading to be followed
-     * @param heading2 IN RADIANS, the second heading to be followed
-     * @return the built PathChain
-     */
-    public static PathChain generatePath(Pose pose1, Pose pose2, double heading1, double heading2) {
-        return follower.pathBuilder()
-                .addPath(
-                        new BezierLine(pose1, pose2)
-                )
-                .setLinearHeadingInterpolation(heading1, heading2)
-                .build();
-    }
-
-    /**
-     * generates a PathChain with a linear heading from pose1 & pose2
-     * this is a bezier curve
-     * @param pose1 the first pose
-     * @param curvePose the curve pose
-     * @param pose2 the second pose
-     * @return the built PathChain
-     */
-    public static PathChain generatePathCurve(Pose pose1, Pose curvePose, Pose pose2) {
-        return follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(pose1, curvePose, pose2)
-                )
-                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
-                .build();
-    }
-
-    /**
-     * generates a PathChain with a linear heading from pose1 & pose2 and a velocity constraint
-     * @param pose1 the first pose
-     * @param pose2 the second pose
-     * @param velocityConstraint double from 0-1
-     * @return the built PathChain
-     */
-    public static PathChain generatePathWithVelocityConstraint(Pose pose1, Pose pose2, double velocityConstraint) {
-        return follower.pathBuilder()
-                .addPath(
-                        new BezierLine(pose1, pose2)
-                )
-                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
-                .setVelocityConstraint(velocityConstraint)
-                .build();
     }
 }
