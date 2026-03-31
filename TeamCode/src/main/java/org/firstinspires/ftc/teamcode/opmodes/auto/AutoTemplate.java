@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 
-import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 public abstract class AutoTemplate extends NextFTCOpMode {
@@ -62,17 +61,13 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
 
     protected HashMap<Integer, Runnable> pauseActions = new HashMap<>();
-
-    // Actions to run (without pausing) when entering a chain index
     protected HashMap<Integer, Runnable> entryActions = new HashMap<>();
-
-    // Tracks which actions have fired so they don't repeat
     protected HashSet<Integer> firedEntryActions = new HashSet<>();
     protected HashSet<Integer> firedPauseActions = new HashSet<>();
 
     protected ElapsedTime shootPauseTimer = null;
     protected boolean waitingToResume = false;
-    protected double shootPauseDuration = 0.5; // tune this
+    protected double shootPauseDuration = 2; // tune this
     protected int lastSeenChainIndex = -1;
 
     /**
@@ -102,6 +97,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onWaitForStart() {
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
         turret.setTurretStateFixed();
         turret.update();
 
@@ -123,19 +119,20 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
+        telemetry.addData("index", pathIndex);
+        telemetry.addData("pause?", waitingToResume);
+        telemetry.addData("pauseActions", pauseActions);
         int currentIndex = follower.getChainIndex();
 
         if (currentIndex != lastSeenChainIndex && !waitingToResume) {
-            if (pauseActions.containsKey(currentIndex)
-                    && !firedPauseActions.contains(currentIndex)) {
+            if (pauseActions.containsKey(currentIndex) && !firedPauseActions.contains(currentIndex)) {
                 firedPauseActions.add(currentIndex);
                 follower.pausePathFollowing();
                 Objects.requireNonNull(pauseActions.get(currentIndex)).run();
                 shootPauseTimer = new ElapsedTime();
                 waitingToResume = true;
             } else {
-                if (entryActions.containsKey(currentIndex)
-                        && !firedEntryActions.contains(currentIndex)) {
+                if (entryActions.containsKey(currentIndex) && !firedEntryActions.contains(currentIndex)) {
                     Objects.requireNonNull(entryActions.get(currentIndex)).run();
                     firedEntryActions.add(currentIndex);
                 }
@@ -171,7 +168,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
         telemetry.addData("pose", follower.getPose());
         telemetry.addData("chain index", currentIndex);
+        telemetry.addData("lastSeenChainIndex", lastSeenChainIndex);
         telemetry.addData("waiting to resume", waitingToResume);
+        telemetry.addData("firedPauseActions", firedPauseActions);
+        telemetry.addData("isBusy", follower.isBusy());
 
         flywheel.update();
         intake.update();
@@ -258,10 +258,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         firedPauseActions.clear();
     }
 
-    // =====================================================
-    // FLYWHEEL HELPERS
-    // =====================================================
-
     protected void turnFlywheelOnForFront() {
         flywheelVel = Flywheel.FLYWHEEL_AUTO_TARGET_VEL_FRONT;
     }
@@ -273,10 +269,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void turnFlywheelOnCustom(double power) {
         flywheelVel = power;
     }
-
-    // =====================================================
-    // MODULAR PATH BUILDING METHODS
-    // =====================================================
 
     protected void intake1() {
         entryActions.put(pathIndex, () -> {
@@ -373,7 +365,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
      * Appends a path to the close shooting pose and registers a pause
      * on the NEXT path index. When Pedro transitions past this path,
      * onUpdate() catches it and pauses before follower.update() runs.
-     *
      * Index layout example:
      *   pathIndex N:   drive to closeShootingPose (entry action preps turret/hood)
      *   pathIndex N+1: whatever comes next (pause registered here, shoot action runs)
