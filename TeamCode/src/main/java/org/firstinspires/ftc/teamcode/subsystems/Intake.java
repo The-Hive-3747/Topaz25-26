@@ -154,6 +154,11 @@ public class Intake implements Component {
         intakeReversed = true;
     }
 
+    public void stopIntakeNoReverse() {
+        isIntakeOn = false;
+        intakeMotor.setPower(0);
+    }
+
     public void turnAgitator() {
         agitator.setTargetPosition(agitator.getCurrentPosition() + AGITATOR_ENC / 4);
         agitator.setPower(AGITATOR_POWER);

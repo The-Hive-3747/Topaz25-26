@@ -67,10 +67,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected ElapsedTime shootPauseTimer = null;
     protected boolean waitingToResume = false;
-    protected double shootPauseDuration = 1.25; // tune this
-    protected double shootApproachPower = 0.5; // limit speed on approach to shooting pose
+    protected double shootPauseDuration = 1.6; // tune this
     protected boolean hasShot = false;
-    protected double settleTime = 0.5;
+    protected double settleTime = 0.4;
     protected Runnable pendingShootAction = null;
     protected int lastSeenChainIndex = -1;
 
@@ -264,6 +263,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void beginPathBuilding() {
         AutoPaths.generatePoses(follower);
         pathBuilder = follower.pathBuilder();
+        pathBuilder.setGlobalDeceleration();
         pathIndex = 0;
         pauseActions.clear();
         entryActions.clear();
@@ -360,7 +360,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void openGate() {
-        entryActions.put(pathIndex, () -> intake.stopIntake());
+        entryActions.put(pathIndex, () -> intake.stopIntakeNoReverse());
         pathBuilder
                 .addPath(new BezierLine(lastPose, openGateStartPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), openGateStartPose.getHeading());
@@ -384,15 +384,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
      */
     protected void shootAtClose() {
         entryActions.put(pathIndex, () -> {
-            intake.stopIntake();
             setTurretFixedClose();
             setHoodPosClose();
-            intake.railDown();
-            follower.setMaxPower(shootApproachPower);
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, closeShootingPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
+                .addParametricCallback(0.7, () -> follower.setMaxPower(0.45));
         pathIndex++;
 
         // Pause fires when Pedro transitions to the next path (pathIndex is
@@ -408,15 +407,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void shootAtCloseCurved() {
         entryActions.put(pathIndex, () -> {
-            intake.stopIntake();
             setTurretFixedClose();
             setHoodPosClose();
-            intake.railDown();
-            follower.setMaxPower(shootApproachPower);
         });
         pathBuilder
                 .addPath(new BezierCurve(lastPose, curveIntake2, closeShootingPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
+                .addParametricCallback(0.7, () -> follower.setMaxPower(0.45));
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {
@@ -430,15 +428,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void shootAtFar() {
         entryActions.put(pathIndex, () -> {
-            intake.stopIntake();
             setTurretFixedFar();
             setHoodPosFar();
-            intake.railDown();
-            follower.setMaxPower(shootApproachPower);
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, farShootingPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading())
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
+                .addParametricCallback(0.7, () -> follower.setMaxPower(0.45));
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {

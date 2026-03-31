@@ -21,7 +21,7 @@ public class Constants {
             .useSecondaryHeadingPIDF(true)
             .headingPIDFCoefficients(new PIDFCoefficients(0.8,0,0.01,0.04))
             .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.3,0,0.03,0.03))
-            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.5, 0.1497893095, 0.001531626878493768))
+            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.3, 0.1497893095, 0.001531626878493768))
             .centripetalScaling(0);
 
 
@@ -51,7 +51,7 @@ public class Constants {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     // defaults: (0.995, 0.1, 0.1, 0.007, 100, 1, 10, 1);
-    public static PathConstraints pathConstraints = new PathConstraints(0.97,100,1.5,1.5);
+    public static PathConstraints pathConstraints = new PathConstraints(0.97,100,0.75,1.5);
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
