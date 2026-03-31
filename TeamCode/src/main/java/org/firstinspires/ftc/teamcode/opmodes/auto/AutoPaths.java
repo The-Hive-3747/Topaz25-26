@@ -82,7 +82,7 @@ public class AutoPaths {
         if (alliance == Alliance.BLUE) {
             return Math.toRadians(heading);
         }
-        return Math.toRadians(heading + 180);
+        return Math.toRadians(heading + 180) % 360;
     }
 
     /**

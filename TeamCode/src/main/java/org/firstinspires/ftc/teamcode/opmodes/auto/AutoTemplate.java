@@ -67,7 +67,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected ElapsedTime shootPauseTimer = null;
     protected boolean waitingToResume = false;
-    protected double shootPauseDuration = 2; // tune this
+    protected double shootPauseDuration = 1.25; // tune this
+    protected boolean hasShot = false;
+    protected double settleTime = 0.5;
+    protected Runnable pendingShootAction = null;
     protected int lastSeenChainIndex = -1;
 
     /**
@@ -119,16 +122,25 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
+        int currentIndex = follower.getChainIndex();
+
+        telemetry.addLine("----- AUTO TELEMETRY -----");
         telemetry.addData("index", pathIndex);
         telemetry.addData("pause?", waitingToResume);
         telemetry.addData("pauseActions", pauseActions);
-        int currentIndex = follower.getChainIndex();
+        telemetry.addData("pose", follower.getPose());
+        telemetry.addData("chain index", currentIndex);
+        telemetry.addData("lastSeenChainIndex", lastSeenChainIndex);
+        telemetry.addData("waiting to resume", waitingToResume);
+        telemetry.addData("firedPauseActions", firedPauseActions);
+        telemetry.addData("isBusy", follower.isBusy());
 
         if (currentIndex != lastSeenChainIndex && !waitingToResume) {
             if (pauseActions.containsKey(currentIndex) && !firedPauseActions.contains(currentIndex)) {
                 firedPauseActions.add(currentIndex);
                 follower.pausePathFollowing();
-                Objects.requireNonNull(pauseActions.get(currentIndex)).run();
+                pendingShootAction = pauseActions.get(currentIndex);
+                hasShot = false;
                 shootPauseTimer = new ElapsedTime();
                 waitingToResume = true;
             } else {
@@ -140,10 +152,16 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             }
         }
 
+        if (waitingToResume && !hasShot && shootPauseTimer != null && shootPauseTimer.seconds() > settleTime) {
+            hasShot = true;
+            Objects.requireNonNull(pendingShootAction).run();
+        }
+
         if (waitingToResume && shootPauseTimer != null
                 && shootPauseTimer.seconds() > shootPauseDuration) {
             waitingToResume = false;
             follower.resumePathFollowing();
+            pendingShootAction = null;
 
             if (entryActions.containsKey(currentIndex)
                     && !firedEntryActions.contains(currentIndex)) {
@@ -165,13 +183,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         if (FIREWHEELS_ON) {
             intake.runFireWheels();
         }
-
-        telemetry.addData("pose", follower.getPose());
-        telemetry.addData("chain index", currentIndex);
-        telemetry.addData("lastSeenChainIndex", lastSeenChainIndex);
-        telemetry.addData("waiting to resume", waitingToResume);
-        telemetry.addData("firedPauseActions", firedPauseActions);
-        telemetry.addData("isBusy", follower.isBusy());
 
         flywheel.update();
         intake.update();
@@ -378,7 +389,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, closeShootingPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
+                .setVelocityConstraint(0.8);
         pathIndex++;
 
         // Pause fires when Pedro transitions to the next path (pathIndex is

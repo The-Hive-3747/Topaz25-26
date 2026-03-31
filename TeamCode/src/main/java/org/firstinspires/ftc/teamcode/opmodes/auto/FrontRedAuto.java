@@ -18,7 +18,7 @@ public class FrontRedAuto extends AutoTemplate {
         intake1();
         shootAtClose();
         intake2();
-        shootAtCloseCurved();
+        shootAtClose();
         intake3();
         shootAtClose();
         parkAtFront();
