@@ -14,6 +14,7 @@
 // Include common definitions from above.
 buildscript {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven {
             url "https://repo.dairy.foundation/releases"
@@ -47,10 +48,17 @@ android {
 
 
 dependencies {
+    configurations.all {
+        resolutionStrategy {
+            force 'com.pedropathing:ftc:LOCAL'
+            force 'com.pedropathing:core:LOCAL'
+        }
+    }
     implementation project(':FtcRobotController')
     implementation 'dev.nextftc:ftc:1.0.1'
     implementation 'dev.nextftc:control:1.0.0'
     implementation 'dev.nextftc:bindings:1.0.1'
     implementation 'dev.nextftc:hardware:1.0.1'
+    implementation 'com.pedropathing:ftc:LOCAL'
     implementation 'dev.nextftc.extensions:pedro:1.0.0'
 }

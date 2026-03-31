@@ -53,7 +53,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     boolean FIREWHEELS_ON = false;
 
     // Shoot pause/resume
-    protected ElapsedTime shootPauseTimer = null;
+    protected ElapsedTime shootPauseTimer = new ElapsedTime();
     protected boolean waitingToResume = false;
     protected double shootPauseDuration = 1; // tune this
 
@@ -88,6 +88,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onWaitForStart() {
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
         turret.setTurretStateFixed();
         turret.update();
 
@@ -122,8 +123,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         }
 
         // Resume path following after shoot pause
-        if (waitingToResume && shootPauseTimer != null
-                && shootPauseTimer.seconds() > shootPauseDuration) {
+        if (waitingToResume && shootPauseTimer.seconds() > shootPauseDuration) {
             waitingToResume = false;
             follower.resumePathFollowing();
         }
@@ -309,12 +309,12 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 .addParametricCallback(0.2, this::setTurretFixedClose)
                 .addParametricCallback(0.3, () -> intake.railDown())
                 .addParametricCallback(0.5, this::setHoodPosClose)
-                .addParametricCallback(1.0, () -> {
+                .addParametricCallback(0.9, () -> {
                     follower.pausePathFollowing();
                     FIREWHEELS_ON = true;
                     intake.turnIsShootingTrue();
                     intake.shootAllThree();
-                    shootPauseTimer = new ElapsedTime();
+                    shootPauseTimer.reset();
                     waitingToResume = true;
                 });
 
@@ -333,7 +333,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                     FIREWHEELS_ON = true;
                     intake.turnIsShootingTrue();
                     intake.shootAllThree();
-                    shootPauseTimer = new ElapsedTime();
+                    shootPauseTimer.reset();
                     waitingToResume = true;
                 });
 
@@ -353,7 +353,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                     FIREWHEELS_ON = true;
                     intake.turnIsShootingTrue();
                     intake.shootAllThree();
-                    shootPauseTimer = new ElapsedTime();
+                    shootPauseTimer.reset();
                     waitingToResume = true;
                 });
 

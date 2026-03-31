@@ -398,9 +398,9 @@ public class TopazTeleop extends NextFTCOpMode {
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
         // turret.shootOnTheMove(follower.getVelocity());
 
-        //turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
 
-        //turret.update();
+        turret.update();
 
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,
