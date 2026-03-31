@@ -68,6 +68,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected ElapsedTime shootPauseTimer = null;
     protected boolean waitingToResume = false;
     protected double shootPauseDuration = 1.25; // tune this
+    protected double shootApproachPower = 0.5; // limit speed on approach to shooting pose
     protected boolean hasShot = false;
     protected double settleTime = 0.5;
     protected Runnable pendingShootAction = null;
@@ -161,6 +162,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 && shootPauseTimer.seconds() > shootPauseDuration) {
             waitingToResume = false;
             follower.resumePathFollowing();
+            follower.setMaxPower(1.0);
             pendingShootAction = null;
 
             if (entryActions.containsKey(currentIndex)
@@ -386,11 +388,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             setTurretFixedClose();
             setHoodPosClose();
             intake.railDown();
+            follower.setMaxPower(shootApproachPower);
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, closeShootingPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
-                .setVelocityConstraint(0.8);
+                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading());
         pathIndex++;
 
         // Pause fires when Pedro transitions to the next path (pathIndex is
@@ -410,6 +412,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             setTurretFixedClose();
             setHoodPosClose();
             intake.railDown();
+            follower.setMaxPower(shootApproachPower);
         });
         pathBuilder
                 .addPath(new BezierCurve(lastPose, curveIntake2, closeShootingPose))
@@ -431,11 +434,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             setTurretFixedFar();
             setHoodPosFar();
             intake.railDown();
+            follower.setMaxPower(shootApproachPower);
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, farShootingPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading())
-                .setVelocityConstraint(0.7);
+                .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading());
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {
