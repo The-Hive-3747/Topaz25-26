@@ -58,6 +58,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected PathBuilder pathBuilder;
     protected PathChain allPaths;
     protected int pathIndex = 0;
+    protected double toIntakePower = 0.3;
+    protected double toIntakeBrakeTValue = 0.7;
+    protected double intakePower = 0.9;
+    protected double shootBrakeDistance = 15; // inches from shooting pose to start braking
+    protected double shootBrakePower = 0.4;
 
 
     protected HashMap<Integer, Runnable> pauseActions = new HashMap<>();
@@ -67,9 +72,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected ElapsedTime shootPauseTimer = null;
     protected boolean waitingToResume = false;
-    protected double shootPauseDuration = 1.6; // tune this
+    protected double shootPauseDuration = 1.5; // tune this
     protected boolean hasShot = false;
-    protected double settleTime = 0.4;
+    protected double settleTime = 0.1;
     protected Runnable pendingShootAction = null;
     protected int lastSeenChainIndex = -1;
 
@@ -291,12 +296,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, intake1StartPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), intake1StartPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), intake1StartPose.getHeading())
+                .addParametricCallback(toIntakeBrakeTValue, () -> follower.setMaxPower(toIntakePower));
         pathIndex++;
 
         pathBuilder
                 .addPath(new BezierLine(intake1StartPose, intake1EndPose))
-                .setLinearHeadingInterpolation(intake1StartPose.getHeading(), intake1EndPose.getHeading());
+                .setLinearHeadingInterpolation(intake1StartPose.getHeading(), intake1EndPose.getHeading())
+                .addParametricCallback(0, () -> follower.setMaxPower(intakePower));
         pathIndex++;
 
         lastPose = intake1EndPose;
@@ -310,12 +317,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, intake2StartPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), intake2StartPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), intake2StartPose.getHeading())
+                .addParametricCallback(toIntakeBrakeTValue, () -> follower.setMaxPower(toIntakePower));
         pathIndex++;
 
         pathBuilder
                 .addPath(new BezierLine(intake2StartPose, intake2EndPose))
-                .setLinearHeadingInterpolation(intake2StartPose.getHeading(), intake2EndPose.getHeading());
+                .setLinearHeadingInterpolation(intake2StartPose.getHeading(), intake2EndPose.getHeading())
+                .addParametricCallback(0, () -> follower.setMaxPower(intakePower));
         pathIndex++;
 
         lastPose = intake2EndPose;
@@ -329,12 +338,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, intake3StartPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), intake3StartPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), intake3StartPose.getHeading())
+                .addParametricCallback(toIntakeBrakeTValue, () -> follower.setMaxPower(toIntakePower));
         pathIndex++;
 
         pathBuilder
                 .addPath(new BezierLine(intake3StartPose, intake3EndPose))
-                .setLinearHeadingInterpolation(intake3StartPose.getHeading(), intake3EndPose.getHeading());
+                .setLinearHeadingInterpolation(intake3StartPose.getHeading(), intake3EndPose.getHeading())
+                .addParametricCallback(0, () -> follower.setMaxPower(intakePower));
         pathIndex++;
 
         lastPose = intake3EndPose;
@@ -348,15 +359,44 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, intakeHPStartPose))
-                .setLinearHeadingInterpolation(lastPose.getHeading(), intakeHPStartPose.getHeading());
+                .setLinearHeadingInterpolation(lastPose.getHeading(), intakeHPStartPose.getHeading())
+                .addParametricCallback(toIntakeBrakeTValue, () -> follower.setMaxPower(toIntakePower));
         pathIndex++;
 
         pathBuilder
                 .addPath(new BezierLine(intakeHPStartPose, intakeHPEndPose))
-                .setLinearHeadingInterpolation(intakeHPStartPose.getHeading(), intakeHPEndPose.getHeading());
+                .setLinearHeadingInterpolation(intakeHPStartPose.getHeading(), intakeHPEndPose.getHeading())
+                .addParametricCallback(0, () -> follower.setMaxPower(intakePower));
+
         pathIndex++;
 
         lastPose = intakeHPEndPose;
+    }
+
+    protected void intakeGate() {
+        entryActions.put(pathIndex, () -> {
+            FIREWHEELS_ON = false;
+            intake.firewheelsOff();
+            intake.startIntake();
+        });
+        pathBuilder
+                .addPath(new BezierLine(lastPose, gateIntakeStartPose))
+                .setLinearHeadingInterpolation(lastPose.getHeading(), gateIntakeStartPose.getHeading())
+                .addParametricCallback(toIntakeBrakeTValue, () -> follower.setMaxPower(toIntakePower));
+        pathIndex++;
+
+        pathBuilder
+                .addPath(new BezierLine(gateIntakeStartPose, gateIntakeEndPose))
+                .setLinearHeadingInterpolation(gateIntakeStartPose.getHeading(), gateIntakeEndPose.getHeading())
+                .addParametricCallback(0, () -> follower.setMaxPower(0.4));
+        pathIndex++;
+
+        pauseActions.put(pathIndex, () -> {});
+        entryActions.put(pathIndex, () -> {
+            intake.stopIntake();
+        });
+
+        lastPose = gateIntakeEndPose;
     }
 
     protected void openGate() {
@@ -382,7 +422,15 @@ public abstract class AutoTemplate extends NextFTCOpMode {
      *   pathIndex N:   drive to closeShootingPose (entry action preps turret/hood)
      *   pathIndex N+1: whatever comes next (pause registered here, shoot action runs)
      */
+    private double computeBrakeT(Pose start, Pose end) {
+        double dx = end.getX() - start.getX();
+        double dy = end.getY() - start.getY();
+        double pathLength = Math.sqrt(dx * dx + dy * dy);
+        return Math.max(0, (pathLength - shootBrakeDistance) / pathLength);
+    }
+
     protected void shootAtClose() {
+        double brakeT = computeBrakeT(lastPose, closeShootingPose);
         entryActions.put(pathIndex, () -> {
             setTurretFixedClose();
             setHoodPosClose();
@@ -391,7 +439,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 .addPath(new BezierLine(lastPose, closeShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
                 .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
-                .addParametricCallback(0.7, () -> follower.setMaxPower(0.45));
+                .addParametricCallback(0, () -> follower.setMaxPower(1))
+                .addParametricCallback(brakeT, () -> follower.setMaxPower(shootBrakePower));
         pathIndex++;
 
         // Pause fires when Pedro transitions to the next path (pathIndex is
@@ -406,6 +455,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void shootAtCloseCurved() {
+        double brakeT = computeBrakeT(lastPose, closeShootingPose);
         entryActions.put(pathIndex, () -> {
             setTurretFixedClose();
             setHoodPosClose();
@@ -414,7 +464,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 .addPath(new BezierCurve(lastPose, curveIntake2, closeShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
                 .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
-                .addParametricCallback(0.7, () -> follower.setMaxPower(0.45));
+                .addParametricCallback(brakeT, () -> follower.setMaxPower(shootBrakePower));
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {
@@ -427,15 +477,18 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void shootAtFar() {
+        double brakeT = computeBrakeT(lastPose, farShootingPose);
         entryActions.put(pathIndex, () -> {
             setTurretFixedFar();
+            turnFlywheelOnForBack();
             setHoodPosFar();
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, farShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading())
                 .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
-                .addParametricCallback(0.7, () -> follower.setMaxPower(0.45));
+                .addParametricCallback(0, () -> follower.setMaxPower(0.8))
+                .addParametricCallback(brakeT, () -> follower.setMaxPower(shootBrakePower));
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {

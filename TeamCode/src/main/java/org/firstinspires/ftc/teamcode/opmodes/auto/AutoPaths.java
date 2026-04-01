@@ -9,9 +9,9 @@ public class AutoPaths {
     public static Pose startingPose, curveIntake2, closeShootingPose, intakeHPStartPose, intakeHPEndPose,
             farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose,
             backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose,
-            intake3EndPose, farJigglePose;
+            intake3EndPose, farJigglePose, gateIntakeEndPose, gateIntakeStartPose;
 
-    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
+    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle, gateIntakeAngle;
     public static Alliance alliance;
     public static Follower follower;
     public static boolean customParkPose;
@@ -32,6 +32,11 @@ public class AutoPaths {
         shootAngle = flipHeading180Degrees(180);
         intakeAngle = flipHeading180Degrees(180);
         openGateAngle = Math.toRadians(90);
+        if (alliance == Alliance.BLUE) {
+            gateIntakeAngle = Math.toRadians(165);
+        } else {
+            gateIntakeAngle = Math.toRadians(15);
+        }
 
         // DEFINE POSES
         if (startingPose == null) {
@@ -44,6 +49,8 @@ public class AutoPaths {
         if (!customParkPose) {
             frontParkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
+        gateIntakeStartPose = flipOverCenter(new Pose(30, 55, gateIntakeAngle));
+        gateIntakeEndPose = flipOverCenter(new Pose(17, 59.2, gateIntakeAngle));
         backParkPose = flipOverCenter(new Pose(36.25, 20.5, parkAngle));
         closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
         farShootingPose = flipOverCenter(new Pose(55, 21, shootAngle));
