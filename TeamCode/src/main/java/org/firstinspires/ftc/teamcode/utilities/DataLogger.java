@@ -69,7 +69,7 @@ public class DataLogger implements Component{
         ActiveOpMode.telemetry().addData("Flywheel goal vel","uhh");
         ActiveOpMode.telemetry().addData("hood pos", hoodPos); //hood encoder is on intake
         ActiveOpMode.telemetry().addData("last time shooting",timeShooting);
-        ActiveOpMode.telemetry().update();
+        // ActiveOpMode.telemetry().update();
 
         if (agitator.isBusy() && !isAgitatorRun && !isAgitatorDone) {
             AgitatorTime.reset();

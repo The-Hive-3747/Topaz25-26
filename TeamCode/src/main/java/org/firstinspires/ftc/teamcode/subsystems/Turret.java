@@ -45,8 +45,11 @@ public class Turret implements Component {
     public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 114;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
+    public int turretZone;
+    public double turretZoneMargin = 8.5, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;
+
     double botY, botX;
-    public static double TURRET_PID_KP = 0.017, TURRET_PID_KD = 0.01, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.0;//P:0.038
+    public static double TURRET_PID_KP = 0.01, TURRET_PID_KD = 0.2, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.000000000000000000001;//P:0.038//P:0.017 I:0.0 D:0.01
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1, TURRET_POWER_MIN = 0.05;
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
@@ -105,31 +108,31 @@ public class Turret implements Component {
             turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
             turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
         }
+
         botY = this.currentPose.getY();
         botX = this.currentPose.getX();
-        if (botY >=63.5 ) { //New code for turning off/on for launch zones
-            if (botX<72 && botY >= -botX + 135.5) {
-                this.setTurretPower(turretPower);
+         //New code for turning off/on for launch zones
+            if (botX< midPointX && botY >= -botX + endPointY - turretZoneMargin) {
+                currentState = turretState.AUTO;
+                turretZone = 1;
             }
-            if (botX>= 72 && botY >= botX - 8.5) {
-                this.setTurretPower(turretPower);
+            else if (botX>= midPointX && botY >= botX - turretZoneMargin) {
+                currentState = turretState.AUTO;
+                turretZone = 2;
             }
-            else{
+
+            else if (botX<midPointX && botY <= botX - midPointX + farZoneHeight + turretZoneMargin) {
+                currentState = turretState.AUTO;
+                turretZone = 3;
+            }
+            else if (botX >= midPointX && botY <= -botX + midPointX + farZoneHeight + turretZoneMargin) {
+                currentState = turretState.AUTO;
+                turretZone = 4;
+            } else {
                 currentState = turretState.OFF;
+                turretZone = 0;
             }
-        } else if (botY <=32.5) {
-            if (botX<72 && botY <= botX - 39.5) {
-                this.setTurretPower(turretPower);
-            }
-            if (botX >= 72 && botY <= -botX + 104.5) {
-                this.setTurretPower(turretPower);
-            }
-            else {
-                currentState = turretState.OFF;
-            }
-        } else{
-            this.setTurretPower(turretPower);
-        }
+        this.setTurretPower(turretPower);
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
@@ -140,11 +143,14 @@ public class Turret implements Component {
         //this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
+        ActiveOpMode.telemetry().addData("TURRET zone", turretZone);
+        ActiveOpMode.telemetry().addData("TURRET pose", this.currentPose);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
         ActiveOpMode.telemetry().addData("TURRET power", turretPower);
         ActiveOpMode.telemetry().addData("TURRET angle", this.getTurretAngle());
         ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
         ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
+
         //ActiveOpMode.telemetry().addData("TURRET vel", thruTurret.getVelocity());
     }
 

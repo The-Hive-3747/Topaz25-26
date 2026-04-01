@@ -176,6 +176,7 @@ public class TopazTeleop extends NextFTCOpMode {
 
         turret.setAlliance(alliance);
         aimbot.setAlliance(alliance);
+        turret.setTurretStateAuto();
 
         Button g2X = button(() -> gamepad2.x);
         Button g2Y = button(() -> gamepad2.y);
@@ -229,9 +230,9 @@ public class TopazTeleop extends NextFTCOpMode {
 
         g1Left.whenBecomesTrue(() -> turret.turretStateBackward());
 
-        g1Y.toggleOnBecomesTrue()
+        /*g1Y.toggleOnBecomesTrue()
                         .whenBecomesTrue(() -> turret.setTurretStateoff())
-                        .whenBecomesFalse(() -> turret.setTurretStateAuto());
+                        .whenBecomesFalse(() -> turret.setTurretStateAuto());*/
 
         g1RT.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> slowModeMultiplier = 0.5)
@@ -337,9 +338,12 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.update(follower.getHeading(), slowModeMultiplier);
         looptime.reset();
         follower.update();
+
+        dataLogger.setCurrentPose(follower.getPose());
         dataLogger.addAimbot(aimbot);
         dataLogger.addTurret(turret);
         dataLogger.update();
+
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
@@ -398,9 +402,9 @@ public class TopazTeleop extends NextFTCOpMode {
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
         // turret.shootOnTheMove(follower.getVelocity());
 
-        //turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
 
-        //turret.update();
+        turret.update();
 
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,
@@ -430,7 +434,6 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
         panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
         panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
-
 
         telemetry.addData("limelight correction", limelightCorrection);
         telemetry.addData("limelight relocalized", limelightRelocalized);
