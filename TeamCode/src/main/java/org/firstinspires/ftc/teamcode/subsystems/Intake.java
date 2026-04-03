@@ -1,15 +1,19 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
 import org.firstinspires.ftc.teamcode.utilities.Artifact;
+import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
@@ -20,6 +24,8 @@ import dev.nextftc.ftc.ActiveOpMode;
 public class Intake implements Component {
     DcMotor intakeMotor;
     DcMotorEx agitator;
+    TurretLights prismLights;
+    GoBildaPrismDriver prism;
     NormalizedColorSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
@@ -56,6 +62,7 @@ public class Intake implements Component {
 
     YCbCr frontValues, rightValues, leftValues;
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
+    TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
 
     @Override
@@ -71,8 +78,8 @@ public class Intake implements Component {
         frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");
         rightColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "rightColor");
         leftColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "leftColor");
+        prism = ActiveOpMode.hardwareMap().get(GoBildaPrismDriver.class, "prism");
         isIntakeOn = false;
-
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
 
@@ -281,6 +288,7 @@ public class Intake implements Component {
         leftValues.cL = 0.001;
     }
 
+
     public Command stopIntake = new LambdaCommand()
             .setStart(() -> {
                 isIntakeOn = false;
@@ -395,6 +403,9 @@ public class Intake implements Component {
         latchRightColorSensor();
         latchLeftColorSensor();
 
+        panelsTelemetry.addData("front artifact", frontArtifact);
+        panelsTelemetry.addData("right artifact", rightArtifact);
+        panelsTelemetry.addData("left artifact", leftArtifact);
         ActiveOpMode.telemetry().addData("front artifact", frontArtifact);
         ActiveOpMode.telemetry().addData("right artifact", rightArtifact);
         ActiveOpMode.telemetry().addData("left artifact", leftArtifact);
@@ -433,5 +444,16 @@ public class Intake implements Component {
             agitator.setPower(0);
             agitatorResetRequest = false;
         }
+
+        /*if(rightArtifact == Artifact.GREEN){
+            prismLights.gPP();
+        }
+        if(frontArtifact == Artifact.PURPLE){
+            prismLights.pPG();
+        }
+        if(frontArtifact == Artifact.GREEN){
+            prismLights.pGP();
+        }*/
+
     }
 }
