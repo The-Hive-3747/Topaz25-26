@@ -15,14 +15,7 @@ public class FrontRedAuto extends AutoTemplate {
         beginPathBuilding();
 
         shootAtClose();
-        intake2();
-        shootAtClose();
-        intakeGate();
-        shootAtClose();
-        intakeGate();
-        shootAtClose();
-        intake1();
-        shootAtClose();
-        parkAtFront();
+        intake1Sidespike();
+        shootAtCloseAndPark();
     }
 }

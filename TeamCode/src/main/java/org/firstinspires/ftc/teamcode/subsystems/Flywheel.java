@@ -30,7 +30,7 @@ public class Flywheel implements Component {
     ControlSystem largeFlywheelPID;
     CRServo leftFireServo;
     Hood hood;
-    public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 3050; //UPDATED TO RPM
+    public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 2980; //3050
     public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 3900; //UPDATED TO RPM
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;

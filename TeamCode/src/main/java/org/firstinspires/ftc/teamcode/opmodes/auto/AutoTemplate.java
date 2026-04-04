@@ -10,7 +10,9 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
+import org.firstinspires.ftc.teamcode.utilities.AimbotValues;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
@@ -58,11 +60,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected PathBuilder pathBuilder;
     protected PathChain allPaths;
     protected int pathIndex = 0;
-    protected double toIntakePower = 0.3;
+    protected double toIntakePower = 0.5;
     protected double toIntakeBrakeTValue = 0.7;
-    protected double intakePower = 0.9;
-    protected double shootBrakeDistance = 15; // inches from shooting pose to start braking
-    protected double shootBrakePower = 0.4;
+    protected double intakePower = 1;
+    protected double shootBrakeDistance = 18; // inches from shooting pose to start braking
+    protected double shootBrakePower = 0.45;
 
 
     protected HashMap<Integer, Runnable> pauseActions = new HashMap<>();
@@ -72,9 +74,12 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected ElapsedTime shootPauseTimer = null;
     protected boolean waitingToResume = false;
-    protected double shootPauseDuration = 1.5; // tune this
+    protected double shootPauseDuration = 1.4; // tune this
+    protected double gatePauseDuration = 1.1; // tune this
+    protected HashMap<Integer, Double> pauseDurations = new HashMap<>();
     protected boolean hasShot = false;
-    protected double settleTime = 0.1;
+    protected double settleTime = 0; //0.2
+    protected double currentPauseDuration = 0;
     protected Runnable pendingShootAction = null;
     protected int lastSeenChainIndex = -1;
 
@@ -145,6 +150,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 firedPauseActions.add(currentIndex);
                 follower.pausePathFollowing();
                 pendingShootAction = pauseActions.get(currentIndex);
+                currentPauseDuration = pauseDurations.getOrDefault(currentIndex, shootPauseDuration);
                 hasShot = false;
                 shootPauseTimer = new ElapsedTime();
                 waitingToResume = true;
@@ -163,7 +169,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         }
 
         if (waitingToResume && shootPauseTimer != null
-                && shootPauseTimer.seconds() > shootPauseDuration) {
+                && shootPauseTimer.seconds() > currentPauseDuration) {
             waitingToResume = false;
             follower.resumePathFollowing();
             follower.setMaxPower(1.0);
@@ -221,6 +227,57 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         HOOD_POS = Hood.HOOD_AUTON_FAR_POS;
     }
 
+    /**
+     * Computes turret angle from closeShootAndParkPose to the goal,
+     * using the same formula as Turret.getAutoAimGoalAngle().
+     */
+    protected void setTurretFixedClosePark() {
+        double goalX, goalY;
+        if (alliance == Alliance.RED) {
+            goalX = 144; goalY = 144;
+        } else {
+            goalX = 0; goalY = 144;
+        }
+        double fieldAngle = Math.atan2(
+                goalY - closeShootAndParkPose.getY(),
+                goalX - closeShootAndParkPose.getX());
+        double turretAngle = Math.toDegrees(
+                Turret.normalizeAngle(fieldAngle - closeShootAndParkPose.getHeading() + Math.PI));
+        turret.setFixedAngleCustom(turretAngle);
+    }
+
+    /**
+     * Computes distance from closeShootAndParkPose to the aimbot goal,
+     * then looks up hood position from the Aimbot table.
+     */
+    protected void setHoodPosClosePark() {
+        HOOD_POS = getAimValuesForClosePark().hoodPos;
+    }
+
+    /**
+     * Sets flywheel velocity based on distance from closeShootAndParkPose
+     * to the aimbot goal, looked up from the Aimbot table.
+     */
+    protected void turnFlywheelOnForClosePark() {
+        flywheelVel = getAimValuesForClosePark().velocity;
+    }
+
+    private AimbotValues getAimValuesForClosePark() {
+        double aGoalX, aGoalY;
+        if (alliance == Alliance.RED) {
+            aGoalX = 120; aGoalY = 129;
+        } else {
+            aGoalX = 20; aGoalY = 129;
+        }
+        double dist = Math.sqrt(
+                Math.pow(aGoalX - closeShootAndParkPose.getX(), 2)
+              + Math.pow(aGoalY - closeShootAndParkPose.getY(), 2));
+
+        Aimbot aimbot = new Aimbot();
+        aimbot.setAlliance(alliance);
+        return aimbot.getAimValues(dist);
+    }
+
     protected void startAsBlue() {
         alliance = Alliance.BLUE;
         AutoPaths.alliance = alliance;
@@ -271,9 +328,23 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         pathBuilder.setGlobalDeceleration();
         pathIndex = 0;
         pauseActions.clear();
+        pauseDurations.clear();
         entryActions.clear();
         firedEntryActions.clear();
         firedPauseActions.clear();
+    }
+
+    /**
+     * Adds an entry action at the given index. If one already exists,
+     * composes them so both run (existing first, then new).
+     */
+    protected void addEntryAction(int index, Runnable action) {
+        Runnable existing = entryActions.get(index);
+        if (existing != null) {
+            entryActions.put(index, () -> { existing.run(); action.run(); });
+        } else {
+            entryActions.put(index, action);
+        }
     }
 
     protected void turnFlywheelOnForFront() {
@@ -289,7 +360,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void intake1() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             intake.startIntake();
@@ -309,8 +380,29 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = intake1EndPose;
     }
 
+    protected void intake1Sidespike() {
+        addEntryAction(pathIndex, () -> {
+            FIREWHEELS_ON = false;
+            intake.firewheelsOff();
+            intake.startIntake();
+        });
+        pathBuilder
+                .addPath(new BezierLine(lastPose, intake1SidespikeStartPose))
+                .setLinearHeadingInterpolation(lastPose.getHeading(), intake1SidespikeStartPose.getHeading())
+                .addParametricCallback(toIntakeBrakeTValue, () -> follower.setMaxPower(0.6));
+        pathIndex++;
+
+        pathBuilder
+                .addPath(new BezierCurve(intake1SidespikeStartPose, intake1SidespikeCurvePose, intake1SidespikeEndPose))
+                .setLinearHeadingInterpolation(intake1SidespikeStartPose.getHeading(), intake1SidespikeEndPose.getHeading())
+                .addParametricCallback(0, () -> follower.setMaxPower(1));
+        pathIndex++;
+
+        lastPose = intake1SidespikeEndPose;
+    }
+
     protected void intake2() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             intake.startIntake();
@@ -331,7 +423,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void intake3() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             intake.startIntake();
@@ -352,7 +444,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void intakeHP() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             intake.startIntake();
@@ -374,7 +466,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void intakeGate() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             intake.startIntake();
@@ -388,19 +480,18 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         pathBuilder
                 .addPath(new BezierLine(gateIntakeStartPose, gateIntakeEndPose))
                 .setLinearHeadingInterpolation(gateIntakeStartPose.getHeading(), gateIntakeEndPose.getHeading())
-                .addParametricCallback(0, () -> follower.setMaxPower(0.4));
+                .addParametricCallback(0, () -> follower.setMaxPower(0.5));
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {});
-        entryActions.put(pathIndex, () -> {
-            intake.stopIntake();
-        });
+        pauseDurations.put(pathIndex, gatePauseDuration);
+        addEntryAction(pathIndex, () -> intake.stopIntake());
 
         lastPose = gateIntakeEndPose;
     }
 
     protected void openGate() {
-        entryActions.put(pathIndex, () -> intake.stopIntakeNoReverse());
+        addEntryAction(pathIndex, () -> intake.stopIntakeNoReverse());
         pathBuilder
                 .addPath(new BezierLine(lastPose, openGateStartPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), openGateStartPose.getHeading());
@@ -431,16 +522,16 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void shootAtClose() {
         double brakeT = computeBrakeT(lastPose, closeShootingPose);
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             setTurretFixedClose();
             setHoodPosClose();
         });
         pathBuilder
                 .addPath(new BezierLine(lastPose, closeShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
-                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); FIREWHEELS_ON = true; })
                 .addParametricCallback(0, () -> follower.setMaxPower(1))
-                .addParametricCallback(brakeT, () -> follower.setMaxPower(shootBrakePower));
+                .addParametricCallback(brakeT, () -> follower.setMaxPower(0.35));
         pathIndex++;
 
         // Pause fires when Pedro transitions to the next path (pathIndex is
@@ -454,17 +545,62 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = closeShootingPose;
     }
 
+    protected void shootAtCloseAndPark() {
+        double brakeT = computeBrakeT(lastPose, closeShootAndParkPose);
+        addEntryAction(pathIndex, () -> {
+            setTurretFixedClosePark();
+            setHoodPosClosePark();
+            turnFlywheelOnForClosePark();
+        });
+        pathBuilder
+                .addPath(new BezierLine(lastPose, closeShootAndParkPose))
+                .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootAndParkPose.getHeading())
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); FIREWHEELS_ON = true; })
+                .addParametricCallback(0, () -> follower.setMaxPower(1))
+                .addParametricCallback(brakeT, () -> follower.setMaxPower(0.6));
+        pathIndex++;
+
+        // Dummy path so Pedro has a next segment to transition to, triggering the pause
+        Pose nudge = new Pose(
+                closeShootAndParkPose.getX(),
+                closeShootAndParkPose.getY() - 0.5,
+                closeShootAndParkPose.getHeading());
+        pathBuilder
+                .addPath(new BezierLine(closeShootAndParkPose, nudge))
+                .setConstantHeadingInterpolation(closeShootAndParkPose.getHeading());
+        pathIndex++;
+
+        // Pause fires when Pedro transitions past the drive path
+        pauseActions.put(pathIndex - 1, () -> {
+            FIREWHEELS_ON = true;
+            intake.turnIsShootingTrue();
+            intake.shootAllThree();
+        });
+
+        // After the shoot pause ends, clean up like a park
+        addEntryAction(pathIndex - 1, () -> {
+            FIREWHEELS_ON = false;
+            intake.firewheelsOff();
+            HOOD_POS = 0;
+            flywheelVel = 0;
+            turret.setFixedAngleCustom(0);
+        });
+
+        lastPose = closeShootAndParkPose;
+    }
+
     protected void shootAtCloseCurved() {
         double brakeT = computeBrakeT(lastPose, closeShootingPose);
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             setTurretFixedClose();
             setHoodPosClose();
         });
         pathBuilder
                 .addPath(new BezierCurve(lastPose, curveIntake2, closeShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), closeShootingPose.getHeading())
-                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
-                .addParametricCallback(brakeT, () -> follower.setMaxPower(shootBrakePower));
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); FIREWHEELS_ON = true; })
+                .addParametricCallback(0, () -> follower.setMaxPower(1))
+                .addParametricCallback(brakeT, () -> follower.setMaxPower(0.6));
         pathIndex++;
 
         pauseActions.put(pathIndex, () -> {
@@ -478,7 +614,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void shootAtFar() {
         double brakeT = computeBrakeT(lastPose, farShootingPose);
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             setTurretFixedFar();
             turnFlywheelOnForBack();
             setHoodPosFar();
@@ -486,7 +622,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         pathBuilder
                 .addPath(new BezierLine(lastPose, farShootingPose))
                 .setLinearHeadingInterpolation(lastPose.getHeading(), farShootingPose.getHeading())
-                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); })
+                .addParametricCallback(0.3, () -> { intake.stopIntakeNoReverse(); intake.railDown(); FIREWHEELS_ON = true; })
                 .addParametricCallback(0, () -> follower.setMaxPower(0.8))
                 .addParametricCallback(brakeT, () -> follower.setMaxPower(shootBrakePower));
         pathIndex++;
@@ -501,7 +637,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void parkAtFront() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             HOOD_POS = 0;
@@ -517,7 +653,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void parkAtBack() {
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             FIREWHEELS_ON = false;
             intake.firewheelsOff();
             HOOD_POS = 0;
@@ -537,7 +673,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.setFrontParkPose(park);
         AutoPaths.setParkAngle(park.getHeading());
 
-        entryActions.put(pathIndex, () -> {
+        addEntryAction(pathIndex, () -> {
             turret.setTurretAngle(0);
             intake.firewheelsOff();
             flywheelVel = 0;

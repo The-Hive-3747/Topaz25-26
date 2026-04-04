@@ -83,6 +83,7 @@ public class Intake implements Component {
 
     public void startRailDex() {
         isShooting = true;
+        shotTimer.reset();
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
         agitator.setTargetPosition(AGITATOR_ENC);
@@ -156,7 +157,9 @@ public class Intake implements Component {
 
     public void stopIntakeNoReverse() {
         isIntakeOn = false;
-        intakeMotor.setPower(0);
+        if (!intakeReversed) {
+            intakeMotor.setPower(0);
+        }
     }
 
     public void turnAgitator() {
@@ -340,7 +343,7 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
         ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
 
-        if (isShooting && !agitator.isBusy()) {
+        if (isShooting && shotTimer.milliseconds() > 150 && !agitator.isBusy()) {
             isShooting = false;
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
