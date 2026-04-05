@@ -29,6 +29,8 @@ public class Intake implements Component {
     NormalizedColorSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
+    ElapsedTime colorTimer = new ElapsedTime();
+    private double COLOR_CHECK_MS = 200;
     static boolean isIntakeOn = false;
     double INTAKE_POWER = 0.9;
     double INTAKE_SHOOTING_POWER = 0.9;
@@ -398,10 +400,13 @@ public class Intake implements Component {
 
 
     public void update() {
-        getAllColorSensorValues();
-        latchFrontColorSensor();
-        latchRightColorSensor();
-        latchLeftColorSensor();
+        if(colorTimer.milliseconds() > COLOR_CHECK_MS) {
+            getAllColorSensorValues();
+            latchFrontColorSensor();
+            latchRightColorSensor();
+            latchLeftColorSensor();
+            colorTimer.reset();
+        }
 
         panelsTelemetry.addData("front artifact", frontArtifact);
         panelsTelemetry.addData("right artifact", rightArtifact);

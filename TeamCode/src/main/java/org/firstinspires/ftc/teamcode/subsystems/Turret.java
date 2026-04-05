@@ -34,6 +34,7 @@ public class Turret implements Component {
     }
     turretState currentState = turretState.AUTO;
     Alliance alliance;
+    private double turretAngleCached = 0;
     private double fieldCentricGoalAngle, goalX, goalY, turretPower, turretGoalNotInLimits, heading;
     private KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
@@ -49,9 +50,14 @@ public class Turret implements Component {
     public double turretZoneMargin = 8.5, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;
 
     double botY, botX;
-    public static double TURRET_PID_KP = 0.01, TURRET_PID_KD = 0.2, TURRET_PID_KS = 0.08, TURRET_PID_KI = 0.000000000000000000001;//P:0.038//P:0.017 I:0.0 D:0.01
+    public static double TURRET_PID_KP = 0.008;//0.01; //0.038; //0.017;
+    public static double TURRET_PID_KD = 1.0;//0.1;//0.001;//0.2; //0.01;
+    public static double TURRET_PID_KS = 0.09;//0.08;
+    public static double TURRET_PID_KI = 10;//0;//0.000000000000000000001;//0.0;
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
-    private final double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1, TURRET_POWER_MIN = 0.05;
+    public static double TURRET_ANGLE_GO_FAST = 20;//3;
+    public static double TURRET_POWER_GO_FAST = 0.9;
+    private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 0.5, TURRET_POWER_MIN = 0.05;//D: 1
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
     ControlSystem turretPID, turretSecPID;
 
@@ -75,7 +81,7 @@ public class Turret implements Component {
         currentState = turretState.AUTO;
         turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
-                .basicFF(0, 0, TURRET_PID_KS)
+                //.basicFF(0, 0, TURRET_PID_KS)
                 .build();
         turretGoalNotInLimits = 0;
     }
@@ -91,6 +97,14 @@ public class Turret implements Component {
     }
 
     public void update() {
+        //update cached information
+        turretAngleCached=-((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
+
+        turretPID = ControlSystem.builder()
+                .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
+                //.basicFF(0, 0, TURRET_PID_KS)
+                .build();
+
         if (currentState == turretState.AUTO) {
             turretPID.setGoal(getAutoAimGoalAngle());
             angleAfterOffset = new KineticState((2*getTurretGoal())- turretOffset);
@@ -105,8 +119,15 @@ public class Turret implements Component {
         if (Math.abs(this.getTurretAngle() - this.getTurretGoal()) < TURRET_ANGLE_DEADZONE) {
             turretPower = 0;
         }else if (turretState.OFF != currentState){
+            //calculate the turret power because both use it
             turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
-            turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
+            //if we are too far away from being pointed away from the goal, go fast.
+            if(Math.abs(this.getTurretAngle() - this.getTurretGoal()) > TURRET_ANGLE_GO_FAST){
+                turretPower = Math.signum(turretPower) * TURRET_POWER_GO_FAST;
+            } else {
+                //if we are close use the PID to line up carefully
+                turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
+            }
         }
 
         botY = this.currentPose.getY();
@@ -215,7 +236,7 @@ public class Turret implements Component {
      * IN DEGREES
      */
     public double getTurretAngle() {
-        return -((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
+        return turretAngleCached; //-((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
     }
 
     /**

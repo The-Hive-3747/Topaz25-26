@@ -6,6 +6,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -27,10 +28,13 @@ import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
+import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name="topaz teleop")
@@ -96,6 +100,7 @@ public class TopazTeleop extends NextFTCOpMode {
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     public ElapsedTime lightTimer = new ElapsedTime();
     Button g2A;
+    List<LynxModule> allHubs;
 
 
     //GraphManager graphManager = PanelsGraph.INSTANCE.getManager();
@@ -107,6 +112,7 @@ public class TopazTeleop extends NextFTCOpMode {
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
+
 
 
 
@@ -332,9 +338,19 @@ public class TopazTeleop extends NextFTCOpMode {
 
         //g1LT.whenBecomesTrue(() -> turretLights.redAlliance());
 
+        //turning on bulk mode to reduce critical loop time
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for(LynxModule hub : allHubs){
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
     }
     @Override
     public void onUpdate() {
+        //this must occur when using manual caching or we see the same values each loop
+        for(LynxModule module : allHubs){
+            module.clearBulkCache();
+        }
         drive.update(follower.getHeading(), slowModeMultiplier);
         looptime.reset();
         follower.update();
@@ -427,15 +443,21 @@ public class TopazTeleop extends NextFTCOpMode {
         //graphManager.update();
 
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        panelsTelemetry.addData("hood position", flywheel.getHoodPos());
+        panelsTelemetry.addData("hood goal", flywheel.getHoodGoal());
+        panelsTelemetry.addData("hub number", allHubs.toArray().length);
         panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
         panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
+        panelsTelemetry.addData("Critical loop time", looptime);
+        panelsTelemetry.addData("Highset loop time", highestLooptime);
         panelsTelemetry.addData("flywheel power", flywheel.getPower());
         panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
         panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
         panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
 
-        telemetry.addData("limelight correction", limelightCorrection);
+
+        /*telemetry.addData("limelight correction", limelightCorrection);
         telemetry.addData("limelight relocalized", limelightRelocalized);
         telemetry.addData("hood pose", flywheel.getHoodPosition());
         //telemetry.addData("Limelight fresh",limelight.isDataFresh());
@@ -448,7 +470,7 @@ public class TopazTeleop extends NextFTCOpMode {
         telemetry.addData("Is Intake on: ", isIntakeOn);
         telemetry.addData("Is Intake Reversed: ", isIntakeReversed);
         telemetry.addData("Is Flywheel on: ", FLYWHEEL_ON);
-        telemetry.addData("Is Transfer on: ", isTransferOn);
+        telemetry.addData("Is Transfer on: ", isTransferOn);*/
         panelsTelemetry.update(telemetry);
     }
 

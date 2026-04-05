@@ -21,10 +21,16 @@ import dev.nextftc.ftc.ActiveOpMode;
 // This is a component file for the flywheel / shooter.
 public class Flywheel implements Component {
 
+
     DcMotorEx flywheelRight, flywheelLeft;
     static double correct, flywheelVel, targetVel;
-    static int countPerRevolution = 8192;
+    static int TICKS_PER_REVOLUTION_REV_THRU = 8192;
+    static int TICKS_PER_REVOLUTION_MELONBOTICS_THRU = 4096;
+    static int TICKS_PER_REVOLUTION_GOBUILDA_YELLOWJACKET_6000_RPM = 28;
+    static int TICKS_PER_REVOLUTION = TICKS_PER_REVOLUTION_MELONBOTICS_THRU;
     public double convertedVel;
+    double currentVel;
+    boolean USE_VEL_CALC_RPM = true;
     double currentPosition, pastPosition = 0, currentTime, pastTime = 0, deltaTime, deltaPosition;
     private final ElapsedTime flywheelVelocityTimer = new ElapsedTime();
     ControlSystem largeFlywheelPID;
@@ -37,8 +43,9 @@ public class Flywheel implements Component {
     public static double FLYWHEEL_PID_KS = 0.07; //JEM: 0.05;//0.135;
     public static double FLYWHEEL_PID_KD = 1;
     public static double FLYWHEEL_PID_KI = 0;
+    public static boolean USE_BANG_BANG = true;
     double targetAdjust = 0;
-    double READY_VEL_THRESHOLD = 200; // UPDATED TO RPM
+    double READY_VEL_THRESHOLD = 200; // UPDATED TO// RPM
 
     @Override
     public void postInit() { // this runs AFTER the init, it runs just once
@@ -51,14 +58,13 @@ public class Flywheel implements Component {
         leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
         leftFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        flywheelRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        flywheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
         flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         hood = new Hood(flywheelRight);
         hood.init();
@@ -162,26 +168,40 @@ public class Flywheel implements Component {
      *
      * @return gets flywheel motor velocity
      */
-    public double getVel() {
+    private void getVelCache() {
+        //NOTE: We are caching the basis for this value (currentVel). Do not read more than you need to.
+        //TODO: Note that a REV Encoder turning at high speed exceeds the capability of the 16 bit
+        // velocity register, due to its large (8k) number of ticks per rotation. If you use a
+        // REV encoder, you will need to use the position register, which has 32 bits of resolution
+        // and then calculate a speed. However, this will average speed over your critical loop time
+        // and may not be as responsive as desired.
         // unfortunately the encoder we're using is extremely chopped and reads random negative values
         // when using flywheelTop.getVelocity().
         // instead, we're manually calculating the flywheel velocity by getting the distance & time
         // delta distance / delta time = velocity
         // (delta means difference between)
 
-        currentTime = flywheelVelocityTimer.seconds();
-        currentPosition = flywheelLeft.getCurrentPosition();
-        deltaPosition = currentPosition - pastPosition;
-        deltaTime = currentTime - pastTime;
+        if(USE_VEL_CALC_RPM) {
+            currentTime = flywheelVelocityTimer.seconds();
+            currentPosition = flywheelLeft.getCurrentPosition();
+            deltaPosition = currentPosition - pastPosition;
+            deltaTime = currentTime - pastTime;
 
-        convertedVel = ((deltaPosition / deltaTime) / countPerRevolution) * 60; //to convert to RPM (60 for seconds)
+            convertedVel = -((deltaPosition / deltaTime) / TICKS_PER_REVOLUTION) * 60; //to convert to RPM (60 for seconds)
 
-        pastPosition = currentPosition;
-        pastTime = currentTime;
+            pastPosition = currentPosition;
+            pastTime = currentTime;
 
-        return -convertedVel;
+
+            return;
+        }
+        convertedVel = -(currentVel / TICKS_PER_REVOLUTION) * 60;
+        return;
     }
 
+    public double getVel(){
+        return convertedVel;
+    }
 
     /**
      *
@@ -201,21 +221,35 @@ public class Flywheel implements Component {
 
     // simple update function. telling the controller the robot's current velocity, and it returns a motor power
     public void update() {
+        //cache this value so we don't read it multiple times
+        currentVel = flywheelLeft.getVelocity();
+        getVelCache();
+
+        //start update calculations
         flywheelVel = this.getVel();
 
-        // correct is the motor power we need to set!
-        correct = largeFlywheelPID.calculate( // calculate() lets us plug in current vals and outputs a motor power
-                new KineticState(0, flywheelVel) // a KineticState is NextFTC's way of storing position, velocity, and acceleration all in one variable
-        );
 
-        // setting constraints on our motor power so its not above 1 and not below 0
-        if (targetVel != 0) {
-            if (correct < 0) {
+        if(!USE_BANG_BANG) {
+            // correct is the motor power we need to set!
+            correct = largeFlywheelPID.calculate( // calculate() lets us plug in current vals and outputs a motor power
+                    new KineticState(0, flywheelVel) // a KineticState is NextFTC's way of storing position, velocity, and acceleration all in one variable
+            );
+
+            // setting constraints on our motor power so its not above 1 and not below 0
+            if (targetVel != 0) {
+                if (correct < 0) {
+                    correct = 0;
+                }
+                correct = Math.min(0.9, correct);
+            } else {
                 correct = 0;
             }
-            correct = Math.min(0.9, correct);
-        } else {
-            correct = 0;
+        }else{ // USE BANG BANG
+            if(targetVel > flywheelVel && targetVel > 0){
+                correct = 0.9;
+            }else{
+                correct = 0;
+            }
         }
 
         this.setPower(correct);
