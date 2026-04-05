@@ -25,6 +25,13 @@ public class Aimbot implements Component{
     Alliance alliance;
     AimbotValues currentAimValues;
 
+    public double getGoalX(){
+        return goalX;
+    }
+    public double getGoalY(){
+        return goalY;
+    }
+
     public void preInit() {
 
     }

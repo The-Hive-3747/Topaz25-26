@@ -30,7 +30,8 @@ public class Turret implements Component {
         OFF,
         FORWARD,
         AUTO,
-        FIXED
+        FIXED,
+        MOVE_N_SHOOT
     }
     turretState currentState = turretState.AUTO;
     Alliance alliance;
@@ -55,6 +56,7 @@ public class Turret implements Component {
     public static double TURRET_PID_KS = 0.09;//0.08;
     public static double TURRET_PID_KI = 10;//0;//0.000000000000000000001;//0.0;
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
+    private double shootingGoal = 0;
     public static double TURRET_ANGLE_GO_FAST = 20;//3;
     public static double TURRET_POWER_GO_FAST = 0.9;
     private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 0.5, TURRET_POWER_MIN = 0.05;//D: 1
@@ -112,6 +114,8 @@ public class Turret implements Component {
             turretPID.setGoal(ZERO_ANGLE);
         } else if (currentState == turretState.FIXED){  //This is the autonomous fixed position for shooting
             turretPID.setGoal(FIXED_ANGLE);
+        }else if(currentState == turretState.MOVE_N_SHOOT){
+            turretPID.setGoal(new KineticState(shootingGoal));
         } else {
             // this is when the TurretState is Off
             turretPower = 0;
@@ -133,26 +137,24 @@ public class Turret implements Component {
         botY = this.currentPose.getY();
         botX = this.currentPose.getX();
          //New code for turning off/on for launch zones
-            if (botX< midPointX && botY >= -botX + endPointY - turretZoneMargin) {
+        if(turretState.AUTO == currentState || turretState.OFF == currentState) {
+            if (botX < midPointX && botY >= -botX + endPointY - turretZoneMargin) {
                 currentState = turretState.AUTO;
                 turretZone = 1;
-            }
-            else if (botX>= midPointX && botY >= botX - turretZoneMargin) {
+            } else if (botX >= midPointX && botY >= botX - turretZoneMargin) {
                 currentState = turretState.AUTO;
                 turretZone = 2;
-            }
-
-            else if (botX<midPointX && botY <= botX - midPointX + farZoneHeight + turretZoneMargin) {
+            } else if (botX < midPointX && botY <= botX - midPointX + farZoneHeight + turretZoneMargin) {
                 currentState = turretState.AUTO;
                 turretZone = 3;
-            }
-            else if (botX >= midPointX && botY <= -botX + midPointX + farZoneHeight + turretZoneMargin) {
+            } else if (botX >= midPointX && botY <= -botX + midPointX + farZoneHeight + turretZoneMargin) {
                 currentState = turretState.AUTO;
                 turretZone = 4;
             } else {
                 currentState = turretState.OFF;
                 turretZone = 0;
             }
+        }
         this.setTurretPower(turretPower);
 
         // limit the turret power to our Turret Power Limit
@@ -224,6 +226,12 @@ public class Turret implements Component {
     public void setTurretAngle(double goal) {
         currentState = turretState.FORWARD;
         turretPID.setGoal(new KineticState(goal));
+    }
+
+    public void setTurretShootAngle(double goal){
+        shootingGoal = normalizeAngle(goal + 180);
+        currentState = turretState.MOVE_N_SHOOT;
+        turretPID.setGoal(new KineticState(shootingGoal));
     }
 
     public turretState getTurretState() {
