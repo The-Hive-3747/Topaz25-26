@@ -28,7 +28,7 @@ public class Hood{
 
     private static double HOOD_MAX_POS = 8858;
     private double HOOD_MIN_POS = 0;
-    private static double HOOD_INCREMENT = 100;
+    private static double HOOD_INCREMENT = 1000;
     public static double AUTON_HOOD_POS = 1353;//1453
     private double power = 0;
     double hoodAdjust = 0.0;
