@@ -358,6 +358,7 @@ public class TopazTeleop extends NextFTCOpMode {
         dataLogger.setCurrentPose(follower.getPose());
         dataLogger.addAimbot(aimbot);
         dataLogger.addTurret(turret);
+        dataLogger.addFlywheel(flywheel);
         dataLogger.update();
 
 

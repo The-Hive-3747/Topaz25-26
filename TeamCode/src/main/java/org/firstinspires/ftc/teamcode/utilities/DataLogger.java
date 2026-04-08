@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 
 
 import java.io.File;
@@ -40,6 +41,7 @@ public class DataLogger implements Component{
     private File dataLog;
     private Aimbot aimbot;
     private Turret turret;
+    private Flywheel flywheel;
 
     String timeStamp;
     public DataLogger(Telemetry telemetry){
@@ -59,14 +61,14 @@ public class DataLogger implements Component{
     public void update() {
         botPosition = this.currentPose;
         botDistance = aimbot.getBotDistance();
-        flywheelVelocity = flywheelLeft.getVelocity();
+        //flywheelVelocity = flywheelLeft.getVelocity();
         //hoodPos = -intake.getCurrentPosition();
         hoodPos = -flywheelRight.getCurrentPosition();
 
         ActiveOpMode.telemetry().addData("Bot Position",botPosition); //need to put follower in current pose in update of opmode
         ActiveOpMode.telemetry().addData("Distance to Goal",botDistance);
-        ActiveOpMode.telemetry().addData("Flywheel vel",flywheelVelocity);
-        ActiveOpMode.telemetry().addData("Flywheel goal vel","uhh");
+        ActiveOpMode.telemetry().addData("Flywheel vel",flywheel.getVel());
+        ActiveOpMode.telemetry().addData("Flywheel goal vel","");
         ActiveOpMode.telemetry().addData("hood pos", hoodPos); //hood encoder is on intake
         ActiveOpMode.telemetry().addData("last time shooting",timeShooting);
         // ActiveOpMode.telemetry().update();
@@ -87,7 +89,7 @@ public class DataLogger implements Component{
                         botPosition.getY(),
                         botPosition.getHeading(),
                         botDistance,
-                        flywheelVelocity,
+                        flywheel.getVel(),
                         hoodPos,
                         timeShooting,
                         aimbot.getAimVelocity(),
@@ -113,6 +115,7 @@ public class DataLogger implements Component{
     public void addTurret(Turret turret) {
         this.turret = turret;
     }
+    public void addFlywheel(Flywheel flywheel) {this.flywheel = flywheel;}
 
     public void setAlliance(Alliance all) {
         this.alliance = all;

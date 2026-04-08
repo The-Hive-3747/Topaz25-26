@@ -57,17 +57,18 @@ public class Aimbot implements Component{
 
     AimbotValues[] aimbotValues = { //These are all the actual values from tests on field, must be
                                     // in order of distance from least to greatest
-            new AimbotValues(16, 2700, 0), //v:2800
-            new AimbotValues(23.5, 2700, 1200),//v:2800
-            new AimbotValues(29, 2900, 1600),//v:3000
-            new AimbotValues(34, 3000, 2400), //v:3100
-            new AimbotValues(39, 3025, 2700),//v:3050
-            new AimbotValues(44, 3050, 3400),//v:3150
-            new AimbotValues(48, 3100, 4400),//v:3125
+            new AimbotValues(16, 2650, 0), //v:2800
+            new AimbotValues(20, 2650, 0),
+            new AimbotValues(23.5, 2500, 0),//v:2800, h: 1200
+            new AimbotValues(29, 2650, 2000),//v:2900,  h: 1600
+            new AimbotValues(34, 2700, 2000), //v:3000, h: 2400
+            new AimbotValues(39, 2700, 3000),//v:3025, h:2700
+            new AimbotValues(44, 2750, 4000),//v:3050, h:3400 //ALL TUNED UP TO HERE
+            new AimbotValues(48, 3100, 4400),//v:3100,
             new AimbotValues(54, 3100, 4800),//v:3100
-            new AimbotValues(59, 3100, 5100), //v: 3200
-            new AimbotValues(65, 3125, 5700),//v:3150
-            new AimbotValues(69, 3125, 6100),//v:3150
+            new AimbotValues(59, 3100, 5100), //v: 3100
+            new AimbotValues(65, 3125, 5700),//v:3125
+            new AimbotValues(69, 3125, 6100),//v:3125
             new AimbotValues(75, 3150, 6400),//v:3250
             new AimbotValues(79, 3200, 6400),//v:3150
             new AimbotValues(87, 3250, 6400), //v: 3350 h: 6500
@@ -77,8 +78,7 @@ public class Aimbot implements Component{
             new AimbotValues(136, 4050, 7700), //v: 4200
 
 
-            /*
-            new AimbotValues(23.5, 2800, 2200), //vel: 850//
+            /*new AimbotValues(23.5, 2800, 2200), //vel: 850//
             new AimbotValues(21.5, 2057, 0), //vel: 950//
             new AimbotValues(26.5, 2057, 0), //vel: 950//v: 950
             new AimbotValues(31.5, 2057, 0), //v: 950 h:727//v:1000

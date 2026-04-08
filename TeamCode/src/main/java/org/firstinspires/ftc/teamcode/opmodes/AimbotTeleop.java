@@ -39,7 +39,7 @@ import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name="aimbot teleop")
 public class AimbotTeleop extends NextFTCOpMode {
-    private static final Logger log = LoggerFactory.getLogger(TopazTeleop.class);
+    private static final Logger log = LoggerFactory.getLogger(AimbotTeleop.class);
 
     {
         addComponents(
@@ -210,8 +210,8 @@ public class AimbotTeleop extends NextFTCOpMode {
 
 
         g2Y.toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> flywheel.setTargetVel(FLYWHEEL_VEL))
-                .whenBecomesFalse(() -> flywheel.setTargetVel(0));
+                .whenBecomesTrue(() -> FLYWHEEL_ON = true)
+                .whenBecomesFalse(() -> FLYWHEEL_ON = false);
 
 
 
@@ -237,8 +237,16 @@ public class AimbotTeleop extends NextFTCOpMode {
         });
 
 
-        g2LB.whenBecomesTrue(() -> flywheel.decrease());
-        g2RB.whenBecomesTrue(() -> flywheel.increase());
+        g2LB.whenBecomesTrue(() -> {
+            if(FLYWHEEL_VEL>=1000) {
+                FLYWHEEL_VEL -= 50;
+            }
+        });
+        g2RB.whenBecomesTrue(() -> {
+            if(FLYWHEEL_VEL<=9000) {
+                FLYWHEEL_VEL+=50;
+            }
+        });
 
 
         g1B.whenBecomesTrue(() -> {
@@ -266,17 +274,17 @@ public class AimbotTeleop extends NextFTCOpMode {
         looptime.reset();
         follower.update();
 
-        dataLogger.setCurrentPose(follower.getPose());
+        /*dataLogger.setCurrentPose(follower.getPose());
         dataLogger.addAimbot(aimbot);
         dataLogger.addTurret(turret);
-        dataLogger.update();
+        dataLogger.update();*/
 
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
-        FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
+        //FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
-        flywheel.setHoodGoalPos(HOOD_POS);
+        //flywheel.setHoodGoalPos(HOOD_POS);
         if (FLYWHEEL_ON) {
             flywheel.setTargetVel(FLYWHEEL_VEL);
         } else {
@@ -317,7 +325,7 @@ public class AimbotTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("hood goal", flywheel.getHoodGoal());
         panelsTelemetry.addData("hub number", allHubs.toArray().length);
         panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
-        panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
+        panelsTelemetry.addData("flywheel goal velocity", "uh");
         panelsTelemetry.addData("Critical loop time", looptime);
         panelsTelemetry.addData("Highset loop time", highestLooptime);
         panelsTelemetry.addData("flywheel power", flywheel.getPower());
