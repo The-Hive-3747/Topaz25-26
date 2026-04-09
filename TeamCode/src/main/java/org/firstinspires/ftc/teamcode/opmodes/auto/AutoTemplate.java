@@ -95,6 +95,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onWaitForStart() {
+        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
         turret.setTurretStateFixed();
         turret.update();
 

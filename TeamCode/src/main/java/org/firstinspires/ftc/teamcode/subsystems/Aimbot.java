@@ -59,23 +59,23 @@ public class Aimbot implements Component{
                                     // in order of distance from least to greatest
             new AimbotValues(16, 2650, 0), //v:2800
             new AimbotValues(20, 2650, 0),
-            new AimbotValues(23.5, 2500, 0),//v:2800, h: 1200
-            new AimbotValues(29, 2650, 2000),//v:2900,  h: 1600
+            new AimbotValues(23.5, 2650, 0),//v:2500, h: 1200
+            new AimbotValues(29, 2675, 2000),//v:2650,  h: 1600
             new AimbotValues(34, 2700, 2000), //v:3000, h: 2400
             new AimbotValues(39, 2700, 3000),//v:3025, h:2700
             new AimbotValues(44, 2750, 4000),//v:3050, h:3400 //ALL TUNED UP TO HERE
-            new AimbotValues(48, 3100, 4400),//v:3100,
-            new AimbotValues(54, 3100, 4800),//v:3100
-            new AimbotValues(59, 3100, 5100), //v: 3100
-            new AimbotValues(65, 3125, 5700),//v:3125
-            new AimbotValues(69, 3125, 6100),//v:3125
-            new AimbotValues(75, 3150, 6400),//v:3250
-            new AimbotValues(79, 3200, 6400),//v:3150
-            new AimbotValues(87, 3250, 6400), //v: 3350 h: 6500
-            new AimbotValues(117, 3850, 7400),//v: 3800
-            new AimbotValues(120, 3950, 7400),//v: 4050
-            new AimbotValues(128, 4000, 7500), //v: 4100
-            new AimbotValues(136, 4050, 7700), //v: 4200
+            new AimbotValues(48, 2800, 5000),//v:3100,h:4400
+            new AimbotValues(54, 2825, 5000),//v:3100
+            new AimbotValues(59, 2900, 5500), //v: 3100, h:5100
+            new AimbotValues(65, 2950, 6400),//v:3125, h:5700
+            new AimbotValues(69, 3000, 6800),//v:3125, h:6100
+            new AimbotValues(75, 3050, 6800),//v:3150, h:6400
+            new AimbotValues(79, 3150, 7000),//v:3200, h:6400 //TUNED
+            new AimbotValues(87, 3250, 6400), //v: 3250 h: 6400
+            new AimbotValues(117, 3850, 7400),//v: 3850, h:7400
+            new AimbotValues(120, 3950, 7400),//v: 3950, h:7400
+            new AimbotValues(128, 4000, 7500), //v: 4000, h:7500
+            new AimbotValues(136, 4050, 7700), //v: 4050, h:7700
 
 
             /*new AimbotValues(23.5, 2800, 2200), //vel: 850//
