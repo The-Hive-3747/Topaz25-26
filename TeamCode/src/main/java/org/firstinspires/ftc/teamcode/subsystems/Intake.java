@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -21,6 +22,7 @@ import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
 
+@Configurable
 public class Intake implements Component {
     DcMotor intakeMotor;
     DcMotorEx agitator;
@@ -38,8 +40,8 @@ public class Intake implements Component {
     double REVERSAL_TIME = 500;
     double FIRE_POWER = 1;//0.9
     double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
-    double RAIL_UP = 0.5;
-    double RAIL_DOWN = 1;
+    public static double RAIL_UP = 0.157;//0.3;//0.8;//0.5
+    public static double RAIL_DOWN = 0;//1;//1;
     double INTAKE_POWER_REVERSED = -0.9;
     double agitatorResetPosDone = 0.0;
     double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
@@ -77,10 +79,11 @@ public class Intake implements Component {
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
+        //rail.setDirection(Servo.Direction.REVERSE);
         frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");
         rightColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "rightColor");
         leftColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "leftColor");
-        prism = ActiveOpMode.hardwareMap().get(GoBildaPrismDriver.class, "prism");
+        prism = ActiveOpMode.hardwareMap().get(GoBildaPrismDriver.class, "lights");
         isIntakeOn = false;
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)

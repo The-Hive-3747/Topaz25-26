@@ -100,7 +100,7 @@ public class Turret implements Component {
 
     public void update() {
         //update cached information
-        turretAngleCached=-((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
+        turretAngleCached=((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
 
         turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
