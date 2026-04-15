@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="Prism Configurator", group="Linear OpMode")
-@Disabled
+//@Disabled
 
 public class GoBildaPrismConfigurator extends LinearOpMode {
 
@@ -70,7 +70,7 @@ public class GoBildaPrismConfigurator extends LinearOpMode {
     PoliceLights.PoliceLightsStyle policeLightsStyle = PoliceLights.PoliceLightsStyle.Style1;
 
     int startPoint = 0; // the start LED for any configured animation
-    int endPoint = 12; // the end LED for a configured animation
+    int endPoint = 24; // the end LED for a configured animation
     int brightness = 50; // the brightness of configured animation
     int period = 1000; // the period of a configured animation
     float speed = 0.5F; // the speed of a configured animation
@@ -173,7 +173,7 @@ public class GoBildaPrismConfigurator extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
+        prism = hardwareMap.get(GoBildaPrismDriver.class,"lights");
 
         telemetry.addLine("Welcome to the Prism Configurator, enjoy these fun stats " +
                 "and click the 'Play' button to continue");

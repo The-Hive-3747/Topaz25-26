@@ -224,6 +224,8 @@ public class TopazTeleop extends NextFTCOpMode {
             //intake.stopIntake();
             intake.railDown();
             intake.startRailDex();
+            dataLogger.logInfo();
+
             //intake.startRailDexTime();
         });
         //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
@@ -355,7 +357,7 @@ public class TopazTeleop extends NextFTCOpMode {
         looptime.reset();
         follower.update();
 
-        dataLogger.setCurrentPose(follower.getPose());
+        dataLogger.addFollower(follower);
         dataLogger.addAimbot(aimbot);
         dataLogger.addTurret(turret);
         dataLogger.addFlywheel(flywheel);
@@ -398,7 +400,6 @@ public class TopazTeleop extends NextFTCOpMode {
               Pose limelightPose = new Pose(limelightComponent.getRobotX(),limelightComponent.getRobotY(),limelightComponent.getRobotHeading());
             }
        }*/
-
 
 
         limelight.update();
