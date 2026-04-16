@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
+import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
@@ -259,19 +260,21 @@ public class TopazTeleop extends NextFTCOpMode {
                 flywheel.setTargetVel(POSE_TWO_VEL);
         });*/
 
-
         g2A.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> {
                     //intake.turnIsShootingFalse();
                     intake.startIntake();
                     isIntakeOn = true;
+                    /*if (!intake.isFrontEmpty()) {
+                        intake.shiftIntake();
+                    }*/
                 })
                 .whenBecomesFalse(() -> {
                     intake.stopIntake();
                     intake.resetRailDex();
                     isIntakeOn = false;
                 });
-
+        g2X.whenBecomesTrue(() -> intake.shiftIntake());
         /*g2LT.toggleOnBecomesTrue() //reversing intake
                 .whenBecomesTrue(() -> {
                     intakeMotor.setPower(-INTAKE_POWER);
@@ -367,8 +370,8 @@ public class TopazTeleop extends NextFTCOpMode {
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
         FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
-        HOOD_POS = aimbot.getAimbotValues().hoodPos;
-        flywheel.setHoodGoalPos(HOOD_POS);
+        //HOOD_POS = aimbot.getAimbotValues().hoodPos;
+        //flywheel.setHoodGoalPos(HOOD_POS);
         if (FLYWHEEL_ON) {
             flywheel.setTargetVel(FLYWHEEL_VEL);
         } else {

@@ -174,7 +174,7 @@ public class Turret implements Component {
         ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
         ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
 
-        //ActiveOpMode.telemetry().addData("TURRET vel", thruTurret.getVelocity());
+        //ActiveOpMode.telemetry().addData("TURRET vel", thruTurret.getVelocity);
     }
 
     /**
@@ -313,7 +313,6 @@ public class Turret implements Component {
         // these are negative because we want the goal position to adjust in the opposite way of the
         adjustGoalPosition(-currentVelocity.getXComponent(), -currentVelocity.getYComponent());
     }
-
     public Command setTurretAuto = new InstantCommand(
             () -> currentState = turretState.AUTO
     );

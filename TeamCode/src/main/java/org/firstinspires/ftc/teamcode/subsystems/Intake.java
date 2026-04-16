@@ -47,6 +47,8 @@ public class Intake implements Component {
     double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
     double  AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
     int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_GOBILDA_312;
+    int FIRST_ARTIFACT_POS = (AGITATOR_ENC/3);
+
     CRServo leftFireServo, rightFireServo, hood;
     Servo rail;
     ElapsedTime intakeRevTimer = new ElapsedTime();
@@ -143,18 +145,24 @@ public class Intake implements Component {
         //agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     public void startIntake() {
-        /*if (agitator.isBusy()) {
-            return;
-        }*/
         isIntakeOn = true;
         intakeMotor.setPower(INTAKE_POWER);
         rail.setPosition(RAIL_UP);
         agitator.setTargetPosition(0);
-        agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
         leftFireServo.setPower(0);
         rightFireServo.setPower(0);
-
+    }
+    public void shiftIntake() {
+        if (isIntakeOn) {
+            rail.setPosition(RAIL_DOWN);
+            agitator.setTargetPosition(FIRST_ARTIFACT_POS);
+            agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            agitator.setPower(AGITATOR_POWER);
+            //timer function?
+            rail.setPosition(RAIL_UP);
+        }
     }
     public void floatIntake() {
         intakeMotor.setPower(INTAKE_POWER);
@@ -164,7 +172,6 @@ public class Intake implements Component {
     }
 
     public void stopIntake() {
-
         isIntakeOn = false;
         intakeMotor.setPower(INTAKE_POWER_REVERSED);
         intakeRevTimer.reset();
@@ -233,7 +240,13 @@ public class Intake implements Component {
         rightValues = colorConverter(rightRed, rightGreen, rightBlue);
         leftValues = colorConverter(leftRed, leftGreen, leftBlue);
     }
-
+    public boolean isFrontEmpty() {
+        if (detectArtifact(frontValues) == Artifact.EMPTY) {
+            return true;
+        }else {
+            return false;
+        }
+    }
     public void latchFrontColorSensor() {
         Artifact currentArtifact = detectArtifact(frontValues);
         if (leftArtifact == Artifact.EMPTY || rightArtifact == Artifact.EMPTY) {
