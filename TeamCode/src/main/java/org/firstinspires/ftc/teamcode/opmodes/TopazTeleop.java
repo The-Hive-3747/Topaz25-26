@@ -78,8 +78,6 @@ public class TopazTeleop extends NextFTCOpMode {
     private double limelightCorrection = 0.0;
     double FLYWHEEL_VEL = 3200; //4000; //2000;//= 1300; // IN RPM
     double HOOD_POS;
-    double INTAKE_POWER = 0.9;
-    double INTAKE_SHOOTING_POWER = 0.65;
     double THREE_BALL_CURRENT = 6500.0;
     private boolean FLYWHEEL_ON = false;
     private boolean wasReadyToShoot = false;
@@ -114,9 +112,6 @@ public class TopazTeleop extends NextFTCOpMode {
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
 
-
-
-
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
         //limelight.preInit();
@@ -150,7 +145,10 @@ public class TopazTeleop extends NextFTCOpMode {
             //turretLights.blueAlliance();
         }
 
-
+        if (!OpModeTransfer.hasBeenTransferred) {
+            turret.zeroTurret();
+            flywheel.resetHoodEncoder();
+        }
     }
     @Override
     public void onWaitForStart() {
@@ -174,13 +172,6 @@ public class TopazTeleop extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
-        //follower.startTeleOpDrive();
-
-        if (OpModeTransfer.hasBeenTransferred == false) {
-            turret.zeroTurret();
-            flywheel.resetHoodEncoder();
-        }
-
         turret.setAlliance(alliance);
         aimbot.setAlliance(alliance);
         turret.setTurretStateAuto();
@@ -207,7 +198,6 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
 
-
         gUp.whenBecomesTrue(() -> flywheel.increaseHood());
         gDown.whenBecomesTrue(() -> {
             flywheel.setHoodPower(-0.5);
@@ -217,20 +207,13 @@ public class TopazTeleop extends NextFTCOpMode {
                     flywheel.resetHoodEncoder();
                 });
 
-        //g1X.whenBecomesTrue(() -> odoTurret.resetTurret());
-
-        //g2LT.toggleOnBecomesTrue()
         g2LT.whenBecomesTrue(() ->{
             FLYWHEEL_ON = true;
-            //intake.stopIntake();
             intake.railDown();
             intake.startRailDex();
             dataLogger.logInfo();
-
-            //intake.startRailDexTime();
         });
-        //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
-                //.whenBecomesFalse(() -> intake.resetRailDex());
+
         g2RT.toggleOnBecomesTrue()
                 .whenBecomesTrue( () -> intake.reverseIntake())
                 .whenBecomesFalse(() -> intake.stopReverseIntake());
@@ -239,9 +222,9 @@ public class TopazTeleop extends NextFTCOpMode {
 
         g1Left.whenBecomesTrue(() -> turret.turretStateBackward());
 
-        /*g1Y.toggleOnBecomesTrue()
-                        .whenBecomesTrue(() -> turret.setTurretStateoff())
-                        .whenBecomesFalse(() -> turret.setTurretStateAuto());*/
+        g1Y.toggleOnBecomesTrue()
+                        .whenBecomesTrue(() -> turret.setTurretStateOff())
+                        .whenBecomesFalse(() -> turret.setTurretStateAuto());
 
         g1RT.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> slowModeMultiplier = 0.5)
@@ -297,21 +280,6 @@ public class TopazTeleop extends NextFTCOpMode {
             }
         });
 
-        /*g2X.toggleOnBecomesTrue() //firewheels on
-                .whenBecomesTrue(() -> {
-                    fireWheelLeft.setPower(FIRE_POWER);
-                    fireWheelRight.setPower(FIRE_POWER);
-                    isTransferOn = true;
-                })
-                .whenBecomesFalse(() -> {
-                    fireWheelLeft.setPower(0);
-                    fireWheelRight.setPower(0);
-                    isTransferOn = false;
-                });*/
-
-
-
-
         /*gUpOrDown.whenBecomesFalse(() -> { //HOOD ENCODER
                     flywheel.setHoodPower(0);
                     //flywheel.resetHoodEncoder();
@@ -329,19 +297,6 @@ public class TopazTeleop extends NextFTCOpMode {
                 turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
             }
         });
-
-        /*gUp.whenBecomesTrue(() -> FLYWHEEL_VEL += 200); //OLD FLYWHEEL INCREASE
-        gDown.whenBecomesTrue(() -> {
-                if (FLYWHEEL_VEL - 200 < 0) {
-            FLYWHEEL_VEL = 0;
-        } else {
-            FLYWHEEL_VEL -= 200;
-        }
-        });*/
-
-        //g1X.whenBecomesTrue(() -> relocalizeButton());
-
-        //g1LT.whenBecomesTrue(() -> turretLights.redAlliance());
 
         //turning on bulk mode to reduce critical loop time
         allHubs = hardwareMap.getAll(LynxModule.class);
@@ -378,7 +333,6 @@ public class TopazTeleop extends NextFTCOpMode {
         } else {
             flywheel.setTargetVel(0);
         }
-
 
         /*if(intakeMotor.getCurrent(CurrentUnit.MILLIAMPS) > THREE_BALL_CURRENT){
             intakeMotor.setPower(0);
@@ -420,14 +374,8 @@ public class TopazTeleop extends NextFTCOpMode {
             turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
         }
 
-
-        // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
-        // turret.shootOnTheMove(follower.getVelocity());
-
         turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
-
         turret.update();
-
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,
                 Math.toRadians(turret.getTurretAngle()) + follower.getHeading() + Math.toRadians(180),
@@ -457,7 +405,7 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("Critical loop time", looptime);
         panelsTelemetry.addData("Highset loop time", highestLooptime);
         panelsTelemetry.addData("flywheel power", flywheel.getPower());
-        panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
+        panelsTelemetry.addData("Left FlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
         panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
         panelsTelemetry.addData("bot values", aimbot.getAimbotValues());

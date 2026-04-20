@@ -224,7 +224,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void shootAllThreeAtClose(double delayBeforeShot) {
-        AutoPaths.generatePaths(follower);
+        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
             new ParallelGroup(
                 new FollowPath(toShootAtCloseFromLastPose),
@@ -241,7 +241,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void shootAllThreeAtCloseCurved(double delayBeforeShot) {
-        AutoPaths.generatePaths(follower);
+        toShootAtCloseFromLastPoseCurved = generatePathCurve(AutoTemplate.lastPose, curveIntake2, closeShootingPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new FollowPath(toShootAtCloseFromLastPoseCurved),
@@ -257,7 +257,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void shootAllThreeAtFar(double delayBeforeShot) {
-        AutoPaths.generatePaths(follower);
+        toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new FollowPath(toShootAtFarFromLastPose),
@@ -269,26 +269,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
                         intake.shootAllThree
                 )
-                // idk what this does commenting it out fr -neset
-                /*,
-                intake.railUpAuto,
-                //this delay is so we can get the rail up in time to reverse any extra balls out
-                new Delay(0.2),
-                intake.reverseIntake,
-                //this delay is for the time of reversing the intake
-                new Delay(0.4),
-                intake.stopIntake*/
         ));
         lastPose = farShootingPose;
     }
-    //use this in case a ball gets stuck in the shooting mechanism
-    /*protected void flywheelJiggle(){
-        AutoPaths.generatePaths(follower);
-        autonomousCommands = autonomousCommands.then(new SequentialGroup(
-                new FollowPath(farJigglePath),
-                new FollowPath(toShootAtFarFromLastPose)
-        ));
-    }*/
+
     protected void shootAllThreeAgainAtFar(double delayBeforeShot) {
         AutoPaths.generatePaths(follower);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
@@ -305,7 +289,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void intake1(double delayAfterIntake) {
-        AutoPaths.generatePaths(follower);
+        lineUpForIntake1FromLastPose = generatePath(AutoTemplate.lastPose, intake1StartPose);
+        intake1 = generatePath(intake1StartPose, intake1EndPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new InstantCommand(() -> FIREWHEELS_ON=false),
@@ -318,13 +303,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         new FollowPath(intake1)
                 ),
                 new Delay(delayAfterIntake),
-                intake.stopIntake
+                intake.stopIntakeNoReverse
         ));
         lastPose = intake1EndPose;
     }
 
     protected void intake2(double delayAfterIntake) {
-        AutoPaths.generatePaths(follower);
+        lineUpForIntake2FromLastPose = generatePath(AutoTemplate.lastPose, intake2StartPose);
+        intake2 = generatePath(intake2StartPose, intake2EndPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new InstantCommand(() -> FIREWHEELS_ON=false),
@@ -337,13 +323,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         new FollowPath(intake2)
                 ),
                 new Delay(delayAfterIntake),
-                intake.stopIntake
+                intake.stopIntakeNoReverse
         ));
         lastPose = intake2EndPose;
     }
 
     protected void intake3(double delayAfterIntake) {
-        AutoPaths.generatePaths(follower);
+        lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
+        intake3 = generatePath(intake3StartPose, intake3EndPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new InstantCommand(() -> FIREWHEELS_ON=false),
@@ -356,13 +343,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         new FollowPath(intake3)
                 ),
                 new Delay(delayAfterIntake),
-                intake.stopIntake
+                intake.stopIntakeNoReverse
         ));
         lastPose = intake3EndPose;
     }
 
     protected void intakeHP(double delayAfterIntake) {
-        AutoPaths.generatePaths(follower);
+        lineUpForIntakeHPFromLastPose = generatePath(AutoTemplate.lastPose, intakeHPStartPose);
+        intakeHP = generatePath(intakeHPStartPose, intakeHPEndPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new InstantCommand(() -> FIREWHEELS_ON=false),
@@ -375,22 +363,23 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         new FollowPath(intakeHP)
                 ),
                 new Delay(delayAfterIntake),
-                intake.stopIntake
+                intake.stopIntakeNoReverse
         ));
         lastPose = intakeHPEndPose;
     }
 
     protected void openGate(double delayAfterOpenGate) {
-        AutoPaths.generatePaths(follower);
+        lineUpForOpenGateFromLastPose = generatePath(AutoTemplate.lastPose, openGateStartPose);
+        openGate = generatePath(openGateStartPose, openGateEndPose);
         autonomousCommands = autonomousCommands.then(
-                intake.stopIntake,
+                intake.stopIntakeNoReverse,
                 new FollowPath(openGate),
                 new Delay(delayAfterOpenGate)
         );
     }
 
     protected void parkAtFront() {
-        AutoPaths.generatePaths(follower);
+        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontParkPose);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
                 new InstantCommand(() -> FIREWHEELS_ON=false),
                 intake.firewheelsOff,
@@ -403,7 +392,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void parkAtBack() {
-        AutoPaths.generatePaths(follower);
+        parkAtBackFromLastPose = generatePath(AutoTemplate.lastPose, backParkPose);
         autonomousCommands = autonomousCommands.then(new ParallelGroup(
                 new InstantCommand(() -> FIREWHEELS_ON=false),
                 intake.firewheelsOff,

@@ -12,9 +12,6 @@ import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
-import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.utility.InstantCommand;
-import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -26,14 +23,15 @@ public class Turret implements Component {
     private TouchSensor limitSwitch;
     Pose currentPose, limelightPose;
     Vector currentVelocity;
-    public enum turretState {
+    public enum TurretState {
         OFF,
+        AUTO_OFF,
         FORWARD,
         AUTO,
         FIXED,
         MOVE_N_SHOOT
     }
-    turretState currentState = turretState.AUTO;
+    TurretState turretState = TurretState.AUTO;
     Alliance alliance;
     private double turretAngleCached = 0;
     private double fieldCentricGoalAngle, goalX, goalY, turretPower, turretGoalNotInLimits, heading;
@@ -74,13 +72,11 @@ public class Turret implements Component {
         turretRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         thruTurret = ActiveOpMode.hardwareMap().get(DcMotor.class, "intake");
-
-        thruTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     @Override
     public void postInit() {
-        currentState = turretState.AUTO;
+        turretState = TurretState.AUTO;
         turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
                 //.basicFF(0, 0, TURRET_PID_KS)
@@ -104,17 +100,16 @@ public class Turret implements Component {
 
         turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
-                //.basicFF(0, 0, TURRET_PID_KS)
                 .build();
 
-        if (currentState == turretState.AUTO) {
+        if (turretState == TurretState.AUTO) {
             turretPID.setGoal(getAutoAimGoalAngle());
             angleAfterOffset = new KineticState((2*getTurretGoal())- turretOffset);
-        } else if (currentState == turretState.FORWARD) {
+        } else if (turretState == TurretState.FORWARD) {
             turretPID.setGoal(ZERO_ANGLE);
-        } else if (currentState == turretState.FIXED){  //This is the autonomous fixed position for shooting
+        } else if (turretState == TurretState.FIXED){  //This is the autonomous fixed position for shooting
             turretPID.setGoal(FIXED_ANGLE);
-        }else if(currentState == turretState.MOVE_N_SHOOT){
+        }else if(turretState == TurretState.MOVE_N_SHOOT){
             turretPID.setGoal(new KineticState(shootingGoal));
         } else {
             // this is when the TurretState is Off
@@ -122,7 +117,7 @@ public class Turret implements Component {
         }
         if (Math.abs(this.getTurretAngle() - this.getTurretGoal()) < TURRET_ANGLE_DEADZONE) {
             turretPower = 0;
-        }else if (turretState.OFF != currentState){
+        }else if (TurretState.AUTO_OFF != turretState){
             //calculate the turret power because both use it
             turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
             //if we are too far away from being pointed away from the goal, go fast.
@@ -137,35 +132,35 @@ public class Turret implements Component {
         botY = this.currentPose.getY();
         botX = this.currentPose.getX();
          //New code for turning off/on for launch zones
-        if(turretState.AUTO == currentState || turretState.OFF == currentState) {
+        if(TurretState.AUTO == turretState || TurretState.AUTO_OFF == turretState) {
             if (botX < midPointX && botY >= -botX + endPointY - turretZoneMargin) {
-                currentState = turretState.AUTO;
+                turretState = TurretState.AUTO;
                 turretZone = 1;
             } else if (botX >= midPointX && botY >= botX - turretZoneMargin) {
-                currentState = turretState.AUTO;
+                turretState = TurretState.AUTO;
                 turretZone = 2;
             } else if (botX < midPointX && botY <= botX - midPointX + farZoneHeight + turretZoneMargin) {
-                currentState = turretState.AUTO;
+                turretState = TurretState.AUTO;
                 turretZone = 3;
             } else if (botX >= midPointX && botY <= -botX + midPointX + farZoneHeight + turretZoneMargin) {
-                currentState = turretState.AUTO;
+                turretState = TurretState.AUTO;
                 turretZone = 4;
             } else {
-                currentState = turretState.OFF;
+                turretState = TurretState.AUTO_OFF;
                 turretZone = 0;
             }
         }
 
-
         // limit the turret power to our Turret Power Limit
-        turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
         if (Math.abs(turretPower) < TURRET_POWER_MIN) {
             turretPower = 0;
         }
 
-        this.setTurretPower(turretPower);
+        if (turretState != TurretState.OFF) {
+            this.setTurretPower(turretPower);
+        }
 
-        ActiveOpMode.telemetry().addData("TURRET state", currentState);
+        ActiveOpMode.telemetry().addData("TURRET state", turretState);
         ActiveOpMode.telemetry().addData("TURRET zone", turretZone);
         ActiveOpMode.telemetry().addData("TURRET pose", this.currentPose);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
@@ -173,8 +168,6 @@ public class Turret implements Component {
         ActiveOpMode.telemetry().addData("TURRET angle", this.getTurretAngle());
         ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
         ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
-
-        //ActiveOpMode.telemetry().addData("TURRET vel", thruTurret.getVelocity);
     }
 
     /**
@@ -224,18 +217,18 @@ public class Turret implements Component {
      * @param goal: goal angle for turret to face
      */
     public void setTurretAngle(double goal) {
-        currentState = turretState.FORWARD;
+        turretState = TurretState.FORWARD;
         turretPID.setGoal(new KineticState(goal));
     }
 
     public void setTurretShootAngle(double goal){
         shootingGoal = normalizeAngle(goal + 180);
-        currentState = turretState.MOVE_N_SHOOT;
+        turretState = TurretState.MOVE_N_SHOOT;
         turretPID.setGoal(new KineticState(shootingGoal));
     }
 
-    public turretState getTurretState() {
-        return currentState;
+    public TurretState getTurretState() {
+        return turretState;
     }
 
     /**
@@ -313,25 +306,14 @@ public class Turret implements Component {
         // these are negative because we want the goal position to adjust in the opposite way of the
         adjustGoalPosition(-currentVelocity.getXComponent(), -currentVelocity.getYComponent());
     }
-    public Command setTurretAuto = new InstantCommand(
-            () -> currentState = turretState.AUTO
-    );
-    public Command setTurretOff = new InstantCommand(() -> currentState = turretState.OFF);
-    public Command setTurretForward = new InstantCommand(() -> currentState = turretState.FORWARD);
-    public Command setTurretForTeleop = new InstantCommand(
-            () -> setTurretAngle(0)
-    );
-    public Command setTurretForAuto = new InstantCommand(
-            () -> setTurretAngle(180)
-    );
 
     public void setFixedAngleCustom(double angle) {
-        currentState = turretState.FIXED;
+        turretState = TurretState.FIXED;
         FIXED_ANGLE = new KineticState(angle);
     }
 
     public void setFixedAngleClose(Alliance alliance) {
-        currentState = turretState.FIXED;
+        turretState = TurretState.FIXED;
         if (alliance == Alliance.BLUE) {
             FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
         } else {
@@ -340,7 +322,7 @@ public class Turret implements Component {
     }
 
     public void setFixedAngleFar(Alliance alliance) {
-        currentState = turretState.FIXED;
+        turretState = TurretState.FIXED;
         if (alliance == Alliance.BLUE) {
             FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_FAR);
         } else {
@@ -348,35 +330,35 @@ public class Turret implements Component {
         }
     }
 
-    public void setTurretStateoff(){ currentState = turretState.OFF;}
-    public void setTurretStateAuto(){ currentState = turretState.AUTO;}
+    public void setTurretStateOff(){ turretState = TurretState.OFF;}
+    public void setTurretStateAuto(){ turretState = TurretState.AUTO;}
 
     public void setTurretStateFixed(){
-        currentState = turretState.FIXED;
+        turretState = TurretState.FIXED;
     }
 
     public void turretStateForward() {
-        switch (currentState) {
+        switch (turretState) {
             case AUTO:
-                this.currentState = turretState.FORWARD;
+                this.turretState = TurretState.FORWARD;
                 break;
             case FORWARD:
-                this.currentState = turretState.OFF; break;
+                this.turretState = TurretState.OFF; break;
             case OFF:
-                this.currentState = turretState.AUTO; break;
+                this.turretState = TurretState.AUTO; break;
         }
     }
 
     public void turretStateBackward() {
-        switch (currentState) {
+        switch (turretState) {
             case AUTO:
-                this.currentState = turretState.OFF;
+                this.turretState = TurretState.OFF;
                 break;
             case FORWARD:
-                this.currentState = turretState.AUTO;
+                this.turretState = TurretState.AUTO;
                 break;
             case OFF:
-                this.currentState = turretState.FORWARD;
+                this.turretState = TurretState.FORWARD;
                 break;
         }
     }

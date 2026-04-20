@@ -226,7 +226,7 @@ public class NextFTCTeleOp extends NextFTCOpMode {
         g1Left.whenBecomesTrue(() -> turret.turretStateBackward());
 
         g1Y.toggleOnBecomesTrue()
-                        .whenBecomesTrue(() -> turret.setTurretStateoff())
+                        .whenBecomesTrue(() -> turret.setTurretStateOff())
                         .whenBecomesFalse(() -> turret.setTurretStateAuto());
 
         g1RT.toggleOnBecomesTrue()

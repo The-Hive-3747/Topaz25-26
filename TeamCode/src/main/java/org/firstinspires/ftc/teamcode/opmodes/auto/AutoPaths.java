@@ -9,9 +9,9 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
+    public static Pose gateIntakeStartPose, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
     public static PathChain toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, farJigglePath;
-    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
+    public static double gateIntakeAngle, closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
     public static boolean customParkPose;
@@ -28,11 +28,11 @@ public class AutoPaths {
         if (!customParkPose) {
             parkAngle = flipHeading180Degrees(180);
         }
-        /*if (alliance == Alliance.BLUE) {
-            closeShootAngle = Math.toRadians(135); //convertHeading90(Math.toRadians(40));
+        if (alliance == Alliance.BLUE) {
+            gateIntakeAngle = Math.toRadians(165);
         } else {
-            closeShootAngle = Math.toRadians(50); //convertHeading90(Math.toRadians(40));
-        }*/
+            gateIntakeAngle = Math.toRadians(15);
+        }
         closeShootAngle = flipHeading180Degrees(180);
         shootAngle = flipHeading180Degrees(180);
         intakeAngle = flipHeading180Degrees(180);
@@ -65,32 +65,8 @@ public class AutoPaths {
         curveIntake2 = flipOverCenter(new Pose(50,72));
         farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 
-        // GENERATE PATHS HERE
-        lineUpForIntake1FromLastPose = generatePath(AutoTemplate.lastPose, intake1StartPose);
-        intake1 = generatePath(intake1StartPose, intake1EndPose);
-
-        lineUpForOpenGateFromLastPose = generatePath(AutoTemplate.lastPose, openGateStartPose);
-        openGate = generatePath(openGateStartPose, openGateEndPose);
-
-        lineUpForIntake2FromLastPose = generatePath(AutoTemplate.lastPose, intake2StartPose);
-        intake2 = generatePath(intake2StartPose, intake2EndPose);
-
-        lineUpForIntake3FromLastPose = generatePath(AutoTemplate.lastPose, intake3StartPose);
-        intake3 = generatePath(intake3StartPose, intake3EndPose);
-
-        lineUpForIntakeHPFromLastPose = generatePath(AutoTemplate.lastPose, intakeHPStartPose);
-        intakeHP = generatePath(intakeHPStartPose, intakeHPEndPose);
-
-        toShootAtCloseFromLastPoseCurved = generatePathCurve(AutoTemplate.lastPose, curveIntake2, closeShootingPose);
-
-        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
-        toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
-
-        parkAtFrontFromLastPose = generatePath(AutoTemplate.lastPose, frontParkPose);
-        parkAtBackFromLastPose = generatePath(AutoTemplate.lastPose, backParkPose);
-
-        farJigglePath = generatePath(AutoTemplate.lastPose, farJigglePose);
-
+        gateIntakeStartPose = flipOverCenter(new Pose(30, 55, gateIntakeAngle));
+        gateIntakeEndPose = flipOverCenter(new Pose(17, 59.2, gateIntakeAngle));
     }
 
 
@@ -166,7 +142,6 @@ public class AutoPaths {
                         new BezierLine(pose1, pose2)
                 )
                 .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
-                //.setVelocityConstraint(0.9)
                 .build();
     }
 

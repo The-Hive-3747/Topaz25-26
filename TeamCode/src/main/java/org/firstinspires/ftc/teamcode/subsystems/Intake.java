@@ -327,8 +327,12 @@ public class Intake implements Component {
                     rail.setPosition(RAIL_DOWN);
                 }
             })
-            .setIsDone(() -> {
-                return !intakeReversed;
+            .setIsDone(() -> !intakeReversed);
+
+    public InstantCommand stopIntakeNoReverse = new InstantCommand(
+            () -> {
+                isIntakeOn = false;
+                intakeMotor.setPower(0);
             });
 
     public Command stopTransfer = new InstantCommand(
@@ -337,38 +341,16 @@ public class Intake implements Component {
                 rightFireServo.setPower(0);
             }
     );
-    /*public Command startIntake = new LambdaCommand()
-            .setStart(() -> {
-                intakeTimer.reset();
-                startIntake();
-                rail.setPosition(RAIL_UP);
-            })
-            .setUpdate(() -> {
-            })
-            .setStop(interrupted -> {
-                stopIntake();
-            })
-            .setIsDone(() -> intakeTimer.seconds() > 1.0);*/
     public Command startIntake = new LambdaCommand()
-            //() -> startIntake()
             .setStart(() -> {
-                //shotTimer.reset();
-                this.isIntakeOn = true;
-                //intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            //intakeMotor.setPower(INTAKE_POWER);
-            rail.setPosition(RAIL_UP);
-            agitator.setTargetPosition(0);
-            agitator.setPower(AGITATOR_POWER);
-            agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                isIntakeOn = true;
+                rail.setPosition(RAIL_UP);
+                agitator.setTargetPosition(0);
+                agitator.setPower(AGITATOR_POWER);
+                agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             })
             .setIsDone(() -> {
-                return true; //shotTimer.seconds() > 2.0;
-            })
-            .setUpdate(() -> {
-                //intakeMotor.setPower(INTAKE_POWER);
-            })
-            .setStop((interrupted) -> {
-                //intakeMotor.setPower(INTAKE_POWER);
+                return true;
             });
 
     public Command slowIntake = new InstantCommand(

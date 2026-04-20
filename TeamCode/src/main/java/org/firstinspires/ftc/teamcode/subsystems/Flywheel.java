@@ -48,7 +48,7 @@ public class Flywheel implements Component {
     double READY_VEL_THRESHOLD = 200; // UPDATED TO// RPM
 
     @Override
-    public void postInit() { // this runs AFTER the init, it runs just once
+    public void postInit() {
         //this needs to be forward in order to use the hood PID.09000 correction is in set power
         flywheelRight = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelRight");
         flywheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -62,8 +62,6 @@ public class Flywheel implements Component {
         flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheelRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         hood = new Hood(flywheelRight);
@@ -85,8 +83,8 @@ public class Flywheel implements Component {
      * self-explanatory, resets the hood encoder
      */
     public void resetHoodEncoder() {
-        flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void increaseHood() {
