@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
 import org.firstinspires.ftc.teamcode.utilities.Artifact;
+import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
@@ -16,9 +21,13 @@ import dev.nextftc.ftc.ActiveOpMode;
 public class Intake implements Component {
     DcMotor intakeMotor;
     DcMotorEx agitator;
+    TurretLights prismLights;
+    GoBildaPrismDriver prism;
     NormalizedColorSensor frontColor, rightColor, leftColor;
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
+    ElapsedTime colorTimer = new ElapsedTime();
+    private double COLOR_CHECK_MS = 200;
     static boolean isIntakeOn = false;
     double INTAKE_POWER = 0.9;
     double INTAKE_SHOOTING_POWER = 0.9;
@@ -51,6 +60,7 @@ public class Intake implements Component {
 
     YCbCr frontValues, rightValues, leftValues;
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
+    TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
     @Override
     public void postInit() {
@@ -65,6 +75,7 @@ public class Intake implements Component {
         frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");
         rightColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "rightColor");
         leftColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "leftColor");
+        prism = ActiveOpMode.hardwareMap().get(GoBildaPrismDriver.class, "prism");
         isIntakeOn = false;
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -184,6 +195,51 @@ public class Intake implements Component {
         railDown();
         startRailDex();
     }
+
+    /** Shoot all balls out the right side (same as shootAllThree — normal agitator direction) */
+    public void shootAllRight() {
+        shootAllThree();
+    }
+
+    /** Shoot all balls out the left side (reversed agitator direction) */
+    public void shootAllLeft() {
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        isShooting = true;
+        railDown();
+        shotTimer.reset();
+        agitator.setTargetPosition(-AGITATOR_ENC);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    /** Shoot one ball out the right side (normal agitator direction, 1/3 revolution) */
+    public void shootRight() {
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        isShooting = true;
+        railDown();
+        shotTimer.reset();
+        agitator.setTargetPosition(agitator.getCurrentPosition() + AGITATOR_ENC / 3);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    /** Shoot one ball out the left side (reversed agitator direction, 1/3 revolution) */
+    public void shootLeft() {
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        isShooting = true;
+        railDown();
+        shotTimer.reset();
+        agitator.setTargetPosition(agitator.getCurrentPosition() - AGITATOR_ENC / 3);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public Artifact getLeftArtifact() { return leftArtifact; }
+    public Artifact getFrontArtifact() { return frontArtifact; }
+    public Artifact getRightArtifact() { return rightArtifact; }
 
     public void firewheelsOff() {
         isShooting = false;
@@ -331,11 +387,17 @@ public class Intake implements Component {
     // =====================================================
 
     public void update() {
-        getAllColorSensorValues();
-        latchFrontColorSensor();
-        latchRightColorSensor();
-        latchLeftColorSensor();
+        if(colorTimer.milliseconds() > COLOR_CHECK_MS) {
+            getAllColorSensorValues();
+            latchFrontColorSensor();
+            latchRightColorSensor();
+            latchLeftColorSensor();
+            colorTimer.reset();
+        }
 
+        panelsTelemetry.addData("front artifact", frontArtifact);
+        panelsTelemetry.addData("right artifact", rightArtifact);
+        panelsTelemetry.addData("left artifact", leftArtifact);
         ActiveOpMode.telemetry().addData("front artifact", frontArtifact);
         ActiveOpMode.telemetry().addData("right artifact", rightArtifact);
         ActiveOpMode.telemetry().addData("left artifact", leftArtifact);
@@ -371,5 +433,16 @@ public class Intake implements Component {
             agitator.setPower(0);
             agitatorResetRequest = false;
         }
+
+        /*if(rightArtifact == Artifact.GREEN){
+            prismLights.gPP();
+        }
+        if(frontArtifact == Artifact.PURPLE){
+            prismLights.pPG();
+        }
+        if(frontArtifact == Artifact.GREEN){
+            prismLights.pGP();
+        }*/
+
     }
 }

@@ -42,6 +42,8 @@ public class Turret implements Component {
     public static double turretOffset = 0;
     public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -140; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 140;
+    public static double AUTON_RED_LIMELIGHT_ANGLE_CLOSE = -40; //-92 -95
+    public static double AUTON_BLUE_LIMELIGHT_ANGLE_CLOSE = 40;
     public static double AUTON_RED_SHOOT_ANGLE_FAR = -114; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 114;
     public boolean hasBeenReset = false;
@@ -108,6 +110,7 @@ public class Turret implements Component {
             turretPower = turretPower + TURRET_PID_KS * Math.signum(turretPower);
         }
 
+        /*
         botY = this.currentPose.getY();
         botX = this.currentPose.getX();
         //New code for turning off/on for launch zones
@@ -130,7 +133,7 @@ public class Turret implements Component {
         } else {
             currentState = turretState.OFF;
             turretZone = 0;
-        }
+        }*/
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
@@ -138,7 +141,7 @@ public class Turret implements Component {
             turretPower = 0;
         }
 
-        //this.setTurretPower(turretPower);
+        this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
         ActiveOpMode.telemetry().addData("TURRET goal", turretPID.getGoal().component1());
@@ -303,6 +306,15 @@ public class Turret implements Component {
             FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
         } else {
             FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_CLOSE);
+        }
+    }
+
+    public void setFixedAngleCloseLimelight(Alliance alliance) {
+        currentState = turretState.FIXED;
+        if (alliance == Alliance.BLUE) {
+            FIXED_ANGLE = new KineticState(AUTON_BLUE_LIMELIGHT_ANGLE_CLOSE);
+        } else {
+            FIXED_ANGLE = new KineticState(AUTON_RED_LIMELIGHT_ANGLE_CLOSE);
         }
     }
 

@@ -21,7 +21,7 @@ public class LimelightComponent implements Component{
 
 
     public void init() {
-        limelight = ActiveOpMode.hardwareMap().get(Limelight3A.class, "Limelight");
+        limelight = ActiveOpMode.hardwareMap().get(Limelight3A.class, "limelight");
         limelight.start();
     }
 
@@ -50,6 +50,10 @@ public class LimelightComponent implements Component{
             hasTarget = false;
             aprilTagId = -1;
         }
+    }
+
+    public Limelight3A getLimelight() {
+        return limelight;
     }
 
     public double getRobotX() {

@@ -10,9 +10,9 @@ public class AutoPaths {
             farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose,
             backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose,
             intake3EndPose, farJigglePose, gateIntakeEndPose, gateIntakeStartPose, closeShootAndParkPose,
-            intake1SidespikeStartPose, intake1SidespikeEndPose, intake1SidespikeCurvePose;
+            intake1SwoopspikeStartPose, intake1SwoopspikeEndPose, intake1SwoopspikeCurvePose, intake1AdamStartPose, intake1AdamEndPose, intake2SwoopspikeStartPose, intake2SwoopspikeEndPose, intake2SwoopspikeCurvePose;
 
-    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, intakeSidespikeStartAngle, intakeSidespikeEndAngle, openGateAngle, gateIntakeAngle;
+    public static double closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, intakeSwoopspikeStartAngle, intakeSwoopspikeEndAngle, openGateAngle, gateIntakeAngle;
     public static Alliance alliance;
     public static Follower follower;
     public static boolean customParkPose;
@@ -36,12 +36,12 @@ public class AutoPaths {
 
         if (alliance == Alliance.BLUE) {
             gateIntakeAngle = Math.toRadians(165);
-            intakeSidespikeStartAngle = Math.toRadians(200);
-            intakeSidespikeEndAngle = Math.toRadians(225);
+            intakeSwoopspikeStartAngle = Math.toRadians(200);
+            intakeSwoopspikeEndAngle = Math.toRadians(225);
         } else {
             gateIntakeAngle = Math.toRadians(32);
-            intakeSidespikeStartAngle = Math.toRadians(-20);
-            intakeSidespikeEndAngle = Math.toRadians(-45);
+            intakeSwoopspikeStartAngle = Math.toRadians(-20);
+            intakeSwoopspikeEndAngle = Math.toRadians(-45);
         }
 
         // DEFINE POSES
@@ -73,9 +73,14 @@ public class AutoPaths {
         curveIntake2 = flipOverCenter(new Pose(50, 72));
         farJigglePose = flipOverCenter(new Pose(55, 17, shootAngle));
         closeShootAndParkPose = flipOverCenter(new Pose(45, 120, intakeAngle));
-        intake1SidespikeStartPose = flipOverCenter(new Pose(41.929, 88, intakeSidespikeStartAngle));
-        intake1SidespikeEndPose = flipOverCenter(new Pose(23,  88, intakeSidespikeEndAngle));
-        intake1SidespikeCurvePose = flipOverCenter(new Pose(24.892, 94.694));
+        intake1SwoopspikeStartPose = flipOverCenter(new Pose(41.929, 88, intakeSwoopspikeStartAngle));
+        intake1SwoopspikeEndPose = flipOverCenter(new Pose(23,  88, intakeSwoopspikeEndAngle));
+        intake1SwoopspikeCurvePose = flipOverCenter(new Pose(24.892, 94.694));
+        intake2SwoopspikeStartPose = flipOverCenter(new Pose(41.929, 64, intakeSwoopspikeStartAngle));
+        intake2SwoopspikeEndPose = flipOverCenter(new Pose(23,  64, intakeSwoopspikeEndAngle));
+        intake2SwoopspikeCurvePose = flipOverCenter(new Pose(24.892, 70.694));
+        intake1AdamStartPose = flipOverCenter(new Pose(24.5,105, Math.toRadians(-90)));
+        intake1AdamEndPose = flipOverCenter(new Pose(24.5,90, Math.toRadians(-90)));
     }
 
     /**
