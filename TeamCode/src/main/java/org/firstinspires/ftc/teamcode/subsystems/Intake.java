@@ -40,15 +40,15 @@ public class Intake implements Component {
     double INTAKE_SHOOTING_POWER = 0.9;
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
-    double FIRE_POWER = 1;//0.9
-    double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
+    public static double FIRE_POWER = 1;//0.9
+    public static double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
     public static double RAIL_UP = 0.157;//0.3;//0.8;//0.5
     public static double RAIL_DOWN = 0;//1;//1;
     double INTAKE_POWER_REVERSED = -0.9;
     double agitatorResetPosDone = 0.0;
-    double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
-    double  AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
-    int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_REV_V2;
+    static double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
+    static double  AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
+    public static int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_GOBILDA_312;
     int FIRST_ARTIFACT_POS = (AGITATOR_ENC/3);
 
     CRServo leftFireServo, rightFireServo, hood;
@@ -82,6 +82,7 @@ public class Intake implements Component {
         rightFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelRight");
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
+        rightFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
         //rail.setDirection(Servo.Direction.REVERSE);
         frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");

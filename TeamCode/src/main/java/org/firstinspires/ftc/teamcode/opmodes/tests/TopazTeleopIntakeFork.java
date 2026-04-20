@@ -7,9 +7,8 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -17,18 +16,14 @@ import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeFork;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
-import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -36,9 +31,9 @@ import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
-import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
+@Disabled
 @TeleOp(name="topaz teleop intake fork")
 public class TopazTeleopIntakeFork extends NextFTCOpMode {
 
@@ -46,7 +41,7 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         addComponents(
                 flywheel = new Flywheel(),
                 drive = new FieldCentricDrive(),
-                intake = new IntakeFork(),
+                intakeFork = new IntakeFork(),
                 BindingsComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower),
                 aimbot = new Aimbot(),
@@ -60,7 +55,7 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
 
     //Relocalization limelight;
     DataLogger dataLogger;
-    IntakeFork intake;
+    IntakeFork intakeFork;
     NormalizedColorSensor frontSensor;
     NormalizedColorSensor rightSensor;
     NormalizedColorSensor leftSensor;
@@ -195,8 +190,10 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
 
         Button g1Right = button(() -> gamepad1.dpad_right);
         Button g1Left = button(() -> gamepad1.dpad_left);
-        Button g2LB = button(() -> gamepad2.left_bumper || gamepad1.left_bumper);
-        Button g2RB = button(() -> gamepad2.right_bumper || gamepad1.right_bumper);
+        Button g2LB = button(() -> gamepad2.left_bumper);
+        Button g2RB = button(() -> gamepad2.right_bumper);
+        Button g1LB = button(() -> gamepad1.left_bumper);
+        Button g1RB = button(() -> gamepad1.right_bumper);
         Button g1A = button(() -> gamepad1.a);
         Button g1B = button(() -> gamepad1.b);
         Button g1X = button(() -> gamepad1.x);
@@ -223,17 +220,33 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         g2LT.whenBecomesTrue(() ->{
             FLYWHEEL_ON = true;
             //intake.stopIntake();
-            intake.railDown();
-            intake.startRailDex();
+//            intakeFork.railDown();
+//            intakeFork.startRailDex();
+            intakeFork.shootLeftAll();
             dataLogger.logInfo();
 
             //intake.startRailDexTime();
         });
         //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
         //.whenBecomesFalse(() -> intake.resetRailDex());
-        g2RT.toggleOnBecomesTrue()
-                .whenBecomesTrue( () -> intake.reverseIntake())
-                .whenBecomesFalse(() -> intake.stopReverseIntake());
+//        g2RT.toggleOnBecomesTrue()
+//                .whenBecomesTrue( () -> intakeFork.reverseIntake())
+//                .whenBecomesFalse(() -> intakeFork.stopReverseIntake());
+        g2RT.whenBecomesTrue(() ->{
+            FLYWHEEL_ON=true;
+            intakeFork.shootRightAll();
+            dataLogger.logInfo();
+        });
+        g2LB.whenBecomesTrue(()->{
+            FLYWHEEL_ON=true;
+            intakeFork.shootLeft();
+            dataLogger.logInfo();
+        });
+        g2RB.whenBecomesTrue(()->{
+            FLYWHEEL_ON=true;
+            intakeFork.shootRight();
+            dataLogger.logInfo();
+        });
 
         g1Right.whenBecomesTrue(() -> turret.turretStateForward());
 
@@ -246,7 +259,7 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         g1RT.toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> slowModeMultiplier = 0.5)
                 .whenBecomesFalse(() -> slowModeMultiplier = 1);
-        g2B.whenBecomesTrue(() -> intake.turnAgitator());
+        g2B.whenBecomesTrue(() -> intakeFork.turnAgitator());
 
 
         g2Y.toggleOnBecomesTrue()
@@ -261,8 +274,11 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         });*/
 
         g2A.toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> {
+                    intakeFork.beginIntaking();
+                })
                 .whenBecomesFalse(() -> {
-                    intake.finishIntaking();
+                    intakeFork.finishIntaking();
                 });
 
         /*g2LT.toggleOnBecomesTrue() //reversing intake
@@ -307,8 +323,8 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
                     //flywheel.resetHoodEncoder();
                 });*/
 
-        g2LB.whenBecomesTrue(() -> flywheel.decrease());
-        g2RB.whenBecomesTrue(() -> flywheel.increase());
+        g1LB.whenBecomesTrue(() -> flywheel.decrease());
+        g1RB.whenBecomesTrue(() -> flywheel.increase());
 
 
         g1B.whenBecomesTrue(() -> {
@@ -398,7 +414,7 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         limelight.update();
         BindingManager.update();
         flywheel.update();
-        intake.update();
+        intakeFork.update();
 
         if (limelight.isDataFresh()) {
             limelightRelocalized = true;
@@ -451,7 +467,8 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
         panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
 
-
+        telemetry.addData("IntakeFork State",intakeFork.intakeState);
+        telemetry.addData("IsFinishIntaking",intakeFork.isFinishIntaking);
         /*telemetry.addData("limelight correction", limelightCorrection);
         telemetry.addData("limelight relocalized", limelightRelocalized);
         telemetry.addData("hood pose", flywheel.getHoodPosition());

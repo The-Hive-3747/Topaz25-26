@@ -370,8 +370,9 @@ public class TopazTeleop extends NextFTCOpMode {
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
         FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
-        //HOOD_POS = aimbot.getAimbotValues().hoodPos;
-        //flywheel.setHoodGoalPos(HOOD_POS);
+        //TODO: Uncomment this to activate the Hood
+        HOOD_POS = aimbot.getAimbotValues().hoodPos;
+        flywheel.setHoodGoalPos(HOOD_POS);
         if (FLYWHEEL_ON) {
             flywheel.setTargetVel(FLYWHEEL_VEL);
         } else {

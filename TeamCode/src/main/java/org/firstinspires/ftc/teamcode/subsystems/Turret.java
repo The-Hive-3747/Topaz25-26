@@ -155,15 +155,15 @@ public class Turret implements Component {
                 turretZone = 0;
             }
         }
-        //this.setTurretPower(turretPower);
+
 
         // limit the turret power to our Turret Power Limit
         turretPower = Math.min(TURRET_POWER_LIMIT, turretPower);
-        if (turretPower < TURRET_POWER_MIN) {
+        if (Math.abs(turretPower) < TURRET_POWER_MIN) {
             turretPower = 0;
         }
 
-        //this.setTurretPower(turretPower);
+        this.setTurretPower(turretPower);
 
         ActiveOpMode.telemetry().addData("TURRET state", currentState);
         ActiveOpMode.telemetry().addData("TURRET zone", turretZone);

@@ -49,14 +49,14 @@ public class Flywheel implements Component {
 
     @Override
     public void postInit() { // this runs AFTER the init, it runs just once
-        //this needs to be forward in order to use the hood PID. correction is in set power
+        //this needs to be forward in order to use the hood PID.09000 correction is in set power
         flywheelRight = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelRight");
         flywheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
         flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
         flywheelLeft.setDirection(DcMotorEx.Direction.REVERSE);
 
-        leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
-        leftFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelLeft");
+        //leftFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
 
         flywheelLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

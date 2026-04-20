@@ -20,14 +20,66 @@ import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
+import dev.nextftc.control.feedback.FeedbackElement;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
 
-@Configurable
+@Deprecated
 public class IntakeFork implements Component {
+
+    /**
+     * AgitPIDF is a custom PIDF Controller
+     * KF is a feedforward element and is directly given to add to the power calculated.
+     * It should be less than the power calculated.
+     * KI feedback is clamed at 0.5
+     * Power is clamped to 0.9
+     * If the calculated power is less than 0.05, then power is set to 0 and isBusy is done.
+     *
+     * TODO: ONLY USE and Fix this if the built-in encoder is not working
+     * TODO: This should be a two stage system that switches when the error gets too low
+     * TODO: otherwise this cannot be as fast as we want it to be without being twitchy
+     */
+//    @Configurable
+//    class AgitPIDF implements FeedbackElement{
+//        public double KP = 0.0001, KI = 0, KD = 0, KF=0, lastError=0, totalError=0, power, tePower=0;
+//        double TOTAL_ERROR_MAX = .5; //clamp the KI element to prevent windup
+//        double MAX_POWER = 0.9;
+//        double MIN_POWER = 0.05;
+//        boolean isBusy=false;
+//        public AgitPIDF(double P, double I, double D, double F){
+//            KP=P;
+//            KI=I;
+//            KD=D;
+//            KF=F;
+//        }
+//        @Override
+//        public double calculate(KineticState error){
+//            totalError=Math.min(TOTAL_ERROR_MAX,totalError+error.getPosition());
+//            tePower=Math.min(TOTAL_ERROR_MAX,totalError*KI);
+//            //Note that using KF here may cause power to never dip below MIN_POWER. Only add KF at the end.
+//            power=error.getPosition()*KP+totalError*KI+(error.getPosition()-lastError)*KD;
+//            lastError=error.getPosition();
+//            power = Math.min(MAX_POWER,power+KF);
+//            if(power<=MIN_POWER){
+//                isBusy=false;
+//                power=0;
+//            }else
+//            {
+//                isBusy=true;
+//            }
+//            return power+KF;
+//        }
+//        @Override
+//        public void reset(){
+//
+//        }
+//        public boolean isBusy(){
+//            return isBusy;
+//        }
+//    }
     DcMotor intakeMotor;
     DcMotorEx agitator;
     TurretLights prismLights;
@@ -39,23 +91,25 @@ public class IntakeFork implements Component {
     private double COLOR_CHECK_MS = 200;
     static boolean isIntakeOn = false;
     double INTAKE_POWER = 0.9;
+    double INTAKE_SLOW_POWER = 0.3;
     double INTAKE_SHOOTING_POWER = 0.9;
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
     double FIRE_POWER = 1;//0.9
-    double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
-    public static double RAIL_UP = 0.157;//0.3;//0.8;//0.5
+    double AGITATOR_POWER = 0.8; //0.6; //0.8;//0.2;//0.6;
+    public static double RAIL_UP = 0.14;//0.157//0.3;//0.8;//0.5
+    public static double RAIL_FIRST_BALL_UP = 0.07;//0.1;
     public static double RAIL_DOWN = 0;//1;//1;
     double INTAKE_POWER_REVERSED = -0.9;
     double agitatorResetPosDone = 0.0;
     double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
-    double  AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
-    int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_REV_V2;
+    double AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
+    int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_GOBILDA_312;
     int AGITATOR_FRONT = -AGITATOR_ENC/3;
     int AGITATOR_RIGHT_ONE = AGITATOR_ENC/3;
     int AGITATOR_LEFT_ONE = -AGITATOR_ENC/3;
-    int AGITATOR_RIGHT_ALL = AGITATOR_ENC;
-    int AGITATOR_LEFT_ALL = -AGITATOR_ENC;
+    int AGITATOR_RIGHT_ALL = AGITATOR_ENC+AGITATOR_ENC/2;
+    int AGITATOR_LEFT_ALL = -AGITATOR_ENC-AGITATOR_ENC/2;
     int AGITATOR_ZERO = 0;
 
     CRServo leftFireServo, rightFireServo, hood;
@@ -89,7 +143,7 @@ public class IntakeFork implements Component {
         SHOOT_LEFT_ALL,
         SHOOT_RIGHT_ALL
     };
-    IntakeState intakeState = IntakeState.AUTO_START;
+    public IntakeState intakeState = IntakeState.AUTO_START;
     enum ShootState {
         SHOOT_LEFT,
         SHOOT_RIGHT,
@@ -98,7 +152,7 @@ public class IntakeFork implements Component {
         NOT_SHOOTING
     }
     ShootState shootState = ShootState.NOT_SHOOTING;
-    boolean isFinishIntaking = false;
+    public boolean isFinishIntaking = false;
     ElapsedTime railTimer = new ElapsedTime();
     double RAIL_DOWN_TIME_MS = 500;
     double INTAKE_OTHER_ARTIFACTS_MS = 1000;
@@ -106,8 +160,9 @@ public class IntakeFork implements Component {
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-    ControlSystem agitatorPID;
-    public static double KP = 0.0001, KI = 0, KD = 0;
+    //ControlSystem agitatorPID;
+    //public static double KP = 0.0001, KI = 0, KD = 0, KF=0, RTP_KP=0.0001;
+
 
 
     @Override
@@ -119,6 +174,7 @@ public class IntakeFork implements Component {
         rightFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelRight");
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
+        rightFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
         //rail.setDirection(Servo.Direction.REVERSE);
         frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");
@@ -130,21 +186,25 @@ public class IntakeFork implements Component {
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
 
         agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        agitator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        agitatorPID = ControlSystem.builder()
-                .posPid(KP, KI, KD)
-                .build();
+//        agitatorPID = ControlSystem.builder()
+//                .posPid(KP, KI, KD)
+//                .build();
+//        agitator.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(KP,KI,KD,KF));
+//        agitator.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION,new PIDFCoefficients(RTP_KP,0,0,0));
     }
 
     public void runIntakeState() {
         switch (intakeState) {
             case AUTO_START:
             case READY_TO_SHOOT:
+                moveRailDown();
                 switch (shootState) {
                     case NOT_SHOOTING:
-                        moveAgitatorToFront();
-                        intakeState = IntakeState.PREPARING_TO_INTAKE;
+                        //Do NOT do anything. Wait for the state to change to shoot.
+                        //moveAgitatorToFront();
+                        //intakeState = IntakeState.PREPARING_TO_INTAKE;
                         break;
                     case SHOOT_LEFT:
                         moveAgitatorLeftOne();
@@ -167,7 +227,7 @@ public class IntakeFork implements Component {
             case PREPARING_TO_INTAKE:
                 if (!agitator.isBusy()) {
                     intakeState = IntakeState.READY_TO_INTAKE;
-                    moveRailUp();
+                    moveRailInitialUp();
                     startIntake();
                     isFinishIntaking = false;
                 }
@@ -176,7 +236,7 @@ public class IntakeFork implements Component {
                 if (isFinishIntaking) {
                     intakeState = IntakeState.FIRST_ARTIFACT_RAIL_DOWN;
                     isFinishIntaking = false;
-                    stopIntake();
+                    //stopIntake();
                     railTimer.reset();
                     moveRailDown();
                 }
@@ -199,86 +259,88 @@ public class IntakeFork implements Component {
                 if (railTimer.milliseconds() > INTAKE_OTHER_ARTIFACTS_MS) {
                     intakeState = IntakeState.READY_TO_SHOOT;
                     moveRailDown();
+                    stopIntake();
                 }
                 break;
             case SHOOT_LEFT:
-                if (shootState == ShootState.SHOOT_LEFT_ALL) {
-                    moveAgitatorLeftAll();
-                    intakeState = IntakeState.SHOOT_LEFT_ALL;
-                } else if (shootState == ShootState.SHOOT_RIGHT_ALL) {
-                    moveAgitatorRightAll();
-                    intakeState = IntakeState.SHOOT_RIGHT_ALL;
+                if(!agitator.isBusy()) {
+                    if (shootState == ShootState.SHOOT_LEFT_ALL) {
+                        moveAgitatorLeftAll();
+                        intakeState = IntakeState.SHOOT_LEFT_ALL;
+                    } else if (shootState == ShootState.SHOOT_RIGHT_ALL) {
+                        moveAgitatorRightAll();
+                        intakeState = IntakeState.SHOOT_RIGHT_ALL;
+                    }
                 }
                 break;
             case SHOOT_RIGHT:
-                if (shootState == ShootState.SHOOT_LEFT_ALL) {
-                    moveAgitatorLeftAll();
-                    intakeState = IntakeState.SHOOT_LEFT_ALL;
-                } else if (shootState == ShootState.SHOOT_RIGHT_ALL) {
-                    moveAgitatorRightAll();
-                    intakeState = IntakeState.SHOOT_RIGHT_ALL;
+                if(!agitator.isBusy()){
+                    if (shootState == ShootState.SHOOT_LEFT_ALL) {
+                        moveAgitatorLeftAll();
+                        intakeState = IntakeState.SHOOT_LEFT_ALL;
+                    } else if (shootState == ShootState.SHOOT_RIGHT_ALL) {
+                        moveAgitatorRightAll();
+                        intakeState = IntakeState.SHOOT_RIGHT_ALL;
+                    }
                 }
                 break;
             case SHOOT_LEFT_ALL:
                 if (!agitator.isBusy()) {
                     intakeState = IntakeState.PREPARING_TO_INTAKE;
                     shootState = ShootState.NOT_SHOOTING;
-                    moveAgitatorZero();
+                    moveAgitatorToFront();
                 }
                 break;
             case SHOOT_RIGHT_ALL:
                 if (!agitator.isBusy()) {
                     intakeState = IntakeState.PREPARING_TO_INTAKE;
                     shootState = ShootState.NOT_SHOOTING;
-                    moveAgitatorZero();
+                    moveAgitatorToFront();
                 }
                 break;
         }
     }
-    public void finishIntaking() {
-        isFinishIntaking = true;
-    }
+
 //    public void requestIntakeOn() {
 //        isIntakeRequested = false;
 //    }
 
     public void moveAgitatorZero() {
-        setAgitatorGoalPosition(AGITATOR_ZERO);
-//        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        agitator.setTargetPosition(AGITATOR_ZERO);
-//        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        setAgitatorGoalPosition(AGITATOR_ZERO);
+        agitator.setTargetPosition(AGITATOR_ZERO);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
 
     public void moveAgitatorLeftOne() {
-        setAgitatorGoalPosition(AGITATOR_LEFT_ONE);
-//        agitator.setTargetPosition(AGITATOR_LEFT_ONE);
-//        agitator.setPower(AGITATOR_POWER);
-//        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        setAgitatorGoalPosition(AGITATOR_LEFT_ONE);
+        agitator.setTargetPosition(AGITATOR_LEFT_ONE);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
     public void moveAgitatorRightOne() {
-        setAgitatorGoalPosition(AGITATOR_RIGHT_ONE);
-//        agitator.setTargetPosition(AGITATOR_RIGHT_ONE);
-//        agitator.setPower(AGITATOR_POWER);
-//        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        setAgitatorGoalPosition(AGITATOR_RIGHT_ONE);
+        agitator.setTargetPosition(AGITATOR_RIGHT_ONE);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
     public void moveAgitatorLeftAll() {
-        setAgitatorGoalPosition(AGITATOR_LEFT_ALL);
-//        agitator.setTargetPosition(AGITATOR_LEFT_ALL);
-//        agitator.setPower(AGITATOR_POWER);
-//        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        setAgitatorGoalPosition(AGITATOR_LEFT_ALL);
+        agitator.setTargetPosition(AGITATOR_LEFT_ALL);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
     public void moveAgitatorRightAll() {
-        setAgitatorGoalPosition(AGITATOR_RIGHT_ALL);
-//        agitator.setTargetPosition(AGITATOR_RIGHT_ALL);
-//        agitator.setPower(AGITATOR_POWER);
-//        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        setAgitatorGoalPosition(AGITATOR_RIGHT_ALL);
+        agitator.setTargetPosition(AGITATOR_RIGHT_ALL);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
     public void moveAgitatorToFront() {
-        setAgitatorGoalPosition(AGITATOR_FRONT);
-        /*
+//        setAgitatorGoalPosition(AGITATOR_FRONT);
         agitator.setTargetPosition(AGITATOR_FRONT);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         agitator.setPower(AGITATOR_POWER);
-        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
     }
     public void runFireWheels() {
         leftFireServo.setPower(FIRE_POWER);
@@ -290,30 +352,82 @@ public class IntakeFork implements Component {
     public void moveRailDown() {
         rail.setPosition(RAIL_DOWN);
     }
+    public void moveRailInitialUp(){
+        rail.setPosition(RAIL_FIRST_BALL_UP);
+    }
     public void setFirewheelsOff() {
         leftFireServo.setPower(0);
         rightFireServo.setPower(0);
     }
-    public void startIntake() {
+    private void startIntake() {
         isIntakeOn = true;
         intakeMotor.setPower(INTAKE_POWER);
         setFirewheelsOff();
+        isFinishIntaking=false;
+    }
+    public void slowIntake(){
+        isIntakeOn = true;
+        intakeMotor.setPower(INTAKE_SLOW_POWER);
+        setFirewheelsOff();
+        isFinishIntaking = false;
     }
 
-    /**
-     * sets agitatorPID goal position
-     * @param goalPosition in ticks
-     */
-    public void setAgitatorGoalPosition(double goalPosition) {
-        agitatorPID.setGoal(new KineticState(goalPosition));
+    public void beginIntaking() {
+        moveAgitatorToFront();
+        intakeState=IntakeState.PREPARING_TO_INTAKE;
+        shootState=ShootState.NOT_SHOOTING;
+    }
+    public void finishIntaking() {
+        isFinishIntaking = true;
     }
 
-    public void moveAgitatorToGoal() {
-        agitator.setPower(agitatorPID.calculate(new KineticState(agitator.getCurrentPosition())));
+//    /**
+//     * sets agitatorPID goal position
+//     * @param goalPosition in ticks
+//     */
+//    public void setAgitatorGoalPosition(double goalPosition) {
+//        agitatorPID.setGoal(new KineticState(goalPosition));
+//    }
+//
+//    public void moveAgitatorToGoal() {
+//        agitator.setPower(agitatorPID.calculate(new KineticState(agitator.getCurrentPosition())));
+//    }
+
+
+    public void shootLeft(){
+        if(intakeState==IntakeState.READY_TO_SHOOT || intakeState==IntakeState.AUTO_START) {
+            isShooting = true;
+            shootState = ShootState.SHOOT_LEFT;
+        }// if we shot left and get a 2nd request - send it all
+        else if(intakeState==IntakeState.SHOOT_LEFT || intakeState==IntakeState.SHOOT_RIGHT){
+            isShooting = true;
+            shootState = ShootState.SHOOT_LEFT_ALL;
+        }
     }
-
-
-
+    public void shootRight(){
+        if(intakeState==IntakeState.READY_TO_SHOOT || intakeState==IntakeState.AUTO_START) {
+            isShooting = true;
+            shootState = ShootState.SHOOT_RIGHT;
+        } // if we shot right and get a 2nd request - send it all
+        else if(intakeState==IntakeState.SHOOT_RIGHT || intakeState==IntakeState.SHOOT_LEFT ){
+            isShooting = true;
+            shootState = ShootState.SHOOT_RIGHT_ALL;
+        }
+    }
+    public void shootLeftAll(){
+        if(intakeState==IntakeState.READY_TO_SHOOT || intakeState==IntakeState.SHOOT_RIGHT ||
+                intakeState==IntakeState.SHOOT_LEFT || intakeState==IntakeState.AUTO_START){
+            isShooting = true;
+            shootState = ShootState.SHOOT_RIGHT_ALL;
+        }
+    }
+    public void shootRightAll(){
+        if(intakeState==IntakeState.READY_TO_SHOOT || intakeState==IntakeState.SHOOT_RIGHT ||
+                intakeState==IntakeState.SHOOT_LEFT || intakeState==IntakeState.AUTO_START){
+            isShooting = true;
+            shootState = ShootState.SHOOT_RIGHT_ALL;
+        }
+    }
 
     public void startRailDex() {
         isShooting = true;
@@ -544,9 +658,12 @@ public class IntakeFork implements Component {
 
 
     public void update() {
-        agitatorPID = ControlSystem.builder()
-                .posPid(KP, KI, KD)
-                .build();
+        //ONLY USE THESE FOLLOWING LINES FOR TESTING - DO NOT RESET COEFFS DURING MATCHES
+//        agitatorPID = ControlSystem.builder()
+//                .posPid(KP, KI, KD)
+//                .build();
+//        agitator.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(KP,KI,KD,KF));
+//        agitator.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION,new PIDFCoefficients(RTP_KP,0,0,0));
 
         if(colorTimer.milliseconds() > COLOR_CHECK_MS) {
             getAllColorSensorValues();
@@ -555,6 +672,8 @@ public class IntakeFork implements Component {
             latchLeftColorSensor();
             colorTimer.reset();
         }
+        runIntakeState();
+        //moveAgitatorToGoal();
 
         /*
         panelsTelemetry.addData("front artifact", frontArtifact);
@@ -572,14 +691,12 @@ public class IntakeFork implements Component {
         //ActiveOpMode.telemetry().addData("left color", leftColor.red());*/
 
 
-        runIntakeState();
-        moveAgitatorToGoal();
 
-        if (isShooting && !agitator.isBusy()){
-            isShooting = false;
-            agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        }
-
+//        if (isShooting && !agitator.isBusy()){
+//            isShooting = false;
+//            agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        }
+        //TODO: Uncomment this for after testing the state machine
         if(isShooting){
             leftFireServo.setPower(FIRE_POWER);
             rightFireServo.setPower(FIRE_POWER);
