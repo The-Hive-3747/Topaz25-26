@@ -370,7 +370,7 @@ public class Intake implements Component {
             }
     );
     public Command railDownAuto = new InstantCommand(
-            () -> rail.setPosition(RAIL_DOWN)
+            this::railDown
     );
     public Command shootAllThree = new LambdaCommand()
             .setStart(() ->{

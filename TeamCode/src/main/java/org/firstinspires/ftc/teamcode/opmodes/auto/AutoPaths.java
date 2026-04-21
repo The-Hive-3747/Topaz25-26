@@ -17,11 +17,11 @@ public class AutoPaths {
     public static boolean customParkPose;
 
     /**
-     * this generates all poses & paths. must be called before start of auto.
+     * this generates all poses. must be called before start of auto.
      * this should be called AFTER you've set the alliance, starting pose, etc
      * @param follow PedroPathing follower
      */
-    public static void generatePaths(Follower follow) {
+    public static void generatePoses(Follower follow) {
         follower = follow;
 
         // DEFINE ANGLES HERE
@@ -55,13 +55,13 @@ public class AutoPaths {
         intakeHPStartPose = flipOverCenter(new Pose(28.5, 10.5, intakeAngle));
         intakeHPEndPose = flipOverCenter(new Pose(10.5,10.5, intakeAngle));
         intake1StartPose = flipOverCenter(new Pose(51.25, 80.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = flipOverCenter(new Pose(22.5, 80.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
+        intake1EndPose = flipOverCenter(new Pose(20.5, 80.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
         openGateStartPose = flipOverCenter(new Pose(35, 76, intakeAngle)); //78//x:35
         openGateEndPose = flipOverCenter(new Pose(18.5, 76, intakeAngle));//x:18
         intake2StartPose = flipOverCenter(new Pose(56.25, 57.75, intakeAngle));//y:58//y: 61
-        intake2EndPose = flipOverCenter(new Pose(13.5, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
+        intake2EndPose = flipOverCenter(new Pose(13, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
-        intake3EndPose = flipOverCenter(new Pose(15, 33.75, intakeAngle));//x:18 y:38//y: 32
+        intake3EndPose = flipOverCenter(new Pose(13, 33.75, intakeAngle));//x:18 y:38//y: 32
         curveIntake2 = flipOverCenter(new Pose(50,72));
         farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 
