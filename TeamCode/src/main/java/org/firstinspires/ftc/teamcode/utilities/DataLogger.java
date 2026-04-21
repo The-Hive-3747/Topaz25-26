@@ -65,13 +65,13 @@ public class DataLogger implements Component{
         botDistance = aimbot.getBotDistance();
         //flywheelVelocity = flywheelLeft.getVelocity();
         //hoodPos = -intake.getCurrentPosition();
-        hoodPos = -flywheelRight.getCurrentPosition();
+        //hoodPos = flywheelRight.getCurrentPosition();
 
         ActiveOpMode.telemetry().addData("Bot Position",botPosition); //need to put follower in current pose in update of opmode
         ActiveOpMode.telemetry().addData("Distance to Goal",botDistance);
-        ActiveOpMode.telemetry().addData("Flywheel vel",flywheel.getVel());
-        ActiveOpMode.telemetry().addData("Flywheel goal vel","");
-        ActiveOpMode.telemetry().addData("hood pos", hoodPos); //hood encoder is on intake
+        //ActiveOpMode.telemetry().addData("Flywheel vel",flywheel.getVel());
+        //ActiveOpMode.telemetry().addData("Flywheel goal vel","");
+        //ActiveOpMode.telemetry().addData("hood pos", hoodPos); //hood encoder is on intake
         ActiveOpMode.telemetry().addData("last time shooting",timeShooting);
         // ActiveOpMode.telemetry().update();
 

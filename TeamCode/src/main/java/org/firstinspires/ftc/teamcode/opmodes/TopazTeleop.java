@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import static dev.nextftc.bindings.Bindings.button;
 
+import android.graphics.Path;
+
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -108,8 +110,15 @@ public class TopazTeleop extends NextFTCOpMode {
     @Override
     public void onInit() {
         follower = Constants.createFollower(hardwareMap);
-        drive.setOffset(OpModeTransfer.currentPose.getHeading());
-        follower.setStartingPose(OpModeTransfer.currentPose);
+        if(OpModeTransfer.hasBeenTransferred) {
+            drive.setOffset(OpModeTransfer.currentPose.getHeading());
+            follower.setStartingPose(OpModeTransfer.currentPose);
+            //note: the opmode transfer is used later to reset the turret and hood which are built in post init
+        }else{
+            drive.setOffset(OpModeTransfer.startingPose.getHeading());
+            follower.setStartingPose(OpModeTransfer.startingPose);
+            OpModeTransfer.hasBeenTransferred = false;
+        }
         follower.update();
 
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
@@ -144,11 +153,11 @@ public class TopazTeleop extends NextFTCOpMode {
         } else{
             //turretLights.blueAlliance();
         }
-
-        if (!OpModeTransfer.hasBeenTransferred) {
-            turret.zeroTurret();
-            flywheel.resetHoodEncoder();
-        }
+        // TODO hood encoder is only available post init
+//        if (!OpModeTransfer.hasBeenTransferred) {
+//            turret.zeroTurret();
+//            flywheel.resetHoodEncoder();
+//        }
     }
     @Override
     public void onWaitForStart() {
@@ -254,7 +263,7 @@ public class TopazTeleop extends NextFTCOpMode {
                 })
                 .whenBecomesFalse(() -> {
                     intake.stopIntake();
-                    intake.resetRailDex();
+                    //intake.resetRailDex();
                     isIntakeOn = false;
                 });
         g2X.whenBecomesTrue(() -> intake.shiftIntake());
@@ -304,6 +313,11 @@ public class TopazTeleop extends NextFTCOpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
+        if (!OpModeTransfer.hasBeenTransferred) {
+            turret.zeroTurret();
+            flywheel.resetHoodEncoder();
+            OpModeTransfer.hasBeenTransferred = false;
+        }
     }
     @Override
     public void onUpdate() {

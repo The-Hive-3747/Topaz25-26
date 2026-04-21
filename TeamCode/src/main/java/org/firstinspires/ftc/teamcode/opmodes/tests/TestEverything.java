@@ -18,6 +18,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 
@@ -59,6 +60,7 @@ public class TestEverything extends NextFTCOpMode {
     double pinpointHeading = 0;
     double pinpointX = 0;
     double pinpointY = 0;
+    Flywheel flywheel;
     TestName currentTest = TestName.CONFIG;
     DcMotorEx leftFront, rightFront, rightBack, leftBack, agitator, intake, flywheelLeft, flywheelRight;
     Servo rail;
@@ -497,8 +499,7 @@ public class TestEverything extends NextFTCOpMode {
         }
     }
     public void testFlywheelVel(){
-        telemetry.addLine("No further tests are implemented yet");
-        telemetry.update();
+
     }
     public void testHood(){
 
@@ -600,6 +601,9 @@ public class TestEverything extends NextFTCOpMode {
             case FLYWHEEL_RIGHT:
                 testFlywheelRight();
                 if(goToNextTest){
+                    if(flywheelLeft != null && flywheelRight != null){
+                        flywheel = new Flywheel();
+                    }
                     currentTest = TestName.FLYWHEEL_VEL;
                     goToNextTest = false;
                 }

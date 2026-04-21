@@ -40,10 +40,11 @@ public class Intake implements Component {
     double INTAKE_SHOOTING_POWER = 0.9;
     double INTAKE_FAST = 1.0;
     double REVERSAL_TIME = 500;
+    double RAIL_DOWN_TIME = 500;
     public static double FIRE_POWER = 1;//0.9
     public static double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
-    public static double RAIL_UP = 0.157;//0.3;//0.8;//0.5
-    public static double RAIL_DOWN = 0;//1;//1;
+    public static double RAIL_UP = 0.9; //0.72;// 0.22;//0.3//0.157;//0.3;//0.8;//0.5
+    public static double RAIL_DOWN = 0.5;//1;//1;
     double INTAKE_POWER_REVERSED = -0.9;
     double agitatorResetPosDone = 0.0;
     static double AGITATOR_ENC_REVOLUTIONS_REV_V2 = 8192.0;
@@ -57,6 +58,7 @@ public class Intake implements Component {
     boolean intakeReversed = false;
     boolean agitatorResetRequest = false;
     boolean isShooting = false;
+    boolean intakeStopping = false;
 
     Artifact leftArtifact = Artifact.EMPTY;
     Artifact rightArtifact = Artifact.EMPTY;
@@ -179,9 +181,10 @@ public class Intake implements Component {
 
     public void stopIntake() {
         isIntakeOn = false;
-        intakeMotor.setPower(INTAKE_POWER_REVERSED);
+        //intakeMotor.setPower(INTAKE_POWER_REVERSED);
+        railDown();
         intakeRevTimer.reset();
-        intakeReversed=true;
+        intakeStopping = true;
     }
     public void turnAgitator() {
 
@@ -445,6 +448,12 @@ public class Intake implements Component {
             intakeMotor.setPower(0);
             intakeReversed = false;
             rail.setPosition(RAIL_DOWN);
+        }
+        if(intakeStopping && intakeRevTimer.milliseconds() >= RAIL_DOWN_TIME){
+            intakeStopping = false;
+            intakeReversed = true;
+            intakeMotor.setPower(INTAKE_POWER_REVERSED);
+            intakeRevTimer.reset();
         }
         if (agitatorResetRequest && !agitator.isBusy()) {
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

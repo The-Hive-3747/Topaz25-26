@@ -35,9 +35,9 @@ public class Hood{
     public boolean allowPID = true;
 
     public static double HOOD_P = 0.0002;//0.00047;//0.0001;//0.00029;//0.00058;//0.0012;
-    public static double HOOD_D = 1;//0.1;//0;//0.3;//0.1;//0;//1;
+    public static double HOOD_D = 0;//0.1;//0;//0.3;//0.1;//0;//1;
     public static double HOOD_I = 0;//0.00000000000000001;//0.0000000000003;//0.0;
-    public static double HOOD_FF = 0.075;
+    public static double HOOD_FF = 0;
 
     public static double HOOD_AUTON_CLOSE_POS = 5000;
     public static double HOOD_AUTON_FAR_POS = 7500;
