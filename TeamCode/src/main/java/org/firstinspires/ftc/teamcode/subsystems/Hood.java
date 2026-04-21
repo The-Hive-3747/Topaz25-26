@@ -1,25 +1,17 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import android.provider.Settings;
-
-import dev.nextftc.control.feedback.FeedbackElement;
 import dev.nextftc.control.feedforward.FeedforwardElement;
-import dev.nextftc.core.components.Component;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-
-import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
-import dev.nextftc.core.subsystems.Subsystem;
 
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -28,10 +20,10 @@ public class Hood{
 
     private static double HOOD_MAX_POS = 8858;
     private double HOOD_MIN_POS = 0;
-    private static double HOOD_INCREMENT = 200;//1000;
+    public static double HOOD_INCREMENT = 200;//1000;
     public static double AUTON_HOOD_POS = 1353;//1453
     private double power = 0;
-    double hoodAdjust = 0.0;
+    double hoodOffset = 0.0;
     public boolean allowPID = true;
 
     public static double HOOD_P = 0.0002;//0.00047;//0.0001;//0.00029;//0.00058;//0.0012;
@@ -49,6 +41,11 @@ public class Hood{
     public Hood(DcMotorEx encoder){
         hoodEncoder = encoder;
     }
+    ElapsedTime resetHoodTimer = new ElapsedTime();
+    double HOOD_RESET_TIME_MS = 2000;
+    boolean isHoodResetting = false;
+    double HOOD_RESET_POWER = -1;
+    static boolean manualMode = false;
 
     public class FrictionFeedback implements FeedforwardElement {
         double HOOD_FF_INNER = 0;
@@ -67,7 +64,6 @@ public class Hood{
     public void init() {
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         hood.setDirection(DcMotorSimple.Direction.REVERSE);
-
 
         // default goal value
         goal = new KineticState(0);
@@ -89,7 +85,7 @@ public class Hood{
 
     public void setGoal(double goalPos) {
         enableHoodPID();
-        goalPos = goalPos + hoodAdjust;
+        goalPos = goalPos + hoodOffset;
         if (goalPos > HOOD_MAX_POS) {
             goalPos = HOOD_MAX_POS;
         } else if (goalPos < HOOD_MIN_POS) {
@@ -110,6 +106,21 @@ public class Hood{
     public void enableHoodPID() {
         allowPID = true;
     }
+    public static void enableManualMode() {
+        manualMode = true;
+    }
+    public static void disableManualMode() {
+        manualMode = false;
+    }
+
+    /**
+     * Use to apply a permanent offset to all hood goals.
+     * Should only be used if the hood is consistently too low/high in a match.
+     * @param offset The offset to be added to the existing offset (can be negative)
+     */
+    public void adjustHoodOffset(double offset) {
+        hoodOffset += offset;
+    }
 
     public void increaseHood(){
         setGoal(getGoal() + HOOD_INCREMENT);
@@ -118,6 +129,15 @@ public class Hood{
         setGoal(getGoal() - HOOD_INCREMENT);
     }
 
+    /**
+     * Use to reset the hood position using a timer.
+     * Runs the hood with negative power for a time, then resets the encoder.
+     */
+    public void resetHoodPosUsingTimer() {
+        isHoodResetting = true;
+        resetHoodTimer.reset();
+        setHoodPower(HOOD_RESET_POWER);
+    }
 
     public void update() {
         //update all the cached values, only get the position once
@@ -132,7 +152,18 @@ public class Hood{
                 .build();
         hoodPID.setGoal(goal);*/
 
-        if (allowPID) {
+        if (isHoodResetting) {
+            allowPID = false;
+            if (resetHoodTimer.milliseconds() > HOOD_RESET_TIME_MS) {
+                hood.setPower(0);
+                hoodEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                hoodEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                isHoodResetting = false;
+                allowPID = true;
+            }
+        }
+
+        if (allowPID && !manualMode) {
             //calculate the power we need and then add a feedforward in order to overcome friction
             power = hoodPID.calculate(new KineticState(this.getHoodPosition()));
             power = power + Math.signum(power) * HOOD_FF;

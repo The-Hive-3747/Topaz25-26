@@ -87,6 +87,23 @@ public class Flywheel implements Component {
         flywheelRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    /**
+     * Use to reset the hood position using a timer.
+     * Runs the hood with negative power for a time, then resets the encoder.
+     */
+    public void resetHoodPosUsingTimer() {
+        hood.resetHoodPosUsingTimer();
+    }
+
+    /**
+     * Use to apply a permanent offset to all hood goals.
+     * Should only be used if the hood is consistently too low/high in a match.
+     * @param offset The offset to be added to the existing offset (can be negative)
+     */
+    public void adjustHoodOffset(double offset) {
+        hood.adjustHoodOffset(offset);
+    }
+
     public void increaseHood() {
         hood.increaseHood();
     }

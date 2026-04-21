@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import static org.firstinspires.ftc.teamcode.subsystems.Hood.HOOD_INCREMENT;
 import static dev.nextftc.bindings.Bindings.button;
 
 import android.graphics.Path;
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
@@ -135,7 +137,7 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2Back = button(() -> gamepad2.back);
         Button g1DDown = button(() -> gamepad1.dpad_down);
         g1DDown.whenBecomesTrue(() -> flywheel.resetHoodEncoder());
-        g2Back.whenBecomesTrue(() -> turret.zeroTurret());
+        //g2Back.whenBecomesTrue(() -> turret.zeroTurret());
         g1Back.whenBecomesTrue(() -> {
                     if (alliance == Alliance.BLUE){
                         alliance = Alliance.RED;
@@ -190,8 +192,8 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2B = button(() -> gamepad2.b);
         g2A = button(() -> gamepad2.a);
 
-        Button gUp = button(() -> gamepad2.dpad_up || gamepad1.dpad_up);
-        Button gDown = button(() -> gamepad2.dpad_down || gamepad1.dpad_down);
+        Button g2Up = button(() -> gamepad2.dpad_up);
+        Button g2Down = button(() -> gamepad2.dpad_down);
 
         Button g1Right = button(() -> gamepad1.dpad_right);
         Button g1Left = button(() -> gamepad1.dpad_left);
@@ -207,14 +209,32 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
         Button g1RT = button(() -> gamepad1.right_trigger > 0.1);
 
-        gUp.whenBecomesTrue(() -> flywheel.increaseHood());
-        gDown.whenBecomesTrue(() -> {
-            flywheel.setHoodPower(-0.5);
-        })
+        Button g1Back = button(() -> gamepad1.back);
+        Button g2Back = button(() -> gamepad2.back);
+
+        g2Back
+                .toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> {
+                    BindingManager.setLayer("manual");
+                    Hood.enableManualMode();
+                })
                 .whenBecomesFalse(() -> {
-                    flywheel.setHoodPower(0);
-                    flywheel.resetHoodEncoder();
+                    BindingManager.setLayer(null);
+                    Hood.disableManualMode();
                 });
+
+        g2Up
+                .inLayer(null)
+                .whenBecomesTrue(() -> flywheel.adjustHoodOffset(HOOD_INCREMENT))
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.setHoodPower(0.5))
+                .whenBecomesFalse(() -> flywheel.setHoodPower(0));
+        g2Down
+                .inLayer(null)
+                .whenBecomesTrue(() -> flywheel.adjustHoodOffset(-HOOD_INCREMENT))
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.setHoodPower(-0.5))
+                .whenBecomesFalse(() -> flywheel.setHoodPower(0));
 
         g2LT.whenBecomesTrue(() ->{
             FLYWHEEL_ON = true;
@@ -306,6 +326,8 @@ public class TopazTeleop extends NextFTCOpMode {
                 turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
             }
         });
+
+        g1Back.whenBecomesTrue(() -> flywheel.resetHoodPosUsingTimer());
 
         //turning on bulk mode to reduce critical loop time
         allHubs = hardwareMap.getAll(LynxModule.class);

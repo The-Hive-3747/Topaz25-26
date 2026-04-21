@@ -84,7 +84,7 @@ public class Intake implements Component {
         rightFireServo = ActiveOpMode.hardwareMap().get(CRServo.class, "fireWheelRight");
         hood = ActiveOpMode.hardwareMap().get(CRServo.class, "hood");
         leftFireServo.setDirection(CRServo.Direction.REVERSE);
-        rightFireServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightFireServo.setDirection(CRServo.Direction.REVERSE);
         rail = ActiveOpMode.hardwareMap().get(Servo.class, "upperRail");
         //rail.setDirection(Servo.Direction.REVERSE);
         frontColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "frontColor");
