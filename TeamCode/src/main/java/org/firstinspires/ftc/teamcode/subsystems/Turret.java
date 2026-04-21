@@ -39,7 +39,7 @@ public class Turret implements Component {
     private KineticState FIXED_ANGLE = new KineticState(-95);
     private KineticState angleAfterOffset = new KineticState(0);
     public static double turretOffset = 0;
-    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -140; //-92 -95
+    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -139; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 138;
     public static double AUTON_RED_SHOOT_ANGLE_FAR = -114; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 114;
@@ -312,28 +312,30 @@ public class Turret implements Component {
         FIXED_ANGLE = new KineticState(angle);
     }
 
-    public void setFixedAngleClose(Alliance alliance) {
+    public void setFixedAngle(Alliance alliance, boolean isClose) {
         turretState = TurretState.FIXED;
-        if (alliance == Alliance.BLUE) {
-            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
+        if (isClose) {
+            if (alliance == Alliance.BLUE) {
+                FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_CLOSE);
+            } else {
+                FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_CLOSE);
+            }
         } else {
-            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_CLOSE);
+            if (alliance == Alliance.BLUE) {
+                FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_FAR);
+            } else {
+                FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_FAR);
+            }
         }
     }
-
-    public void setFixedAngleFar(Alliance alliance) {
-        turretState = TurretState.FIXED;
-        if (alliance == Alliance.BLUE) {
-            FIXED_ANGLE = new KineticState(AUTON_BLUE_SHOOT_ANGLE_FAR);
-        } else {
-            FIXED_ANGLE = new KineticState(AUTON_RED_SHOOT_ANGLE_FAR);
-        }
+    public void setTurretStateOff() {
+        turretState = TurretState.OFF;
+    }
+    public void setTurretStateAuto() {
+        turretState = TurretState.AUTO;
     }
 
-    public void setTurretStateOff(){ turretState = TurretState.OFF;}
-    public void setTurretStateAuto(){ turretState = TurretState.AUTO;}
-
-    public void setTurretStateFixed(){
+    public void setTurretStateFixed() {
         turretState = TurretState.FIXED;
     }
 

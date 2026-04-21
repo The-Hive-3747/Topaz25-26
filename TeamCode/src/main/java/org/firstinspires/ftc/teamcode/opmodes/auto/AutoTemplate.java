@@ -152,35 +152,46 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected Command runFirewheels = new InstantCommand(() -> FIREWHEELS_ON=true);
 
     protected void setTurretFixedClose() {
-        turret.setAlliance(alliance);
-        turret.setFixedAngleClose(alliance);
+        autonomousCommands = autonomousCommands.then(
+                new InstantCommand(() -> setTurretFixed(alliance, true))
+        );
     }
 
     protected void setTurretFixedFar() {
+        autonomousCommands = autonomousCommands.then(
+                new InstantCommand(() -> setTurretFixed(alliance, false))
+        );
+    }
+
+    protected void setTurretFixed(Alliance alliance, boolean isClose) {
         turret.setAlliance(alliance);
-        turret.setFixedAngleFar(alliance);
+        turret.setFixedAngle(alliance, isClose);
     }
 
     protected void setHoodPosClose() {
-        HOOD_POS = Hood.HOOD_AUTON_CLOSE_POS;
+        autonomousCommands = autonomousCommands.then(new InstantCommand(() -> setHoodPos(true)));
     }
 
     protected void setHoodPosFar() {
-        HOOD_POS = Hood.HOOD_AUTON_FAR_POS;
+        autonomousCommands = autonomousCommands.then(new InstantCommand(() -> setHoodPos(false)));
+    }
+
+    protected void setHoodPos(boolean isClose) {
+        if (isClose) {
+            HOOD_POS = Hood.HOOD_AUTON_CLOSE_POS;
+        } else {
+            HOOD_POS = Hood.HOOD_AUTON_FAR_POS;
+        }
     }
 
     protected void startAsBlue() {
         alliance = Alliance.BLUE;
         AutoPaths.alliance = alliance;
-        turret.setAlliance(alliance);
-        turret.setFixedAngleClose(alliance);
     }
 
     protected void startAsRed() {
         alliance = Alliance.RED;
         AutoPaths.alliance = alliance;
-        turret.setAlliance(alliance);
-        turret.setFixedAngleClose(alliance);
     }
 
     protected void startAtBack() {
@@ -192,6 +203,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
         AutoPaths.generatePoses(follower);
+        setHoodPos(false);
+        setTurretFixed(alliance, false);
     }
 
     protected void startAtFront() {
@@ -203,6 +216,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
         AutoPaths.generatePoses(follower);
+        setHoodPos(true);
+        setTurretFixed(alliance, true);
     }
 
     protected void startAtCustomPose(Pose pose) {
@@ -271,21 +286,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 new ParallelGroup(
                         new InstantCommand(() -> FIREWHEELS_ON=true),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
-                        intake.shootAllThree
-                )
-        ));
-        lastPose = farShootingPose;
-    }
-
-    protected void shootAllThreeAgainAtFar(double delayBeforeShot) {
-        AutoPaths.generatePoses(follower);
-        autonomousCommands = autonomousCommands.then(new SequentialGroup(
-                /*new ParallelGroup(
-                        //new FollowPath(toShootAtFarFromLastPose),
-                        intake.railDownAuto
-                ),*/
-                new Delay(delayBeforeShot),
-                new ParallelGroup(
                         intake.shootAllThree
                 )
         ));
