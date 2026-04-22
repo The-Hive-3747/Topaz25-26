@@ -50,12 +50,16 @@ public class AutoPaths {
             frontParkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
         backParkPose = flipOverCenter(new Pose(36.25, 20.5, parkAngle));
-        closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
+        if (alliance == Alliance.RED) {
+            closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
+        } else {
+            closeShootingPose = new Pose(56, 90, Math.toRadians(180));
+        }
         farShootingPose = flipOverCenter(new Pose(55, 21, shootAngle));
-        intakeHPStartPose = flipOverCenter(new Pose(28.5, 10.5, intakeAngle));
-        intakeHPEndPose = flipOverCenter(new Pose(10.5,10.5, intakeAngle));
-        intake1StartPose = flipOverCenter(new Pose(51.25, 80.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
-        intake1EndPose = flipOverCenter(new Pose(19, 80.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
+        intakeHPStartPose = flipOverCenter(new Pose(40, 10.5, intakeAngle));
+        intakeHPEndPose = flipOverCenter(new Pose(10,10.5, intakeAngle));
+        intake1StartPose = flipOverCenter(new Pose(51.25, 81.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
+        intake1EndPose = flipOverCenter(new Pose(19, 81.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
         openGateStartPose = flipOverCenter(new Pose(35, 76, intakeAngle)); //78//x:35
         openGateEndPose = flipOverCenter(new Pose(18.5, 76, intakeAngle));//x:18
         intake2StartPose = flipOverCenter(new Pose(56.25, 57.75, intakeAngle));//y:58//y: 61
@@ -192,6 +196,25 @@ public class AutoPaths {
                         new BezierCurve(pose1, curvePose, pose2)
                 )
                 .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+                .build();
+    }
+
+    /**
+     * generates a PathChain with a linear heading from pose1 & pose2
+     * this is a bezier curve
+     * @param pose1 the first pose
+     * @param curvePose the curve pose
+     * @param pose2 the second pose
+     * @param velocityConstraint
+     * @return the built PathChain
+     */
+    public static PathChain generatePathCurveWithVelocityConstraint(Pose pose1, Pose curvePose, Pose pose2, double velocityConstraint) {
+        return follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(pose1, curvePose, pose2)
+                )
+                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+                .setVelocityConstraint(velocityConstraint)
                 .build();
     }
 

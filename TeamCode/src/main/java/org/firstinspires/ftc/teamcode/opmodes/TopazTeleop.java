@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import static org.firstinspires.ftc.teamcode.subsystems.Hood.HOOD_INCREMENT;
+import static org.firstinspires.ftc.teamcode.subsystems.Hood.HOOD_MANUAL_POWER;
 import static dev.nextftc.bindings.Bindings.button;
 
 import android.graphics.Path;
@@ -14,8 +15,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
+import com.qualcomm.robotcore.hardware.ServoControllerEx;
+import com.qualcomm.robotcore.hardware.configuration.ServoFlavor;
+import com.qualcomm.robotcore.hardware.configuration.ServoHubConfiguration;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
@@ -24,6 +31,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.subsystems.TurretLights;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
@@ -73,7 +81,7 @@ public class TopazTeleop extends NextFTCOpMode {
     Turret turret;
     Relocalization limelight;
     Flywheel  flywheel;
-    //TurretLights turretLights;
+    TurretLights turretLights;
     private ElapsedTime looptime;
     private ElapsedTime relocalizeTimer = new ElapsedTime();
     private double relocalizeBreak = 1000;
@@ -97,7 +105,6 @@ public class TopazTeleop extends NextFTCOpMode {
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
 
-    private GoBildaPrismDriver prism;
     Follower follower;
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -123,12 +130,11 @@ public class TopazTeleop extends NextFTCOpMode {
         }
         follower.update();
 
-        //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
         //limelight.preInit();
         //limelightComponent = hardwareMap.get(LimelightComponent.class, "limelight");
 
-        //turretLights = new TurretLights(hardwareMap, telemetry);
+        turretLights = new TurretLights(hardwareMap, telemetry);
 
         Drawing.init();
 
@@ -138,7 +144,7 @@ public class TopazTeleop extends NextFTCOpMode {
         Button g1DDown = button(() -> gamepad1.dpad_down);
         g1DDown.whenBecomesTrue(() -> flywheel.resetHoodEncoder());
         //g2Back.whenBecomesTrue(() -> turret.zeroTurret());
-        g1Back.whenBecomesTrue(() -> {
+        /*g1Back.whenBecomesTrue(() -> {
                     if (alliance == Alliance.BLUE){
                         alliance = Alliance.RED;
                         //turretLights.redAlliance();
@@ -147,14 +153,15 @@ public class TopazTeleop extends NextFTCOpMode {
                         //turretLights.blueAlliance();
                     }
                     //turret.setAlliance(alliance);
-                });
+                });*/
         looptime = new ElapsedTime();
 
         if (alliance == Alliance.BLUE){
-            //turretLights.redAlliance();
+            turretLights.blueAlliance();
         } else{
-            //turretLights.blueAlliance();
+            turretLights.redAlliance();
         }
+
         // TODO hood encoder is only available post init
 //        if (!OpModeTransfer.hasBeenTransferred) {
 //            turret.zeroTurret();
@@ -227,13 +234,13 @@ public class TopazTeleop extends NextFTCOpMode {
                 .inLayer(null)
                 .whenBecomesTrue(() -> flywheel.adjustHoodOffset(HOOD_INCREMENT))
                 .inLayer("manual")
-                .whenBecomesTrue(() -> flywheel.setHoodPower(0.5))
+                .whenBecomesTrue(() -> flywheel.setHoodPower(HOOD_MANUAL_POWER))
                 .whenBecomesFalse(() -> flywheel.setHoodPower(0));
         g2Down
                 .inLayer(null)
                 .whenBecomesTrue(() -> flywheel.adjustHoodOffset(-HOOD_INCREMENT))
                 .inLayer("manual")
-                .whenBecomesTrue(() -> flywheel.setHoodPower(-0.5))
+                .whenBecomesTrue(() -> flywheel.setHoodPower(-HOOD_MANUAL_POWER))
                 .whenBecomesFalse(() -> flywheel.setHoodPower(0));
 
         g2LT.whenBecomesTrue(() ->{
@@ -336,10 +343,12 @@ public class TopazTeleop extends NextFTCOpMode {
         }
 
         if (!OpModeTransfer.hasBeenTransferred) {
+            intake.resetAgitatorEncoder();
             turret.zeroTurret();
             flywheel.resetHoodEncoder();
             OpModeTransfer.hasBeenTransferred = false;
         }
+        intake.resetRailDex();
     }
     @Override
     public void onUpdate() {
@@ -376,12 +385,12 @@ public class TopazTeleop extends NextFTCOpMode {
         }*/
 
         if(flywheel.readyToShoot() && !wasReadyToShoot && lightTimer.seconds() > 1.0 && flywheel.getVel() != 0){
-            //turretLights.readyToShoot();
+            turretLights.readyToShoot();
             wasReadyToShoot = true;
             lightTimer.reset();
         } else if (!flywheel.readyToShoot() && wasReadyToShoot && lightTimer.seconds() > 1.0) {
             wasReadyToShoot = false;
-            //turretLights.notReadyToShoot();
+            turretLights.notReadyToShoot();
             lightTimer.reset();
         }
 
@@ -435,7 +444,7 @@ public class TopazTeleop extends NextFTCOpMode {
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
         panelsTelemetry.addData("hood position", flywheel.getHoodPos());
         panelsTelemetry.addData("hood goal", flywheel.getHoodGoal());
-        panelsTelemetry.addData("hub number", allHubs.toArray().length);
+        //panelsTelemetry.addData("hub number", Servo);
         panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
         panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
         panelsTelemetry.addData("Critical loop time", looptime);

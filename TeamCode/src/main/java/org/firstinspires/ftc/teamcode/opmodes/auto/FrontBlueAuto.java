@@ -11,14 +11,13 @@ public class FrontBlueAuto extends AutoTemplate {
         setTurretFixedClose();
         setHoodPosClose();
         turnFlywheelOnForFront();
-        shootAllThreeAtClose(0.3);
-        intake1(0.5);
-        //openGate(0.2);
-        shootAllThreeAtClose(0.5);
-        intake2(0.5);
-        shootAllThreeAtClose(0.5);
-        intake3(0.5);
-        shootAllThreeAtClose(0.5);
+        shootAllThreeAtClose(0);
+        intake1(0.1);
+        shootAllThreeAtClose(0);
+        intake2(0.1);
+        shootAllThreeAtCloseCurved(0); //SHOULD BE CURVED, BUT IT BROKE :( SO CHANGED BACK
+        intake3(0.1);
+        shootAllThreeAtClose(0);
         parkAtFront();
     }
 }

@@ -95,11 +95,14 @@ public class Intake implements Component {
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
 
-        agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        agitator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         /*PIDFCoefficients pid = agitator.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
         PIDFCoefficients pidNew = new PIDFCoefficients(pid.p*-1, pid.i *-1, pid.d * -1, pid.f * -1);
         agitator.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidNew);*/
+    }
+
+    public void resetAgitatorEncoder() {
+        agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        agitator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void runFireWheels() {
@@ -142,8 +145,8 @@ public class Intake implements Component {
         leftFireServo.setPower(0);
         rightFireServo.setPower(0);
         agitator.setTargetPosition(0);
-        agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
     public void startResetRailDex() {
         leftFireServo.setPower(0);

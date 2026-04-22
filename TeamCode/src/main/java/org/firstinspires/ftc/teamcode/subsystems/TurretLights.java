@@ -9,39 +9,26 @@ import org.firstinspires.ftc.teamcode.utilities.PrismAnimations;
 
 public class TurretLights {
     GoBildaPrismDriver prism;
-    PrismAnimations.Solid ball1 = new PrismAnimations.Solid(Color.RED);
     PrismAnimations.Solid red = new PrismAnimations.Solid(Color.RED);
     PrismAnimations.Solid blue = new PrismAnimations.Solid(Color.BLUE);
-    PrismAnimations.Solid ball2 = new PrismAnimations.Solid(Color.RED);
-    PrismAnimations.Solid ball3 = new PrismAnimations.Solid(Color.RED);
-    PrismAnimations.Solid ball4 = new PrismAnimations.Solid(Color.RED);
-    PrismAnimations.Solid ball5 = new PrismAnimations.Solid(Color.RED);
-    PrismAnimations.Solid ball6 = new PrismAnimations.Solid(Color.RED);
-    PrismAnimations.Solid blue1 = new PrismAnimations.Solid(Color.BLUE);
-    PrismAnimations.Solid blue2 = new PrismAnimations.Solid(Color.BLUE);
-    PrismAnimations.Solid blue3 = new PrismAnimations.Solid(Color.BLUE);
-    PrismAnimations.Solid blue4 = new PrismAnimations.Solid(Color.BLUE);
-    PrismAnimations.Solid blue5 = new PrismAnimations.Solid(Color.BLUE);
-    PrismAnimations.Solid blue6 = new PrismAnimations.Solid(Color.BLUE);
     PrismAnimations.Solid shootNow = new PrismAnimations.Solid(Color.GREEN);
     PrismAnimations.Solid green = new PrismAnimations.Solid(Color.GREEN);
     PrismAnimations.Solid noShoot = new PrismAnimations.Solid(Color.MAGENTA);
     PrismAnimations.Solid purple = new PrismAnimations.Solid(Color.MAGENTA);
-    PrismAnimations.Solid purple2 = new PrismAnimations.Solid(Color.MAGENTA);
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
     int brightness = 30;
     int startIndex = 0;
-    int stopIndex = 11;
+    int stopIndex = 23;
 
 
     public TurretLights(HardwareMap hm, Telemetry tm) {
         hardwareMap = hm;
         telemetry = tm;
-        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
+        prism = hardwareMap.get(GoBildaPrismDriver.class, "lights");
 
-        prism.setStripLength(12);
+        prism.setStripLength(24);
 
 
     }
@@ -61,17 +48,17 @@ public class TurretLights {
     }
 
     public void redAlliance() {
-        red.setBrightness(50);
-        red.setStartIndex(0);
-        red.setStopIndex(11);
+        red.setBrightness(brightness);
+        red.setStartIndex(startIndex);
+        red.setStopIndex(stopIndex);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, red);
     }
 
     public void blueAlliance() {
-        blue.setBrightness(50);
-        blue.setStartIndex(0);
-        blue.setStopIndex(11);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, red);
+        blue.setBrightness(brightness);
+        blue.setStartIndex(startIndex);
+        blue.setStopIndex(stopIndex);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, blue);
     }
 
     public void gPP() {
@@ -101,7 +88,7 @@ public class TurretLights {
         green.setBrightness(50);
         purple.setBrightness(50);
         purple.setStartIndex(0);
-        purple.setStartIndex(5);
+        purple.setStopIndex(3);
         green.setStartIndex(4);
         green.setStopIndex(5);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, purple);

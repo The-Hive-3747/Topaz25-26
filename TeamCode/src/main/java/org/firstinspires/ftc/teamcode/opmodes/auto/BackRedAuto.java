@@ -2,23 +2,22 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "back red auto / shoots close", group = "default")
+@Autonomous(name = "back red auto / shoots far", group = "default")
 public class BackRedAuto extends AutoTemplate {
     @Override
     public void initAuto() {
         startAsRed();
         startAtBack();
-        setTurretFixedClose();
-        setHoodPosClose();
-        turnFlywheelOnForFront();
-        shootAllThreeAtClose(0.3);
-        intake1(0.3);
-        openGate(0.2);
-        shootAllThreeAtClose(0.4);
-        intake2(0.3);
-        shootAllThreeAtCloseCurved(0.4);
-        intake3(0.3);
-        shootAllThreeAtClose(0.4);
-        parkAtFront();
+        setTurretFixedFar();
+        setHoodPosFar();
+        turnFlywheelOnForBack();
+        shootAllThreeAtFar(1);
+        intakeHP(0.5);
+        shootAllThreeAtFar(0);
+        intake3(0.1);
+        shootAllThreeAtFar(0);
+        intake2(0.1);
+        shootAllThreeAtFar(0);
+        parkAtBack();
     }
 }
