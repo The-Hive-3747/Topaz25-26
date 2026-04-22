@@ -384,6 +384,7 @@ public class TopazTeleop extends NextFTCOpMode {
             got3Balls = true;
         }*/
 
+        /*
         if(flywheel.readyToShoot() && !wasReadyToShoot && lightTimer.seconds() > 1.0 && flywheel.getVel() != 0){
             turretLights.readyToShoot();
             wasReadyToShoot = true;
@@ -392,6 +393,13 @@ public class TopazTeleop extends NextFTCOpMode {
             wasReadyToShoot = false;
             turretLights.notReadyToShoot();
             lightTimer.reset();
+        }*/
+        if (flywheel.readyToShoot() && !wasReadyToShoot) {
+            turretLights.readyToShoot();
+            wasReadyToShoot = true;
+        } else if (!flywheel.readyToShoot() && wasReadyToShoot) {
+            turretLights.notReadyToShoot();
+            wasReadyToShoot = false;
         }
 
         /*double currentHeading = follower.getHeading();

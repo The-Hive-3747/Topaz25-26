@@ -4,7 +4,6 @@ import static org.firstinspires.ftc.teamcode.opmodes.auto.AutoPaths.*;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
@@ -23,10 +22,10 @@ import dev.nextftc.core.commands.groups.CommandGroup;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.InstantCommand;
+import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -42,7 +41,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 //light = new Light()
         );
     }
-    TurretLights turretLights;
+    protected TurretLights turretLights;
     protected CommandGroup autonomousCommands;
     protected Alliance alliance = null; // default value
     protected Pose startPose;
@@ -56,6 +55,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     Follower follower;
     double HOOD_POS, secondsBeforeIntakeOff = 0.5, maxLoopTimeMS = 0;
     boolean FIREWHEELS_ON = false, hasResetEncoders = false;
+    public boolean isDone;
+
 
 
 
@@ -102,6 +103,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onWaitForStart() {
         if (!hasResetEncoders) {
+            turretLights.gPP();
             flywheel.resetHoodEncoder();
             turret.zeroTurret();
             intake.resetAgitatorEncoder();
@@ -151,10 +153,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         }
         telemetry.addLine("---- AUTO ----");
         telemetry.addData("pose", follower.getPose());
-        telemetry.addData("endPose", follower.getCurrentPathChain() != null ? follower.getCurrentPathChain().endPose() : "");
-        telemetry.addData("endPose", follower.getCurrentPathChain() != null ? follower.getCurrentPathChain().toString() : "");
         telemetry.addData("looptime", loopTime.milliseconds());
         telemetry.addData("max looptime", maxLoopTimeMS);
+        telemetry.addData("pose", follower.isBusy() ? follower.getCurrentPath().getPose(1) : "mewo");
         telemetry.update();
     }
 
@@ -183,6 +184,12 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     protected void setTurretFixed(Alliance alliance, boolean isClose) {
         turret.setAlliance(alliance);
         turret.setFixedAngle(alliance, isClose);
+    }
+
+    protected void setTurretAuto() {
+        autonomousCommands = autonomousCommands.then(
+                new InstantCommand(() -> turret.setTurretStateAuto())
+        );
     }
 
     protected void setHoodPosClose() {
@@ -228,7 +235,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         if (alliance == Alliance.RED) {
             startPose = new Pose(110, 134.25, Math.toRadians(-94.95));
         } else {
-            startPose = new Pose(34, 135.5,Math.toRadians(-85.05));
+            startPose = new Pose(34, 134.25,Math.toRadians(-85.05));
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
@@ -264,82 +271,53 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void shootAllThreeAtClose(double delayBeforeShot) {
-        toShootAtCloseFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, closeShootingPose, 0.5);
+        toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
         generateShootCommand(toShootAtCloseFromLastPose, closeShootingPose, delayBeforeShot);
     }
 
-    protected void shootAllThreeAtCloseChoppedAt2(double delayBeforeShot) {
-        toShootAtCloseFromLastPose = follower.pathBuilder()
-                .addPath(
-                        new Path(
-                                new BezierLine(
-                                        new Pose(11.5, 57.75, Math.toRadians(180)), new Pose(54.25, 88.75, Math.toRadians(180))
-                                ))).build();
-        autonomousCommands = autonomousCommands.then(new SequentialGroup(
-                new ParallelGroup(
-                        new FollowPath(toShootAtCloseFromLastPose, false),
-                        new Delay(secondsBeforeIntakeOff).then(
-                                intake.stopIntakeNoReverse,
-                                intake.railDownAuto
-                        ),
-                        runFirewheels
-                ),
-                new Delay(delayBeforeShot),
-                new ParallelGroup(
-                        new InstantCommand(() -> intake.turnIsShootingTrue()),
-                        intake.shootAllThree
-                )
-        ));
-        lastPose = new Pose(54.25, 88.75, Math.toRadians(180));
-    }
-
-    protected void shootAllThreeAtCloseChoppedAt3(double delayBeforeShot) {
-        toShootAtCloseFromLastPose = follower.pathBuilder()
-                .addPath(
-                        new Path(
-                                new BezierLine(
-                                        new Pose(11.5, 33.75, Math.toRadians(180)), new Pose(54.25, 88.75, Math.toRadians(180))
-                                ))).build();
-        autonomousCommands = autonomousCommands.then(new SequentialGroup(
-                new ParallelGroup(
-                        new FollowPath(toShootAtCloseFromLastPose, false),
-                        new Delay(secondsBeforeIntakeOff).then(
-                                intake.stopIntakeNoReverse,
-                                intake.railDownAuto
-                        ),
-                        runFirewheels
-                ),
-                new Delay(delayBeforeShot),
-                new ParallelGroup(
-                        new InstantCommand(() -> intake.turnIsShootingTrue()),
-                        intake.shootAllThree
-                )
-        ));
-        lastPose = new Pose(54.25, 88.75, Math.toRadians(180));
-    }
-
     protected void shootAllThreeAtCloseCurved(double delayBeforeShot) {
-        toShootAtCloseFromLastPoseCurved = generatePathCurveWithVelocityConstraint(AutoTemplate.lastPose, curveIntake2, closeShootingPose, 0.5);
+        toShootAtCloseFromLastPoseCurved = generatePathCurve(AutoTemplate.lastPose, curveIntake2, closeShootingPose);
         generateShootCommand(toShootAtCloseFromLastPoseCurved, closeShootingPose, delayBeforeShot);
     }
 
     protected void generateShootCommand(PathChain toShootPath, Pose endPose, double delayBeforeShot) {
+        shootCloseJiggle = generatePathShortCallback(toShootPath.endPose(), closeShootingPoseJiggle);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
-                        new FollowPath(toShootPath),
+                        new FollowPath(toShootPath, false),
                         new Delay(secondsBeforeIntakeOff).then(
                                 intake.stopIntakeNoReverse,
                                 intake.railDownAuto
                         ),
                         runFirewheels
                 ),
+                //new InstantCommand(() -> turret.setTurretStateAutoForAuto()),
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
+                        followJigglePath(shootCloseJiggle),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
                         intake.shootAllThree
                 )
+               // new InstantCommand(() -> turret.setTurretStateAuto())
         ));
         lastPose = endPose;
+    }
+
+    protected Command followJigglePath(PathChain path) {
+        ElapsedTime jiggleTimer = new ElapsedTime();
+        return new LambdaCommand()
+                .setStart(
+                        () -> {
+                            jiggleTimer.reset();
+                            isDone = false;
+                            PedroComponent.follower().followPath(path);
+                        }
+                )
+
+                .setStop(interrupted -> {
+                    if (interrupted) PedroComponent.follower().breakFollowing();
+                })
+                .setIsDone(() -> jiggleTimer.milliseconds() > 200);
     }
 
     protected void shootAllThreeAtFar(double delayBeforeShot) {
@@ -452,4 +430,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 )
         );
     }
+
+
+
 }

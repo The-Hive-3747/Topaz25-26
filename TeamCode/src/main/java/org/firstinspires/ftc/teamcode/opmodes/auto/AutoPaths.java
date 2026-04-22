@@ -5,12 +5,13 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathConstraints;
 
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose gateIntakeStartPose, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
-    public static PathChain toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, farJigglePath;
+    public static Pose gateIntakeStartPose, closeShootingPoseJiggle, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
+    public static PathChain shootCloseJiggle, toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, farJigglePath;
     public static double gateIntakeAngle, closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
@@ -50,11 +51,10 @@ public class AutoPaths {
             frontParkPose = flipOverCenter(new Pose(36.25, 78.25, parkAngle));
         }
         backParkPose = flipOverCenter(new Pose(36.25, 20.5, parkAngle));
-        if (alliance == Alliance.RED) {
-            closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
-        } else {
-            closeShootingPose = new Pose(56, 90, Math.toRadians(180));
-        }
+
+        closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
+        closeShootingPoseJiggle = flipOverCenter(new Pose(54, 88.5, shootAngle));
+
         farShootingPose = flipOverCenter(new Pose(55, 21, shootAngle));
         intakeHPStartPose = flipOverCenter(new Pose(40, 10.5, intakeAngle));
         intakeHPEndPose = flipOverCenter(new Pose(10,10.5, intakeAngle));
@@ -66,7 +66,7 @@ public class AutoPaths {
         intake2EndPose = flipOverCenter(new Pose(11.5, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
         intake3EndPose = flipOverCenter(new Pose(11.5, 33.75, intakeAngle));//x:18 y:38//y: 32
-        curveIntake2 = flipOverCenter(new Pose(50,72));
+        curveIntake2 = flipOverCenter(new Pose(55,68));
         farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 
         gateIntakeStartPose = flipOverCenter(new Pose(30, 55, gateIntakeAngle));
@@ -146,6 +146,22 @@ public class AutoPaths {
                         new BezierLine(pose1, pose2)
                 )
                 .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+                .build();
+    }
+
+    /**
+     * generates a PathChain using the heading from pose1 & pose2
+     * @param pose1 the first pose (MUST HAVE HEADING)
+     * @param pose2 the second pose (MUST HAVE HEADING)
+     * @return the built PathChain
+     */
+    public static PathChain generatePathShortCallback(Pose pose1, Pose pose2) {
+        return follower.pathBuilder()
+                .addPath(
+                        new BezierLine(pose1, pose2)
+                )
+                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+                .setConstraints(new PathConstraints(0.6, 100))
                 .build();
     }
 

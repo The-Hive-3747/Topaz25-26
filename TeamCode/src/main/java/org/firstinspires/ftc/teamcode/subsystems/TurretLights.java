@@ -12,15 +12,22 @@ public class TurretLights {
     PrismAnimations.Solid red = new PrismAnimations.Solid(Color.RED);
     PrismAnimations.Solid blue = new PrismAnimations.Solid(Color.BLUE);
     PrismAnimations.Solid shootNow = new PrismAnimations.Solid(Color.GREEN);
-    PrismAnimations.Solid green = new PrismAnimations.Solid(Color.GREEN);
+    PrismAnimations.Solid green1 = new PrismAnimations.Solid(Color.GREEN);
+    PrismAnimations.Solid green2 = new PrismAnimations.Solid(Color.GREEN);
     PrismAnimations.Solid noShoot = new PrismAnimations.Solid(Color.MAGENTA);
-    PrismAnimations.Solid purple = new PrismAnimations.Solid(Color.MAGENTA);
+    PrismAnimations.Solid purple1 = new PrismAnimations.Solid(Color.MAGENTA);
+    PrismAnimations.Solid purple2 = new PrismAnimations.Solid(Color.MAGENTA);
+    PrismAnimations.Solid purple3 = new PrismAnimations.Solid(Color.MAGENTA);
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
     int brightness = 30;
-    int startIndex = 0;
-    int stopIndex = 23;
+    int startIndexBottom = 0;
+    int stopIndexBottom = 11;
+    int startIndexTop1 = 12;
+    int stopIndexTop1 = 17;
+    int startIndexTop2 = 18;
+    int stopIndexTop2 = 23;
 
 
     public TurretLights(HardwareMap hm, Telemetry tm) {
@@ -30,69 +37,55 @@ public class TurretLights {
 
         prism.setStripLength(24);
 
-
+        green1.setBrightness(brightness);
+        green2.setBrightness(brightness);
+        purple1.setBrightness(brightness);
+        purple2.setBrightness(brightness);
+        purple3.setBrightness(brightness);
     }
 
     public void readyToShoot() {
-        shootNow.setStartIndex(startIndex);
-        shootNow.setStopIndex(stopIndex);
+        shootNow.setStartIndex(startIndexBottom);
+        shootNow.setStopIndex(stopIndexBottom);
         shootNow.setBrightness(brightness);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, shootNow);
     }
 
     public void notReadyToShoot() {
-        noShoot.setStartIndex(startIndex);
-        noShoot.setStartIndex(stopIndex);
+        noShoot.setStartIndex(startIndexBottom);
+        noShoot.setStartIndex(stopIndexBottom);
         noShoot.setBrightness(brightness);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, noShoot);
     }
 
     public void redAlliance() {
         red.setBrightness(brightness);
-        red.setStartIndex(startIndex);
-        red.setStopIndex(stopIndex);
+        red.setStartIndex(startIndexBottom);
+        red.setStopIndex(stopIndexBottom);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, red);
     }
 
     public void blueAlliance() {
         blue.setBrightness(brightness);
-        blue.setStartIndex(startIndex);
-        blue.setStopIndex(stopIndex);
+        blue.setStartIndex(startIndexBottom);
+        blue.setStopIndex(stopIndexBottom);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, blue);
     }
 
     public void gPP() {
-        green.setBrightness(50);
-        purple.setBrightness(50);
-        green.setStartIndex(0);
-        green.setStopIndex(1);
-        purple.setStartIndex(0);
-        purple.setStartIndex(5);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, purple);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, green);
+        green1.setStartIndex(startIndexTop1);
+        green1.setStopIndex(startIndexTop1+1);
+        purple1.setStartIndex(startIndexTop1);
+        purple1.setStopIndex(stopIndexTop1);
+        green2.setStartIndex(stopIndexTop2-1);
+        green2.setStopIndex(stopIndexTop2);
+        purple2.setStartIndex(startIndexTop2);
+        purple2.setStopIndex(stopIndexTop2);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_3, purple1);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_4, purple2);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_5, green1);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_6, green2);
     }
 
-    public void pGP() {
-        green.setBrightness(50);
-        purple.setBrightness(50);
-        purple.setStartIndex(0);
-        purple.setStopIndex(5);
-        green.setStartIndex(2);
-        green.setStopIndex(3);
-        //purple2.setStartIndex(4);
-        //purple2.setStopIndex(5);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, purple);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, green);
-    }
-    public void pPG(){
-        green.setBrightness(50);
-        purple.setBrightness(50);
-        purple.setStartIndex(0);
-        purple.setStopIndex(3);
-        green.setStartIndex(4);
-        green.setStopIndex(5);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, purple);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, green);
-    }
 
 }

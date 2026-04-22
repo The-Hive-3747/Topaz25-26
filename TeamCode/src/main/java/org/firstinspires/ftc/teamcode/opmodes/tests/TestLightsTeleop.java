@@ -32,13 +32,13 @@ public class TestLightsTeleop extends NextFTCOpMode {
                 turretLights.blueAlliance();
                 currentLightMode = "blue alliance";
             } else if (lightMode == 3) {
-                turretLights.pPG();
+               // turretLights.pPG();
                 currentLightMode = "ppg";
             } else if (lightMode == 4) {
                 turretLights.gPP();
                 currentLightMode = "gpp";
             } else if (lightMode == 5) {
-                turretLights.pGP();
+               // turretLights.pGP();
                 currentLightMode = "pgp";
             } else if (lightMode == 6) {
                 lightMode = 0;

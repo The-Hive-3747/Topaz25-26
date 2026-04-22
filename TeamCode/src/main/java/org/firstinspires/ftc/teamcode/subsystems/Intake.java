@@ -386,7 +386,7 @@ public class Intake implements Component {
             })
             .setStop(interrupted -> {})
             //in order to reset agitator fully it needs 2.75 seconds but its usually covered in the driving.
-            .setIsDone(() -> (shotTimer.seconds() > 2.25)); //2 2.2 2
+            .setIsDone(() -> (shotTimer.seconds() > 2.25 ));//|| !agitator.isBusy())); //2 2.2 2
 
     public Command firewheelsOff = new InstantCommand(
             () -> {
