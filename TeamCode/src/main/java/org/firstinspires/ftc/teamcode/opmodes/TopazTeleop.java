@@ -101,6 +101,7 @@ public class TopazTeleop extends NextFTCOpMode {
     private boolean got3Balls = false;
     private boolean isRelocalized = false;
     private boolean limelightRelocalized = false;
+    private boolean isManualModeOn = false;
     int FLYWHEEL_STEP = 50;
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
@@ -204,6 +205,8 @@ public class TopazTeleop extends NextFTCOpMode {
 
         Button g1Right = button(() -> gamepad1.dpad_right);
         Button g1Left = button(() -> gamepad1.dpad_left);
+        Button g2Right = button(() -> gamepad2.dpad_right);
+        Button g2Left = button(() -> gamepad2.dpad_left);
         Button g2LB = button(() -> gamepad2.left_bumper || gamepad1.left_bumper);
         Button g2RB = button(() -> gamepad2.right_bumper || gamepad1.right_bumper);
         Button g1A = button(() -> gamepad1.a);
@@ -223,24 +226,38 @@ public class TopazTeleop extends NextFTCOpMode {
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> {
                     BindingManager.setLayer("manual");
-                    Hood.enableManualMode();
+                    isManualModeOn = true;
                 })
                 .whenBecomesFalse(() -> {
                     BindingManager.setLayer(null);
-                    Hood.disableManualMode();
+                    isManualModeOn = false;
                 });
 
         g2Up
                 .inLayer(null)
-                .whenBecomesTrue(() -> flywheel.adjustHoodOffset(HOOD_INCREMENT))
+                .whenBecomesTrue(() -> {
+                    flywheel.adjustHoodOffset(HOOD_INCREMENT);
+                    Hood.disableManualMode();
+
+                })
                 .inLayer("manual")
-                .whenBecomesTrue(() -> flywheel.setHoodPower(HOOD_MANUAL_POWER))
+                .whenBecomesTrue(() -> {
+                    flywheel.setHoodPower(HOOD_MANUAL_POWER);
+                    Hood.enableManualMode();
+                })
                 .whenBecomesFalse(() -> flywheel.setHoodPower(0));
         g2Down
                 .inLayer(null)
-                .whenBecomesTrue(() -> flywheel.adjustHoodOffset(-HOOD_INCREMENT))
+                .whenBecomesTrue(() -> {
+                    Hood.disableManualMode();
+                    flywheel.adjustHoodOffset(-HOOD_INCREMENT);
+                })
                 .inLayer("manual")
-                .whenBecomesTrue(() -> flywheel.setHoodPower(-HOOD_MANUAL_POWER))
+                .whenBecomesTrue(() -> {
+                    flywheel.setHoodPower(-HOOD_MANUAL_POWER);
+                    Hood.enableManualMode();
+
+                })
                 .whenBecomesFalse(() -> flywheel.setHoodPower(0));
 
         g2LT.whenBecomesTrue(() ->{
@@ -269,8 +286,24 @@ public class TopazTeleop extends NextFTCOpMode {
 
 
         g2Y.toggleOnBecomesTrue()
+                .inLayer(null)
                 .whenBecomesTrue(() -> FLYWHEEL_ON = true)
-                .whenBecomesFalse(() -> FLYWHEEL_ON = false);
+                .whenBecomesFalse(() -> FLYWHEEL_ON = false)
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.setFlywheelStateManual());
+
+
+        g2Right
+                .inLayer(null)
+                .whenBecomesTrue(() ->turret.setTurretStateRezeroRight())
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.increasePower());
+
+        g2Left
+                .inLayer(null)
+                .whenBecomesTrue(() -> turret.setTurretStateRezeroLeft())
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.decreasePower());
 
         /*g2RT.whenBecomesTrue(() -> {  //preset hood and velocity for position 1
                 flywheel.setTargetVel(POSE_ONE_VEL);
@@ -373,6 +406,7 @@ public class TopazTeleop extends NextFTCOpMode {
         //TODO: Uncomment this to activate the Hood
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
         flywheel.setHoodGoalPos(HOOD_POS);
+
         if (FLYWHEEL_ON) {
             flywheel.setTargetVel(FLYWHEEL_VEL);
         } else {
@@ -478,6 +512,7 @@ public class TopazTeleop extends NextFTCOpMode {
         telemetry.addData("Is Intake Reversed: ", isIntakeReversed);
         telemetry.addData("Is Flywheel on: ", FLYWHEEL_ON);
         telemetry.addData("Is Transfer on: ", isTransferOn);*/
+        telemetry.addData("Manual Mode", isManualModeOn);
         panelsTelemetry.update(telemetry);
     }
 

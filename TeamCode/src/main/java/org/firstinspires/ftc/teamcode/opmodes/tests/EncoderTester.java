@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -19,11 +20,12 @@ import dev.nextftc.ftc.NextFTCOpMode;
 //@Disabled
 public class EncoderTester extends NextFTCOpMode {
     CRServo turretLeft, turretRight;
-
+private TouchSensor limitSwitch;
     DcMotorEx flywheelLeft, flywheelRight, intakeMotor, agitator;
     @Override
     public void onInit() {
         flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
+        limitSwitch = ActiveOpMode.hardwareMap().get(TouchSensor.class, "limitSwitch");
         //flywheelLeft.setDirection(DcMotorSimple.Direction.FORWARD);
         flywheelRight = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelRight");
         //flywheelRight.setDirection(DcMotorEx.Direction.FORWARD);
@@ -52,13 +54,14 @@ public class EncoderTester extends NextFTCOpMode {
     @Override
     public void onUpdate() {
         telemetry.addData("flywheelLeft", flywheelLeft.getCurrentPosition());
-        telemetry.addData("flywheelRight", flywheelRight.getCurrentPosition());
+        telemetry.addData("flywheelRight (hood enc)", flywheelRight.getCurrentPosition());
         telemetry.addData("flywheelLeft p", flywheelLeft.getPower());
         telemetry.addData("flywheelRight p", flywheelRight.getPower());
         telemetry.addData("flywheel left vel", flywheelLeft.getVelocity());
         telemetry.addData("flywheel external vel W CONVERSION",  ((double) flywheelRight.getVelocity()*60)/8192); // 8192 is CPR
         telemetry.addData("flywheelRight vel", flywheelRight.getVelocity());
-        telemetry.addData("intakeMotor", intakeMotor.getCurrentPosition());
+        telemetry.addData("intakeMotor (turret enc)", intakeMotor.getCurrentPosition());
+        telemetry.addData("limit switch", limitSwitch.getValue());
         telemetry.addData("agitator", agitator.getCurrentPosition());
 
         if (gamepad1.a) {

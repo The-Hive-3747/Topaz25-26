@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.utilities.AimbotValues;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -21,7 +22,12 @@ import dev.nextftc.ftc.ActiveOpMode;
 // This is a component file for the flywheel / shooter.
 public class Flywheel implements Component {
 
-
+    public enum FlywheelState {
+        MANUAL,
+        BANGBANG,
+        PID
+    }
+    FlywheelState flywheelState = FlywheelState.BANGBANG;
     DcMotorEx flywheelRight, flywheelLeft;
     static double correct, flywheelVel, targetVel;
     static int TICKS_PER_REVOLUTION_REV_THRU = 8192;
@@ -38,12 +44,18 @@ public class Flywheel implements Component {
     Hood hood;
     public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 3000; //UPDATED TO RPM
     public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 3900; //UPDATED TO RPM
+    public static double MANUAL_DEFAULT_POWER = 0.6;
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
     public static double FLYWHEEL_PID_KS = 0.07; //JEM: 0.05;//0.135;
     public static double FLYWHEEL_PID_KD = 1;
     public static double FLYWHEEL_PID_KI = 0;
+    public static double POWER_MIN = 0.1;
+    public static double POWER_MAX = 0.9;
+    public static double POWER_INCREMENT = 0.05;
+    public static double manualPower;
     public static boolean USE_BANG_BANG = true;
+    public static boolean manualInitialized = false;
     double targetAdjust = 0;
     double READY_VEL_THRESHOLD = 200; // UPDATED TO// RPM
 
@@ -94,6 +106,16 @@ public class Flywheel implements Component {
     public void resetHoodPosUsingTimer() {
         hood.resetHoodPosUsingTimer();
     }
+    public void setFlywheelStateManual() {
+        flywheelState = FlywheelState.MANUAL;
+        manualInitialized = false;
+        manualPower = MANUAL_DEFAULT_POWER;
+    }
+    public void setFlywheelStateBangBang() {
+        flywheelState = FlywheelState.BANGBANG;
+        manualInitialized = false;
+    }
+
 
     /**
      * Use to apply a permanent offset to all hood goals.
@@ -137,6 +159,13 @@ public class Flywheel implements Component {
         }
         largeFlywheelPID.setGoal(new KineticState(0, targetV));
     }
+    public void decreasePower() {
+        manualPower = Math.max(POWER_MIN, getPower()-POWER_INCREMENT);
+    }
+    public void increasePower() {
+        manualPower = Math.min(POWER_MAX, getPower()+POWER_INCREMENT);
+    }
+
 
     public boolean readyToShoot() {
         return Math.abs(targetVel + targetAdjust - getVel()) <= READY_VEL_THRESHOLD;
@@ -244,7 +273,7 @@ public class Flywheel implements Component {
         flywheelVel = this.getVel();
 
 
-        if(!USE_BANG_BANG) {
+        if(FlywheelState.PID == flywheelState) {
             // correct is the motor power we need to set!
             correct = largeFlywheelPID.calculate( // calculate() lets us plug in current vals and outputs a motor power
                     new KineticState(0, flywheelVel) // a KineticState is NextFTC's way of storing position, velocity, and acceleration all in one variable
@@ -259,7 +288,10 @@ public class Flywheel implements Component {
             } else {
                 correct = 0;
             }
-        }else{ // USE BANG BANG
+        }else if (FlywheelState.MANUAL == flywheelState) {
+            correct = manualPower;
+
+        } else{ // USE BANG BANG
             if(targetVel > flywheelVel && targetVel > 0){
                 correct = 0.9;
             }else{

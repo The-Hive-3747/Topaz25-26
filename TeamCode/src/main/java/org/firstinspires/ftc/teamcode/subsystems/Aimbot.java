@@ -55,7 +55,7 @@ public class Aimbot implements Component{
         return this.currentPose;
     }
 
-    AimbotValues[] aimbotValues = { //These are all the actual values from tests on field, must be
+    public static AimbotValues[] aimbotValues = { //These are all the actual values from tests on field, must be
                                     // in order of distance from least to greatest
             new AimbotValues(16, 2650, 0), //v:2800
             new AimbotValues(20, 2650, 0),
