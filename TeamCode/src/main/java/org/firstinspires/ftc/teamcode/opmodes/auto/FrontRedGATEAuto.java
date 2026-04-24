@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Open gate auto", group = "default")
+@Autonomous(name = "front red auto / open gate", group = "default")
 public class FrontRedGATEAuto extends AutoTemplate {
     @Override
     public void initAuto() {

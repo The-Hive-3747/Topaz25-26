@@ -15,6 +15,7 @@ import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
+import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.Component;
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -353,4 +354,11 @@ public class Flywheel implements Component {
     public Command stopFlywheel = new InstantCommand(
             () -> this.setTargetVel(0)
     );
+
+    public Command waitUntilFlywheelAtVel(double thresholdTimeSec) {
+        ElapsedTime spinUpTimer = new ElapsedTime();
+        return new LambdaCommand()
+                .setStart(() -> spinUpTimer.reset())
+                .setIsDone(() -> readyToShoot() || spinUpTimer.seconds() > thresholdTimeSec);
+    }
 }

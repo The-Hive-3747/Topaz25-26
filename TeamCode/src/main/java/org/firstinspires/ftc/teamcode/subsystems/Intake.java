@@ -60,6 +60,8 @@ public class Intake implements Component {
     boolean agitatorResetRequest = false;
     boolean isShooting = false;
     boolean intakeStopping = false;
+    boolean wasShotTimerReset = false;
+    public static double SHOT_TIME_THRESHOLD_SEC = 2.25, SHOT_TIME_AFTER_AGITATOR_SEC = 0.6;
 
     Artifact leftArtifact = Artifact.EMPTY;
     Artifact rightArtifact = Artifact.EMPTY;
@@ -376,18 +378,28 @@ public class Intake implements Component {
     public Command railDownAuto = new InstantCommand(
             this::railDown
     );
-    public Command shootAllThree = new LambdaCommand()
-            .setStart(() ->{
-                leftFireServo.setPower(FIRE_POWER);
-                rightFireServo.setPower(FIRE_POWER);
-                shotTimer.reset();
-                isShooting = true;
-                railDown();
-                startRailDex();
-            })
-            .setStop(interrupted -> {})
-            //in order to reset agitator fully it needs 2.75 seconds but its usually covered in the driving.
-            .setIsDone(() -> (shotTimer.seconds() > 2.25 ));//|| !agitator.isBusy())); //2 2.2 2
+    public Command shootAllThree() {
+        ElapsedTime shotTimerAfterAgitator = new ElapsedTime();
+        return new LambdaCommand()
+                .setStart(() ->{
+                    leftFireServo.setPower(FIRE_POWER);
+                    rightFireServo.setPower(FIRE_POWER);
+                    shotTimer.reset();
+                    isShooting = true;
+                    railDown();
+                    startRailDex();
+                })
+                .setUpdate(() -> {
+                    if (!agitator.isBusy() && !wasShotTimerReset) {
+                        shotTimerAfterAgitator.reset();
+                        wasShotTimerReset = true;
+                    }
+                })
+                .setStop(interrupted -> {})
+                //in order to reset agitator fully it needs 2.75 seconds but its usually covered in the driving.
+                .setIsDone(() -> (shotTimer.seconds() > SHOT_TIME_THRESHOLD_SEC || // Checks if agitator is not busy, then gives a 0.25s buffer
+                        (shotTimerAfterAgitator.seconds() > SHOT_TIME_AFTER_AGITATOR_SEC && wasShotTimerReset)));
+    }
 
     public Command firewheelsOff = new InstantCommand(
             () -> {

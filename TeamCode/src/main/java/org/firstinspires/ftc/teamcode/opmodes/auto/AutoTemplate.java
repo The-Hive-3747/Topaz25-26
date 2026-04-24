@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.TurretLights;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
+import org.firstinspires.ftc.teamcode.utilities.Motif;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
@@ -38,14 +39,13 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 flywheel = new Flywheel(),
                 intake = new Intake(),
                 turret = new Turret()
-                //light = new Light()
         );
     }
     protected TurretLights turretLights;
     protected CommandGroup autonomousCommands;
     protected Alliance alliance = null; // default value
     protected Pose startPose;
-    public static Pose lastPose;
+    public static Pose lastPose; // Tracker for Pose for path generation
     ElapsedTime initTimer = new ElapsedTime(), loopTime = new ElapsedTime();
     double timeToInit = 0;
     Turret turret;
@@ -56,8 +56,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     double HOOD_POS, secondsBeforeIntakeOff = 0.5, maxLoopTimeMS = 0;
     boolean FIREWHEELS_ON = false, hasResetEncoders = false;
     public boolean isDone;
-
-
 
 
     /**
@@ -75,10 +73,13 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 new InstantCommand(() -> telemetry.addLine())
         );
 
-        follower = Constants.createFollower(hardwareMap);
+        // PedroComponent is what NextFTC uses, we want to use the same follower
+        // and not accidentally create 2 followers
+        follower = PedroComponent.follower();
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
+        // default alliance color
         alliance = Alliance.BLUE;
         initAuto();
 
@@ -103,7 +104,13 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onWaitForStart() {
         if (!hasResetEncoders) {
-            turretLights.gPP();
+            if (intake.getMotif().equals(Motif.gPP)) {
+                turretLights.gPP();
+            } else if (intake.getMotif().equals(Motif.pGP)) {
+                turretLights.pGP();
+            } else if (intake.getMotif().equals(Motif.pPG)) {
+                turretLights.pPG();
+            }
             flywheel.resetHoodEncoder();
             turret.zeroTurret();
             intake.resetAgitatorEncoder();
@@ -127,7 +134,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         autonomousCommands.schedule();
-        System.gc();
+        System.gc(); // Garbage Collect
     }
     @Override
     public void onUpdate() {
@@ -143,7 +150,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         if (FIREWHEELS_ON) {
             intake.runFireWheels();
         }
-
 
         flywheel.update();
         intake.update();
@@ -161,8 +167,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     @Override
     public void onStop() {
-        // transfer everything
-        OpModeTransfer.currentPose = follower.getPose();
+        // Workaround for a Pedro bug that makes the follower read (0,0) on stop
+        if (follower.getPose().getX() != 0) {
+            OpModeTransfer.currentPose = follower.getPose();
+        }
         OpModeTransfer.alliance = alliance;
         OpModeTransfer.hasBeenTransferred = true;
     }
@@ -181,7 +189,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         );
     }
 
-    protected void setTurretFixed(Alliance alliance, boolean isClose) {
+    /**
+     * Sets the turret at a fixed angle for auto, based on position and alliance
+     */
+    private void setTurretFixed(Alliance alliance, boolean isClose) {
         turret.setAlliance(alliance);
         turret.setFixedAngle(alliance, isClose);
     }
@@ -288,7 +299,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         generateShootCommandWithJiggle(toShootAtFarFromLastPose, farShootingPose, shootFarJiggle, delayBeforeShot);
     }
 
-    protected void generateShootCommand(PathChain toShootPath, Pose endPose, double delayBeforeShot) {
+    /**
+     * Generates a normal shoot command
+     * do NOT use on blue paths, pedro bugs out. instead, use generateShootCommandWithJiggle()
+     * @param toShootPath Path to follow thatgoes to shoot
+     * @param endPose Shooting pose
+     * @param delayBeforeShot pass through for delay
+     */
+    private void generateShootCommand(PathChain toShootPath, Pose endPose, double delayBeforeShot) {
         shootCloseJiggle = generatePathShortCallback(toShootPath.endPose(), closeShootingPoseJiggle);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
@@ -302,13 +320,21 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
-                        intake.shootAllThree
+                        intake.shootAllThree()
                 )
         ));
         lastPose = endPose;
     }
 
-    protected void generateShootCommandWithJiggle(PathChain toShootPath, Pose endPose, PathChain jigglePath, double delayBeforeShot) {
+    /**
+     * "Jiggle" is our work-around to a Pedro bug.
+     * It is a short path which simulates holding the point.
+     * @param toShootPath Path to follow thatgoes to shoot
+     * @param endPose Shooting pose
+     * @param jigglePath the Jiggle path
+     * @param delayBeforeShot pass through for delay
+     */
+    private void generateShootCommandWithJiggle(PathChain toShootPath, Pose endPose, PathChain jigglePath, double delayBeforeShot) {
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new FollowPath(toShootPath, false),
@@ -322,25 +348,30 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 new ParallelGroup(
                         followJigglePath(jigglePath),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
-                        intake.shootAllThree
+                        intake.shootAllThree()
                 )
         ));
         lastPose = endPose;
     }
 
-    protected Command followJigglePath(PathChain path) {
+    /**
+     * Custom Command to follow a jiggle path.
+     * We need to use a custom Command in order to end purely based on time.
+     * @param path to follow
+     * @return Command
+     */
+    private Command followJigglePath(PathChain path) {
         ElapsedTime jiggleTimer = new ElapsedTime();
         return new LambdaCommand()
                 .setStart(
                         () -> {
                             jiggleTimer.reset();
-                            isDone = false;
-                            PedroComponent.follower().followPath(path);
+                            // TODO: MAY NEED TO CHANGE TO PedroComponent.follower().followPath
+                            follower.followPath(path);
                         }
                 )
-
                 .setStop(interrupted -> {
-                    if (interrupted) PedroComponent.follower().breakFollowing();
+                    if (interrupted) follower.breakFollowing();
                 })
                 .setIsDone(() -> jiggleTimer.milliseconds() > 200);
     }
@@ -376,7 +407,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
      * @param endPose Pose that the path ends on
      * @param delayAfterIntake Pass through a delay after intake
      */
-    protected void generateIntakeCommand(PathChain lineUpForIntake, PathChain intakePath, Pose endPose, double delayAfterIntake) {
+    private void generateIntakeCommand(PathChain lineUpForIntake, PathChain intakePath, Pose endPose, double delayAfterIntake) {
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         new InstantCommand(() -> FIREWHEELS_ON=false),
@@ -392,6 +423,12 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 //intake.stopIntakeNoReverse
         ));
         lastPose = endPose;
+    }
+
+    protected void waitUntilFlywheelAtSpeed(double thresholdTimeSec) {
+        autonomousCommands = autonomousCommands.then(
+                flywheel.waitUntilFlywheelAtVel(thresholdTimeSec)
+        );
     }
 
     protected void openGate(double delayAfterOpenGate) {
@@ -426,7 +463,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         generateParkCommand(parkAtFrontFromLastPose);
     }
 
-    protected void generateParkCommand(PathChain parkPath) {
+    /**
+     * Generates a park Command, which turns everything off and follows the path.
+     * @param parkPath path to follow
+     */
+    private void generateParkCommand(PathChain parkPath) {
         autonomousCommands = autonomousCommands.then(
                 new ParallelGroup(
                     new InstantCommand(() -> FIREWHEELS_ON=false),

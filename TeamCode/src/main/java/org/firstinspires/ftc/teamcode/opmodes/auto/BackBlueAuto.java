@@ -11,7 +11,8 @@ public class BackBlueAuto extends AutoTemplate {
         setTurretFixedFar();
         setHoodPosFar();
         turnFlywheelOnForBack();
-        shootAllThreeAtFar(1);
+        waitUntilFlywheelAtSpeed(3);
+        shootAllThreeAtFar(0);
         intakeHP(0.5);
         shootAllThreeAtFar(0);
         intake3(0.1);
