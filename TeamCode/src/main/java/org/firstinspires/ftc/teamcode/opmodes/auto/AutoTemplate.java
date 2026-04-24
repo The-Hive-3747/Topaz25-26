@@ -272,12 +272,20 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void shootAllThreeAtClose(double delayBeforeShot) {
         toShootAtCloseFromLastPose = generatePath(AutoTemplate.lastPose, closeShootingPose);
-        generateShootCommand(toShootAtCloseFromLastPose, closeShootingPose, delayBeforeShot);
+        shootCloseJiggle = generatePathShortCallback(closeShootingPose, closeShootingPoseJiggle);
+        generateShootCommandWithJiggle(toShootAtCloseFromLastPose, closeShootingPose, shootCloseJiggle, delayBeforeShot);
     }
 
     protected void shootAllThreeAtCloseCurved(double delayBeforeShot) {
         toShootAtCloseFromLastPoseCurved = generatePathCurve(AutoTemplate.lastPose, curveIntake2, closeShootingPose);
-        generateShootCommand(toShootAtCloseFromLastPoseCurved, closeShootingPose, delayBeforeShot);
+        shootCloseJiggle = generatePathShortCallback(closeShootingPose, closeShootingPoseJiggle);
+        generateShootCommandWithJiggle(toShootAtCloseFromLastPoseCurved, closeShootingPose, shootCloseJiggle, delayBeforeShot);
+    }
+
+    protected void shootAllThreeAtFar(double delayBeforeShot) {
+        toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
+        shootFarJiggle = generatePathShortCallback(farShootingPose, farShootingPoseJiggle);
+        generateShootCommandWithJiggle(toShootAtFarFromLastPose, farShootingPose, shootFarJiggle, delayBeforeShot);
     }
 
     protected void generateShootCommand(PathChain toShootPath, Pose endPose, double delayBeforeShot) {
@@ -291,14 +299,31 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         ),
                         runFirewheels
                 ),
-                //new InstantCommand(() -> turret.setTurretStateAutoForAuto()),
                 new Delay(delayBeforeShot),
                 new ParallelGroup(
-                        followJigglePath(shootCloseJiggle),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
                         intake.shootAllThree
                 )
-               // new InstantCommand(() -> turret.setTurretStateAuto())
+        ));
+        lastPose = endPose;
+    }
+
+    protected void generateShootCommandWithJiggle(PathChain toShootPath, Pose endPose, PathChain jigglePath, double delayBeforeShot) {
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        new FollowPath(toShootPath, false),
+                        new Delay(secondsBeforeIntakeOff).then(
+                                intake.stopIntakeNoReverse,
+                                intake.railDownAuto
+                        ),
+                        runFirewheels
+                ),
+                new Delay(delayBeforeShot),
+                new ParallelGroup(
+                        followJigglePath(jigglePath),
+                        new InstantCommand(() -> intake.turnIsShootingTrue()),
+                        intake.shootAllThree
+                )
         ));
         lastPose = endPose;
     }
@@ -318,23 +343,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                     if (interrupted) PedroComponent.follower().breakFollowing();
                 })
                 .setIsDone(() -> jiggleTimer.milliseconds() > 200);
-    }
-
-    protected void shootAllThreeAtFar(double delayBeforeShot) {
-        toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
-        autonomousCommands = autonomousCommands.then(new SequentialGroup(
-                new ParallelGroup(
-                        new FollowPath(toShootAtFarFromLastPose),
-                        intake.railDownAuto
-                ),
-                new Delay(delayBeforeShot),
-                new ParallelGroup(
-                        new InstantCommand(() -> FIREWHEELS_ON=true),
-                        new InstantCommand(() -> intake.turnIsShootingTrue()),
-                        intake.shootAllThree
-                )
-        ));
-        lastPose = farShootingPose;
     }
 
     protected void intake1(double delayAfterIntake) {

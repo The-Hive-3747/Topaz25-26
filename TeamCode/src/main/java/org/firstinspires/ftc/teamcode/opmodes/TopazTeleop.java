@@ -37,11 +37,13 @@ import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.utilities.Motif;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
@@ -92,7 +94,8 @@ public class TopazTeleop extends NextFTCOpMode {
     double HOOD_POS;
     double THREE_BALL_CURRENT = 6500.0;
     private boolean FLYWHEEL_ON = false;
-    private boolean wasReadyToShoot = false;
+    private boolean wasReadyToShoot = false, wasEndgameWarned = false, wasEndgameFinalWarned = false, wasEndgameCleared = false
+            , wasIntakeOn = false, wasManualMode = false, wasGPP = false, wasPGP = false, wasPPG = false;
     private boolean isIntakeOn = false;
     private boolean isIntakeReversed = false;
     private boolean isTransferOn = false;
@@ -109,7 +112,8 @@ public class TopazTeleop extends NextFTCOpMode {
     Follower follower;
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-    public ElapsedTime lightTimer = new ElapsedTime();
+    ElapsedTime matchTimer = new ElapsedTime(), lightTimer = new ElapsedTime();
+    public static double ENDGAME_WARNING_SEC = 100, ENDGAME_FINAL_WARNING_SEC = 115;
     Button g2A;
     List<LynxModule> allHubs;
 
@@ -349,11 +353,6 @@ public class TopazTeleop extends NextFTCOpMode {
             }
         });
 
-        /*gUpOrDown.whenBecomesFalse(() -> { //HOOD ENCODER
-                    flywheel.setHoodPower(0);
-                    //flywheel.resetHoodEncoder();
-                });*/
-
         g2LB.whenBecomesTrue(() -> flywheel.decrease());
         g2RB.whenBecomesTrue(() -> flywheel.increase());
 
@@ -403,7 +402,6 @@ public class TopazTeleop extends NextFTCOpMode {
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
         FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
-        //TODO: Uncomment this to activate the Hood
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
         flywheel.setHoodGoalPos(HOOD_POS);
 
@@ -413,27 +411,58 @@ public class TopazTeleop extends NextFTCOpMode {
             flywheel.setTargetVel(0);
         }
 
-        /*if(intakeMotor.getCurrent(CurrentUnit.MILLIAMPS) > THREE_BALL_CURRENT){
-            intakeMotor.setPower(0);
-            got3Balls = true;
-        }*/
+        if (intake.getMotif().equals(Motif.gPP) && (!wasGPP || wasEndgameCleared)) {
+            wasGPP = true;
+            wasPGP = false;
+            wasPPG = false;
+            turretLights.gPP();
+        } else if (intake.getMotif().equals(Motif.pGP) && (!wasPGP || wasEndgameCleared)) {
+            wasGPP = false;
+            wasPGP = true;
+            wasPPG = false;
+            turretLights.pGP();
+        } else if (intake.getMotif().equals(Motif.pPG) && (!wasPPG || wasEndgameCleared)) {
+            wasGPP = false;
+            wasPGP = false;
+            wasPPG = true;
+            turretLights.pPG();
+        }
 
-        /*
-        if(flywheel.readyToShoot() && !wasReadyToShoot && lightTimer.seconds() > 1.0 && flywheel.getVel() != 0){
+        if (isManualModeOn && !wasManualMode) { //currently breaks if u go into manual mode
+            turretLights.manualMode();
+            wasManualMode = true;
+        } else if (!wasEndgameFinalWarned && matchTimer.seconds() > ENDGAME_FINAL_WARNING_SEC) {
+            turretLights.endgameFinalWarning();
+            lightTimer.reset();
+            wasEndgameFinalWarned = true;
+            wasEndgameCleared = false;
+        } else if (wasEndgameFinalWarned && !wasEndgameCleared && lightTimer.seconds() > 1) {
+            turretLights.clearEndgameWarning();
+            wasEndgameCleared = true;
+        } else if (!wasEndgameWarned && matchTimer.seconds() > ENDGAME_WARNING_SEC) {
+            turretLights.endgameWarning();
+            lightTimer.reset();
+            wasEndgameWarned = true;
+            wasEndgameCleared = false;
+        } else if (wasEndgameWarned && !wasEndgameCleared && lightTimer.seconds() > 1) {
+            turretLights.clearEndgameWarning();
+            wasEndgameCleared = true;
+        } else if (isIntakeOn && !wasIntakeOn) {
+            turretLights.intaking();
+            wasIntakeOn = true;
+        } else if (flywheel.readyToShoot() && (!wasReadyToShoot || wasEndgameCleared)) {
             turretLights.readyToShoot();
             wasReadyToShoot = true;
-            lightTimer.reset();
-        } else if (!flywheel.readyToShoot() && wasReadyToShoot && lightTimer.seconds() > 1.0) {
-            wasReadyToShoot = false;
-            turretLights.notReadyToShoot();
-            lightTimer.reset();
-        }*/
-        if (flywheel.readyToShoot() && !wasReadyToShoot) {
-            turretLights.readyToShoot();
-            wasReadyToShoot = true;
-        } else if (!flywheel.readyToShoot() && wasReadyToShoot) {
+        } else if (!flywheel.readyToShoot() && (wasReadyToShoot || wasEndgameCleared)) {
             turretLights.notReadyToShoot();
             wasReadyToShoot = false;
+        }
+
+        if (!isManualModeOn && wasManualMode) {
+            wasManualMode = false;
+        }
+        if (!isIntakeOn && wasIntakeOn) {
+            wasIntakeOn = false;
         }
 
         /*double currentHeading = follower.getHeading();
@@ -457,7 +486,6 @@ public class TopazTeleop extends NextFTCOpMode {
             limelightCorrection = limelight.getPedroPose().getHeading();
             turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
         } else {
-            //limelightCorrection = 0.0;
             turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
         }
 
@@ -496,22 +524,6 @@ public class TopazTeleop extends NextFTCOpMode {
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
         panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
         panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
-
-
-        /*telemetry.addData("limelight correction", limelightCorrection);
-        telemetry.addData("limelight relocalized", limelightRelocalized);
-        telemetry.addData("hood pose", flywheel.getHoodPosition());
-        //telemetry.addData("Limelight fresh",limelight.isDataFresh());
-        //telemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
-        telemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
-        telemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
-        telemetry.addData("looptime (ms)", looptime.milliseconds());
-        telemetry.addData("highest looptime (ms)", highestLooptime);
-        telemetry.addData("pose", follower.getPose());
-        telemetry.addData("Is Intake on: ", isIntakeOn);
-        telemetry.addData("Is Intake Reversed: ", isIntakeReversed);
-        telemetry.addData("Is Flywheel on: ", FLYWHEEL_ON);
-        telemetry.addData("Is Transfer on: ", isTransferOn);*/
         telemetry.addData("Manual Mode", isManualModeOn);
         panelsTelemetry.update(telemetry);
     }

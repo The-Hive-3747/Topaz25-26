@@ -37,9 +37,8 @@ public class Turret implements Component {
     Alliance alliance;
     private double turretAngleCached = 0;
     private double fieldCentricGoalAngle, goalX, goalY, turretPower, turretGoalNotInLimits, heading;
-    private KineticState ZERO_ANGLE = new KineticState(0);
+    private final KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
-    private KineticState angleAfterOffset = new KineticState(0);
     public static double turretOffset = 0;
     public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -139; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 144;
@@ -112,7 +111,6 @@ public class Turret implements Component {
 
         if (turretState == TurretState.AUTO) {
             turretPID.setGoal(getAutoAimGoalAngle());
-            //angleAfterOffset = new KineticState((2*getTurretGoal())- turretOffset);
         } else if (turretState == TurretState.FORWARD) {
             turretPID.setGoal(ZERO_ANGLE);
         } else if (turretState == TurretState.FIXED){  //This is the autonomous fixed position for shooting
@@ -150,7 +148,7 @@ public class Turret implements Component {
         if (Math.abs(this.getTurretAngle() - this.getTurretGoal()) < TURRET_ANGLE_DEADZONE &&
                 turretState != TurretState.REZEROING_RIGHT && turretState != TurretState.REZEROING_LEFT) {
             turretPower = 0;
-        }else if (TurretState.AUTO_OFF != turretState  && !turretFindingSwitch){
+        } else if (TurretState.AUTO_OFF != turretState  && !turretFindingSwitch) {
             //calculate the turret power because both use it
             turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
             //if we are too far away from being pointed away from the goal, go fast.

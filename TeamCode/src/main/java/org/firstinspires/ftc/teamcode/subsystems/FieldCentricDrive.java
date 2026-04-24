@@ -85,7 +85,7 @@ public class FieldCentricDrive implements Component {
     /**
      *
      * @param heading: heading of robot
-     * @return: heading with offset
+     * @return double:  heading with offset
      */
     private double getHeading(double heading) {
         return heading - this.offset;

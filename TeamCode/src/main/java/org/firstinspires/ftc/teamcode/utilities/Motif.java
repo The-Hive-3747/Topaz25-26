@@ -95,4 +95,8 @@ public class Motif {
         }
         return null;
     }
+
+    public static Motif pPG = new Motif(Artifact.PURPLE, Artifact.PURPLE, Artifact.GREEN);
+    public static Motif pGP = new Motif(Artifact.PURPLE, Artifact.GREEN, Artifact.PURPLE);
+    public static Motif gPP = new Motif(Artifact.GREEN, Artifact.PURPLE, Artifact.PURPLE);
 }

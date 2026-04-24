@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
 import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.utilities.Motif;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
@@ -408,6 +409,10 @@ public class Intake implements Component {
             () -> intakeReversed = true
     );
 
+    public Motif getMotif() {
+        return new Motif(leftArtifact, frontArtifact, rightArtifact);
+    }
+
 
     public void update() {
         if(colorTimer.milliseconds() > COLOR_CHECK_MS) {
@@ -421,6 +426,7 @@ public class Intake implements Component {
         panelsTelemetry.addData("front artifact", frontArtifact);
         panelsTelemetry.addData("right artifact", rightArtifact);
         panelsTelemetry.addData("left artifact", leftArtifact);
+        ActiveOpMode.telemetry().addLine("---- INTAKE ----");
         ActiveOpMode.telemetry().addData("front artifact", frontArtifact);
         ActiveOpMode.telemetry().addData("right artifact", rightArtifact);
         ActiveOpMode.telemetry().addData("left artifact", leftArtifact);
