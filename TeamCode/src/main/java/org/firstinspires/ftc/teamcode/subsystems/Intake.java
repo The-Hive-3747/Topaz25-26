@@ -35,6 +35,7 @@ public class Intake implements Component {
     ElapsedTime shotTimer = new ElapsedTime();
     ElapsedTime intakeTimer = new ElapsedTime();
     ElapsedTime colorTimer = new ElapsedTime();
+    ElapsedTime agitator2Turn = new ElapsedTime();
     private double COLOR_CHECK_MS = 200;
     static boolean isIntakeOn = false;
     double INTAKE_POWER = 0.9;
@@ -43,7 +44,7 @@ public class Intake implements Component {
     double REVERSAL_TIME = 500;
     double RAIL_DOWN_TIME = 500;
     public static double FIRE_POWER = 1;//0.9
-    public static double AGITATOR_POWER = 0.6; //0.8;//0.2;//0.6;
+    public static double AGITATOR_POWER = 0.5;//0.6; //0.8;//0.2;//0.6;
     public static double RAIL_UP = 0.9; //0.72;// 0.22;//0.3//0.157;//0.3;//0.8;//0.5
     public static double RAIL_DOWN = 0.5;//1;//1;
     double INTAKE_POWER_REVERSED = -0.9;
@@ -72,7 +73,9 @@ public class Intake implements Component {
     private final double PURPLE_THRESHOLD_CB_GT =  0.509;
     private final double PURPLE_THRESHOLD_CR_GT =  0.492;
     private final double ARTIFACT_THRESHOLD_CL_GT = 0.01;
-
+    public double agitatorTurns = 0;
+    public double agitatorAdjustNumber = 10;
+    public double agitatorError = 0.3;
     YCbCr frontValues, rightValues, leftValues;
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -115,13 +118,32 @@ public class Intake implements Component {
 
     public void startRailDex() {
         isShooting = true;
+        stopIntake();
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
         agitator.setTargetPosition(AGITATOR_ENC);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitatorTurns +=1;
 
     }
+    public void startRailDex2Turns() {
+        agitator2Turn.reset();
+        isShooting = true;
+        stopIntake();
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        agitator.setTargetPosition(AGITATOR_ENC/4);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (agitator2Turn.milliseconds() > 500) {
+            agitator.setTargetPosition(3*AGITATOR_ENC/4);
+            agitator.setPower(AGITATOR_POWER);
+            agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        agitatorTurns +=1;
+    }
+
     public void startRailDexTime(){
         isShooting = true;
         leftFireServo.setPower(FIRE_POWER);
@@ -397,8 +419,8 @@ public class Intake implements Component {
                 })
                 .setStop(interrupted -> {})
                 //in order to reset agitator fully it needs 2.75 seconds but its usually covered in the driving.
-                .setIsDone(() -> (shotTimer.seconds() > SHOT_TIME_THRESHOLD_SEC || // Checks if agitator is not busy, then gives a 0.25s buffer
-                        (shotTimerAfterAgitator.seconds() > SHOT_TIME_AFTER_AGITATOR_SEC && wasShotTimerReset)));
+                .setIsDone(() -> (shotTimer.seconds() > SHOT_TIME_THRESHOLD_SEC ));//|| // Checks if agitator is not busy, then gives a 0.25s buffer
+        // (shotTimerAfterAgitator.seconds() > SHOT_TIME_AFTER_AGITATOR_SEC && wasShotTimerReset)));
     }
 
     public Command firewheelsOff = new InstantCommand(
@@ -455,7 +477,7 @@ public class Intake implements Component {
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
-        if(isShooting){
+        if (isShooting){
             leftFireServo.setPower(FIRE_POWER);
             rightFireServo.setPower(FIRE_POWER);
         }
@@ -483,6 +505,9 @@ public class Intake implements Component {
             agitator.setPower(0);
             agitatorResetRequest = false;
         }
+        /*if (agitatorTurns >= agitatorAdjustNumber) { //This is code to adjust for our error in converting doubles to integers
+            agitator.setTargetPosition((int)(agitator.getCurrentPosition() - agitatorError*agitatorAdjustNumber));
+        }*/
 
         /*if(rightArtifact == Artifact.GREEN){
             prismLights.gPP();

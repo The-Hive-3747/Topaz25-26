@@ -18,7 +18,7 @@ import dev.nextftc.ftc.ActiveOpMode;
 @Configurable
 public class Hood{
 
-    private static double HOOD_MAX_POS = 8858;
+    private static double HOOD_MAX_POS = 12000;//9000;//8858;
     private double HOOD_MIN_POS = 0;
     public static double HOOD_INCREMENT = 200;//1000;
     public static double AUTON_HOOD_POS = 1353;//1453

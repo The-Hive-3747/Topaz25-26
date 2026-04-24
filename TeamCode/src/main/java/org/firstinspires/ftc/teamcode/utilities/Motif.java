@@ -99,4 +99,17 @@ public class Motif {
     public static Motif pPG = new Motif(Artifact.PURPLE, Artifact.PURPLE, Artifact.GREEN);
     public static Motif pGP = new Motif(Artifact.PURPLE, Artifact.GREEN, Artifact.PURPLE);
     public static Motif gPP = new Motif(Artifact.GREEN, Artifact.PURPLE, Artifact.PURPLE);
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Motif)) return false;
+        Motif other = (Motif) o;
+        return this.left == other.left && this.front == other.front && this.right == other.right;
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(left, front, right);
+    }
 }

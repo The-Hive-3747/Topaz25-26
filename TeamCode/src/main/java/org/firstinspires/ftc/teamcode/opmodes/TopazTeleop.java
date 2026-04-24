@@ -265,6 +265,7 @@ public class TopazTeleop extends NextFTCOpMode {
                 .whenBecomesFalse(() -> flywheel.setHoodPower(0));
 
         g2LT.whenBecomesTrue(() ->{
+            isIntakeOn = false;
             FLYWHEEL_ON = true;
             intake.railDown();
             intake.startRailDex();
@@ -316,19 +317,14 @@ public class TopazTeleop extends NextFTCOpMode {
                 flywheel.setTargetVel(POSE_TWO_VEL);
         });*/
 
-        g2A.toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> {
-                    //intake.turnIsShootingFalse();
-                    intake.startIntake();
-                    isIntakeOn = true;
-                    /*if (!intake.isFrontEmpty()) {
-                        intake.shiftIntake();
-                    }*/
-                })
-                .whenBecomesFalse(() -> {
-                    intake.stopIntake();
-                    //intake.resetRailDex();
-                    isIntakeOn = false;
+        g2A.whenBecomesTrue(() -> {
+                    if (isIntakeOn) {
+                        intake.stopIntake();
+                        isIntakeOn = false;
+                    } else {
+                        intake.startIntake();
+                        isIntakeOn = true;
+                    }
                 });
         g2X.whenBecomesTrue(() -> intake.shiftIntake());
         /*g2LT.toggleOnBecomesTrue() //reversing intake
@@ -447,9 +443,11 @@ public class TopazTeleop extends NextFTCOpMode {
         } else if (wasEndgameWarned && !wasEndgameCleared && lightTimer.seconds() > 1) {
             turretLights.clearEndgameWarning();
             wasEndgameCleared = true;
-        } else if (isIntakeOn && !wasIntakeOn) {
-            turretLights.intaking();
-            wasIntakeOn = true;
+        } else if (isIntakeOn) {
+            if (!wasIntakeOn) {
+                turretLights.intaking();
+                wasIntakeOn = true;
+            }
         } else if (flywheel.readyToShoot() && (!wasReadyToShoot || wasEndgameCleared)) {
             turretLights.readyToShoot();
             wasReadyToShoot = true;

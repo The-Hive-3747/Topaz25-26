@@ -142,13 +142,10 @@ public class AutoPaths {
      * @return the built PathChain
      */
     public static PathChain generatePath(Pose pose1, Pose pose2) {
-        return follower.pathBuilder()
-                .addPath(
-                        new BezierLine(pose1, pose2)
-                )
-                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
-                .build();
+        return generatePath(pose1, pose2, pose1.getHeading(), pose2.getHeading());
     }
+
+
 
     /**
      * generates a PathChain using the heading from pose1 & pose2
@@ -157,6 +154,15 @@ public class AutoPaths {
      * @return the built PathChain
      */
     public static PathChain generatePathShortCallback(Pose pose1, Pose pose2) {
+        if (pose1.getHeading() == pose2.getHeading()) {
+            return follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(pose1, pose2)
+                    )
+                    .setConstantHeadingInterpolation(pose1.getHeading())
+                    .setConstraints(new PathConstraints(0.6, 100))
+                    .build();
+        }
         return follower.pathBuilder()
                 .addPath(
                         new BezierLine(pose1, pose2)
@@ -191,11 +197,14 @@ public class AutoPaths {
      * @return the built PathChain
      */
     public static PathChain generatePath(Pose pose1, Pose pose2, double heading1, double heading2) {
+        if (heading1 == heading2) {
+            return generatePath(pose1, pose2, heading1);
+        }
         return follower.pathBuilder()
                 .addPath(
                         new BezierLine(pose1, pose2)
                 )
-                .setLinearHeadingInterpolation(heading1, heading2)
+                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
                 .build();
     }
 

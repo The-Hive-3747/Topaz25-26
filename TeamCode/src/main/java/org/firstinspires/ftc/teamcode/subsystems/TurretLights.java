@@ -80,7 +80,11 @@ public class TurretLights {
     }
 
     public void clearEndgameWarning() {
-        prism.clearAllAnimations();
+        PrismAnimations.Solid off = new PrismAnimations.Solid(Color.TRANSPARENT);
+        off.setBrightness(0);
+        off.setStartIndex(startIndexBottom);
+        off.setStopIndex(stopIndexTopLeft);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_9, off);
     }
 
     public void endgameFinalWarning() {

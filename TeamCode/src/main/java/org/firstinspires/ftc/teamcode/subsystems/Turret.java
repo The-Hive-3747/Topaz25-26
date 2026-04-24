@@ -43,17 +43,17 @@ public class Turret implements Component {
     public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -139; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 144;
     public static double AUTON_RED_SHOOT_ANGLE_FAR = -110; //-92 -95
-    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 110;
+    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 109;
     public static double LEFT_LIMIT_TICKS = 685;
     public static double RIGHT_LIMIT_TICKS = -856;
     public static double turretRezeroTolerance = 5;
-    public double REZERO_POWER = 0.11;//0.2;//0.1;//0.05;
+    public double REZERO_POWER = 0.16;//0.11;//0.2;//0.1;//0.05;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
     public boolean turretRezeroed = false;
     public boolean turretFindingSwitch = false;
     public int turretZone;
-    public double turretZoneMargin = 8.5, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;
+    public double turretZoneMargin = 11, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;// turretzonemargin:8.5
 
     double botY, botX;
     public static double TURRET_PID_KP = 0.008;//0.01; //0.038; //0.017;

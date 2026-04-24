@@ -11,7 +11,7 @@ public class BackRedAuto extends AutoTemplate {
         setTurretFixedFar();
         setHoodPosFar();
         turnFlywheelOnForBack();
-        waitUntilFlywheelAtSpeed(3);
+        waitUntilFlywheelAtSpeed(5);
         shootAllThreeAtFar(0);
         intakeHP(0.5);
         shootAllThreeAtFar(0);
