@@ -36,14 +36,18 @@ public class Turret implements Component {
     TurretState turretState = TurretState.AUTO;
     Alliance alliance;
     private double turretAngleCached = 0;
+    private double heightToFlywheelTop = 11.25; //in inches
+    private double heightToGoal = 40; //in inches
+    private double flywheelCircumMm = 71; //this is of the inner edge in millimeters
+    private double flywheelCircumInch = 2.79528;
     private double fieldCentricGoalAngle, goalX, goalY, turretPower, turretGoalNotInLimits, heading;
     private final KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
     public static double turretOffset = 0;
     public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -139; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 144;
-    public static double AUTON_RED_SHOOT_ANGLE_FAR = -110; //-92 -95
-    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 109;
+    public static double AUTON_RED_SHOOT_ANGLE_FAR = -116; //-92 -95
+    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 116; //113.2; //114 112
     public static double LEFT_LIMIT_TICKS = 685;
     public static double RIGHT_LIMIT_TICKS = -856;
     public static double turretRezeroTolerance = 5;
@@ -53,7 +57,7 @@ public class Turret implements Component {
     public boolean turretRezeroed = false;
     public boolean turretFindingSwitch = false;
     public int turretZone;
-    public double turretZoneMargin = 11, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;// turretzonemargin:8.5
+    public double turretZoneMarginBack = 17, turretZoneMargin = 11, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;// turretzonemargin:11//8.5
 
     double botY, botX;
     public static double TURRET_PID_KP = 0.008;//0.01; //0.038; //0.017;
@@ -66,7 +70,9 @@ public class Turret implements Component {
     public static double TURRET_POWER_GO_FAST = 0.9;
     private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 0.5, TURRET_POWER_MIN = 0.05;//D: 1
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
+    public double turretRobotHeadingInDeg, robotFieldHeadingInRads, shootOnTheMoveHeadingInRads;
     ControlSystem turretPID, turretSecPID;
+    //private KineticState turretRobotHeading;
 
 
     @Override
@@ -104,7 +110,7 @@ public class Turret implements Component {
     public void update() {
         //update cached information
         turretAngleCached=((double) thruTurret.getCurrentPosition()) / TURRET_TICKS_TO_DEGREES;
-
+        robotFieldHeadingInRads = currentPose.getHeading();
         /*turretPID = ControlSystem.builder()
                 .posPid(TURRET_PID_KP, TURRET_PID_KI, TURRET_PID_KD)
                 .build();*/
@@ -116,7 +122,8 @@ public class Turret implements Component {
         } else if (turretState == TurretState.FIXED){  //This is the autonomous fixed position for shooting
             turretPID.setGoal(FIXED_ANGLE);
         }else if(turretState == TurretState.MOVE_N_SHOOT){
-            turretPID.setGoal(new KineticState(shootingGoal));
+            //turretPID.setGoal(new KineticState(shootingGoal));
+            turretPID.setGoal(convertFieldHeadingRadsToKineticStateUsingDeg(shootOnTheMoveHeadingInRads));
         } else if(turretState == TurretState.REZEROING_RIGHT){
             if (!turretRezeroed && !limitSwitch.isPressed()) {
                 turretFindingSwitch = false;
@@ -170,10 +177,10 @@ public class Turret implements Component {
             } else if (botX >= midPointX && botY >= botX - turretZoneMargin) {
                 turretState = TurretState.AUTO;
                 turretZone = 2;
-            } else if (botX < midPointX && botY <= botX - midPointX + farZoneHeight + turretZoneMargin) {
+            } else if (botX < midPointX && botY <= botX - midPointX + farZoneHeight + turretZoneMarginBack) {
                 turretState = TurretState.AUTO;
                 turretZone = 3;
-            } else if (botX >= midPointX && botY <= -botX + midPointX + farZoneHeight + turretZoneMargin) {
+            } else if (botX >= midPointX && botY <= -botX + midPointX + farZoneHeight + turretZoneMarginBack) {
                 turretState = TurretState.AUTO;
                 turretZone = 4;
             } else {
@@ -209,13 +216,20 @@ public class Turret implements Component {
     public KineticState getAutoAimGoalAngle() {
         if (currentPose != null) {
             fieldCentricGoalAngle = Math.atan2((goalY - this.currentPose.getY()), (goalX - this.currentPose.getX())); // IN RADS
-            turretGoalNotInLimits = Math.toDegrees(normalizeAngle(fieldCentricGoalAngle - this.currentPose.getHeading() + Math.PI));
+            turretGoalNotInLimits = Math.toDegrees(normalizeAngleInRads(fieldCentricGoalAngle - this.currentPose.getHeading() + Math.PI));
             return new KineticState(this.putInTurretLimits(turretGoalNotInLimits));
-
 
         } else {
             return ZERO_ANGLE;
         }
+    }
+    public KineticState convertFieldHeadingRadsToKineticStateUsingDeg(double goalFieldHeadingInRads) {
+        turretRobotHeadingInDeg = Math.toDegrees(normalizeAngleInRads(Math.PI - (robotFieldHeadingInRads - goalFieldHeadingInRads)));
+        return new KineticState (this.putInTurretLimits(turretRobotHeadingInDeg));
+    }
+    public void setTurretOnTheMoveInRads(double goalFieldHeadingInRads) {
+        shootOnTheMoveHeadingInRads = goalFieldHeadingInRads;
+        setTurretStateMoveNShoot();
     }
 
     /**
@@ -255,7 +269,7 @@ public class Turret implements Component {
     }
 
     public void setTurretShootAngle(double goal){
-        shootingGoal = normalizeAngle(goal + 180);
+        shootingGoal = normalizeAngleInRads(goal + 180);
         turretState = TurretState.MOVE_N_SHOOT;
         turretPID.setGoal(new KineticState(shootingGoal));
     }
@@ -289,7 +303,7 @@ public class Turret implements Component {
         return turretPID.getGoal().getPosition();
     }
 
-    public static double normalizeAngle(double angleRad) {
+    public static double normalizeAngleInRads(double angleRad) {
         // Ensure the angle is within the (-π, π] range
         angleRad %= (2 * Math.PI); // Take the modulo with 2π
         if (angleRad > Math.PI) {
@@ -366,6 +380,9 @@ public class Turret implements Component {
     }
     public void setTurretStateAuto() {
         turretState = TurretState.AUTO;
+    }
+    public void setTurretStateMoveNShoot() {
+        turretState = TurretState.MOVE_N_SHOOT;
     }
     public void setTurretStateRezeroLeft() {
         turretRezeroed = false;

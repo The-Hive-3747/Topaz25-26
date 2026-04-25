@@ -31,7 +31,6 @@ import java.util.List;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
-import dev.nextftc.control.feedforward.FeedforwardElement;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
@@ -190,7 +189,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         turret.setAlliance(alliance);
         aimbot.setAlliance(alliance);
-        turret.setTurretStateAuto();
+        turret.setTurretStateMoveNShoot();
 
         Button g2X = button(() -> gamepad2.x);
         Button g2Y = button(() -> gamepad2.y);
@@ -359,14 +358,15 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         for(LynxModule module : allHubs){
             module.clearBulkCache();
         }
-        drive.update(follower.getHeading(), slowModeMultiplier);
         looptime.reset();
         follower.update();
+        drive.update(follower.getHeading(), slowModeMultiplier);
+
 
         dataLogger.setCurrentPose(follower.getPose());
         dataLogger.addAimbot(aimbot);
         dataLogger.addTurret(turret);
-        dataLogger.update();
+        //dataLogger.update();
 
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
@@ -436,11 +436,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
 
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
-        // turret.shootOnTheMove(follower.getVelocity());
+        turret.shootOnTheMove(follower.getVelocity());
 
         turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
-        turret.setTurretShootAngle(Math.toDegrees(shotParameters.headingRadians));
-
+        //turret.setTurretShootAngle(Math.toDegrees(shotParameters.headingRadians));
+        //turret.setTurretShootAngle(turret.convertTurretHeading(shotParameters.headingRadians)); //more recent one
+        turret.setTurretOnTheMoveInRads(shotParameters.headingRadians);
         turret.update();
 
 

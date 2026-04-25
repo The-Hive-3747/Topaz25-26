@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utilities.Alliance;
 public class AutoPaths {
     public static Pose gateIntakeStartPose, farShootingPoseJiggle, closeShootingPoseJiggle, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose;
     public static PathChain shootCloseJiggle, toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, shootFarJiggle;
-    public static double gateIntakeAngle, closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
+    public static double intakeHPAngle, gateIntakeAngle, closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
     public static boolean customParkPose;
@@ -31,8 +31,10 @@ public class AutoPaths {
         }
         if (alliance == Alliance.BLUE) {
             gateIntakeAngle = Math.toRadians(165);
+            intakeHPAngle = Math.toRadians(-160);
         } else {
             gateIntakeAngle = Math.toRadians(15);
+            intakeHPAngle = Math.toRadians(-20);
         }
         closeShootAngle = flipHeading180Degrees(180);
         shootAngle = flipHeading180Degrees(180);
@@ -55,9 +57,9 @@ public class AutoPaths {
         closeShootingPose = flipOverCenter(new Pose(54.25, 88.75, shootAngle));
         closeShootingPoseJiggle = flipOverCenter(new Pose(54, 88.5, shootAngle));
 
-        farShootingPose = flipOverCenter(new Pose(55.2, 21.2, shootAngle));
-        farShootingPoseJiggle = flipOverCenter(new Pose(55, 21, shootAngle));
-        intakeHPStartPose = flipOverCenter(new Pose(40, 10.5, intakeAngle));
+        farShootingPose = flipOverCenter(new Pose(53.5, 17.5, shootAngle));
+        farShootingPoseJiggle = flipOverCenter(new Pose(54, 18, shootAngle));
+        intakeHPStartPose = flipOverCenter(new Pose(50, 15, intakeHPAngle));
         intakeHPEndPose = flipOverCenter(new Pose(10,10.5, intakeAngle));
         intake1StartPose = flipOverCenter(new Pose(51.25, 81.25, intakeAngle)); //y:81 34//y:82//x: 47 y:78
         intake1EndPose = flipOverCenter(new Pose(19, 81.25, intakeAngle)); //6//x:16 y:82//x: 16 :78
@@ -66,7 +68,7 @@ public class AutoPaths {
         intake2StartPose = flipOverCenter(new Pose(56.25, 57.75, intakeAngle));//y:58//y: 61
         intake2EndPose = flipOverCenter(new Pose(11.5, 57.75, intakeAngle));//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(56.25, 33.75, intakeAngle));//y:38//y: 32
-        intake3EndPose = flipOverCenter(new Pose(11.5, 33.75, intakeAngle));//x:18 y:38//y: 32
+        intake3EndPose = flipOverCenter(new Pose(16, 33.75, intakeAngle));//x:11.5 y:38//y: 32
         curveIntake2 = flipOverCenter(new Pose(55,68));
         farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 

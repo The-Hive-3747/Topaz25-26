@@ -509,20 +509,29 @@ public class TopazTeleop extends NextFTCOpMode {
         //graphManager.addData("flywheel power", flywheel.getPower());
         //graphManager.update();
 
+        telemetry.addLine("---- TELEOP ----");
+        telemetry.addData("Robot Pose", follower.getPose());
+        telemetry.addData("Alliance", alliance);
+        telemetry.addData("Turret State", turret.getTurretState());
+        telemetry.addData("Flywheel State", flywheel.getFlywheelState());
+        telemetry.addData("Intake State", intake.getIntakeState());
+        telemetry.addData("Firewheel State", intake.getFirewheelState());
+        telemetry.addData("Agitator Position", intake.getAgitatorPos());
+        telemetry.addData("Match Time (s)", matchTimer.seconds());
+        panelsTelemetry.addData("Critical Loop Time", looptime);
+        panelsTelemetry.addData("Highset Loop Time", highestLooptime);
+        telemetry.addData("Manual Mode", isManualModeOn);
+
+        flywheel.telemetry();
+
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
-        panelsTelemetry.addData("hood position", flywheel.getHoodPos());
-        panelsTelemetry.addData("hood goal", flywheel.getHoodGoal());
         //panelsTelemetry.addData("hub number", Servo);
-        panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
-        panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
-        panelsTelemetry.addData("Critical loop time", looptime);
-        panelsTelemetry.addData("Highset loop time", highestLooptime);
-        panelsTelemetry.addData("flywheel power", flywheel.getPower());
+
         panelsTelemetry.addData("Left FlyWheel Current (mA)", flywheel.getCurrentLeft());
         panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
         panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
         panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
-        telemetry.addData("Manual Mode", isManualModeOn);
+
         panelsTelemetry.update(telemetry);
     }
 

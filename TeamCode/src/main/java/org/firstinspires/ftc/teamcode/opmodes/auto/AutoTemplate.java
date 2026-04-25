@@ -56,6 +56,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     double HOOD_POS, secondsBeforeIntakeOff = 0.5, maxLoopTimeMS = 0;
     boolean FIREWHEELS_ON = false, hasResetEncoders = false;
     public boolean isDone;
+    public static boolean reverseIntake = false;
+
 
 
     /**
@@ -337,14 +339,15 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     private void generateShootCommandWithJiggle(PathChain toShootPath, Pose endPose, PathChain jigglePath, double delayBeforeShot) {
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
+                        flywheel.waitUntilFlywheelAtVel(2),
                         new FollowPath(toShootPath, false),
-                        new Delay(secondsBeforeIntakeOff).then(
-                                intake.stopIntakeNoReverse,
-                                intake.railDownAuto
-                        ),
+                        stopIntake(),
                         runFirewheels
                 ),
-                new Delay(delayBeforeShot),
+                new ParallelGroup(
+                        intake.railDownAuto,
+                        new Delay(delayBeforeShot)
+                ),
                 new ParallelGroup(
                         followJigglePath(jigglePath),
                         new InstantCommand(() -> intake.turnIsShootingTrue()),
@@ -352,6 +355,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 )
         ));
         lastPose = endPose;
+    }
+
+    private Command stopIntake() {
+        if (reverseIntake) {
+            reverseIntake = false;
+            return intake.stopIntake;
+        }
+        return intake.stopIntakeNoReverse;
     }
 
     /**
@@ -367,13 +378,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                         () -> {
                             jiggleTimer.reset();
                             // TODO: MAY NEED TO CHANGE TO PedroComponent.follower().followPath
-                            follower.followPath(path);
+                            follower.followPath(path,false);
                         }
                 )
-                .setStop(interrupted -> {
-                    if (interrupted) follower.breakFollowing();
-                })
-                .setIsDone(() -> jiggleTimer.milliseconds() > 200);
+                .setStop(interrupted -> follower.breakFollowing())
+                .setIsDone(() -> jiggleTimer.milliseconds() > 700); //500
     }
 
     protected void intake1(double delayAfterIntake) {
@@ -396,8 +405,22 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void intakeHP(double delayAfterIntake) {
         lineUpForIntakeHPFromLastPose = generatePath(AutoTemplate.lastPose, intakeHPStartPose);
-        intakeHP = generatePathWithVelocityConstraint(intakeHPStartPose, intakeHPEndPose, 0.7);
-        generateIntakeCommand(lineUpForIntakeHPFromLastPose, intakeHP, intakeHPEndPose, delayAfterIntake);
+        intakeHP = generatePath(intakeHPStartPose, intakeHPEndPose);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        new InstantCommand(() -> reverseIntake = true),
+                        new InstantCommand(() -> FIREWHEELS_ON=false),
+                        intake.firewheelsOff,
+                        new FollowPath(lineUpForIntakeHPFromLastPose),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intakeHP)
+                ),
+                new Delay(delayAfterIntake)
+        ));
+        lastPose = intakeHPEndPose;
     }
 
     /**
@@ -421,6 +444,31 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                 ),
                 new Delay(delayAfterIntake)
                 //intake.stopIntakeNoReverse
+        ));
+        lastPose = endPose;
+    }
+
+    /**
+     * Shorthand method to easily generate new intake Commands.
+     * @param lineUpForIntake PathChain that goes to the beginning of intake
+     * @param intakePath PathChain that actually intakes
+     * @param endPose Pose that the path ends on
+     * @param delayAfterIntake Pass through a delay after intake
+     */
+    private void generateIntakeCommandReverse(PathChain lineUpForIntake, PathChain intakePath, Pose endPose, double delayAfterIntake) {
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        new InstantCommand(() -> reverseIntake = true),
+                        new InstantCommand(() -> FIREWHEELS_ON=false),
+                        intake.firewheelsOff,
+                        new FollowPath(lineUpForIntake),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intakePath)
+                ),
+                new Delay(delayAfterIntake)
         ));
         lastPose = endPose;
     }

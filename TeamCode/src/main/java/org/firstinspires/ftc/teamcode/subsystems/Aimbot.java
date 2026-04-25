@@ -72,10 +72,10 @@ public class Aimbot implements Component{
             new AimbotValues(75, 3050, 6800),//v:3150, h:6400
             new AimbotValues(79, 3150, 7000),//v:3200, h:6400 //TUNED
             new AimbotValues(87, 3250, 6400), //v: 3250 h: 6400
-            new AimbotValues(117, 4050, 7600),//v: 3850, h:7400
-            new AimbotValues(120, 4050, 8400),//v: 3950, h:7400
-            new AimbotValues(128, 4100, 8800), //v: 4000, h:7500
-            new AimbotValues(136, 4200, 9200), //v: 4050, h:7700
+            new AimbotValues(117, 4150, 7600),//v: 3850, h:7400
+            new AimbotValues(120, 4200, 8400),//v: 3950, h:7400
+            new AimbotValues(128, 4250, 8800), //v: 4000, h:7500
+            new AimbotValues(136, 4300, 9200), //v: 4050, h:7700
 
 
             /*new AimbotValues(23.5, 2800, 2200), //vel: 850//

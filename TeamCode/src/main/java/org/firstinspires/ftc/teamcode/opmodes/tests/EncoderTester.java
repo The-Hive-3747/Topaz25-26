@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -22,6 +23,7 @@ public class EncoderTester extends NextFTCOpMode {
     CRServo turretLeft, turretRight;
 private TouchSensor limitSwitch;
     DcMotorEx flywheelLeft, flywheelRight, intakeMotor, agitator;
+    AnalogInput upperRail;
     @Override
     public void onInit() {
         flywheelLeft = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "flyWheelLeft");
@@ -33,6 +35,8 @@ private TouchSensor limitSwitch;
         intakeMotor = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "intake");
         turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
+
+        upperRail = ActiveOpMode.hardwareMap().get(AnalogInput.class, "upperRailEncoder");
 
         agitator = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "agitator"); //312 motor with 537.7 pulses per rev
 //        agitator.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -81,6 +85,9 @@ private TouchSensor limitSwitch;
 
         telemetry.addData("Motor turret", "Turret encoder");
         telemetry.addData("Motor transfer", "Hood encoder");
+
+        telemetry.addData("Upper Rail", upperRail.getVoltage());
+        telemetry.addData("Upper Rail", upperRail.getMaxVoltage());
 
         telemetry.update();
     }

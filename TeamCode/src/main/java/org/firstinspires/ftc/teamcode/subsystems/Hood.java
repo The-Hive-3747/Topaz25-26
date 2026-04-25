@@ -32,7 +32,7 @@ public class Hood{
     public static double HOOD_FF = 0;
 
     public static double HOOD_AUTON_CLOSE_POS = 5250;
-    public static double HOOD_AUTON_FAR_POS = 7500;
+    public static double HOOD_AUTON_FAR_POS = 8150; //8300; //9200 7500
     public static double HOOD_MANUAL_POWER = 0.3;
     private KineticState goal;
     ControlSystem hoodPID;

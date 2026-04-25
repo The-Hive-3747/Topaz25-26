@@ -26,7 +26,8 @@ public class Flywheel implements Component {
     public enum FlywheelState {
         MANUAL,
         BANGBANG,
-        PID
+        PID,
+        OFF
     }
     FlywheelState flywheelState = FlywheelState.BANGBANG;
     DcMotorEx flywheelRight, flywheelLeft;
@@ -41,10 +42,9 @@ public class Flywheel implements Component {
     double currentPosition, pastPosition = 0, currentTime, pastTime = 0, deltaTime, deltaPosition;
     private final ElapsedTime flywheelVelocityTimer = new ElapsedTime();
     ControlSystem largeFlywheelPID;
-    CRServo leftFireServo;
     Hood hood;
     public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 3000; //UPDATED TO RPM
-    public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 3900; //UPDATED TO RPM
+    public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 4000; //4200; //UPDATED TO RPM
     public static double MANUAL_DEFAULT_POWER = 0.6;
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
@@ -303,11 +303,6 @@ public class Flywheel implements Component {
         this.setPower(correct);
 
         hood.update();
-
-        ActiveOpMode.telemetry().addData("flywheel power", correct);
-        ActiveOpMode.telemetry().addData("flywheel vel", flywheelVel);
-        ActiveOpMode.telemetry().addData("flywheel target vel", targetVel + targetAdjust);
-        ActiveOpMode.telemetry().addData("Adjust Target By", targetAdjust);
     }
 
     /**
@@ -360,5 +355,20 @@ public class Flywheel implements Component {
         return new LambdaCommand()
                 .setStart(() -> spinUpTimer.reset())
                 .setIsDone(() -> readyToShoot() || spinUpTimer.seconds() > thresholdTimeSec);
+    }
+
+    public FlywheelState getFlywheelState() {
+        if (targetVel == 0) {
+            return FlywheelState.OFF;
+        }
+        return flywheelState;
+    }
+
+    public void telemetry() {
+        ActiveOpMode.telemetry().addLine("---- FLYWHEEL ----");
+        ActiveOpMode.telemetry().addData("Flywheel Velocity", flywheelVel);
+        ActiveOpMode.telemetry().addData("Flywheel Goal", targetVel + targetAdjust);
+        ActiveOpMode.telemetry().addData("Flywheel Power", correct);
+        ActiveOpMode.telemetry().addData("Is Flywheel Manual?", flywheelState == FlywheelState.MANUAL);
     }
 }

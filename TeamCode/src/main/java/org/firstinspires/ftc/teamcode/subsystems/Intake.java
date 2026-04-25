@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
+import org.firstinspires.ftc.teamcode.opmodes.auto.AutoTemplate;
 import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.utilities.Motif;
@@ -226,6 +227,10 @@ public class Intake implements Component {
         rail.setPosition(RAIL_DOWN);
     }
 
+    public void railUp(){
+        rail.setPosition(RAIL_UP);
+    }
+
     public Artifact detectArtifact(YCbCr values) {
         if (values.cL < ARTIFACT_THRESHOLD_CL_GT) {
             return Artifact.EMPTY;
@@ -350,12 +355,13 @@ public class Intake implements Component {
                 intakeMotor.setPower(INTAKE_POWER_REVERSED);
                 intakeRevTimer.reset();
                 intakeReversed=true;
+                railUp();
+                //railDown();
             })
             .setUpdate(() -> {
                 if (intakeReversed && intakeRevTimer.milliseconds() >= REVERSAL_TIME) {
                     intakeMotor.setPower(0);
                     intakeReversed = false;
-                    rail.setPosition(RAIL_DOWN);
                 }
             })
             .setIsDone(() -> !intakeReversed);
@@ -363,6 +369,7 @@ public class Intake implements Component {
     public InstantCommand stopIntakeNoReverse = new InstantCommand(
             () -> {
                 isIntakeOn = false;
+                railDown();
                 intakeMotor.setPower(0);
             });
 
@@ -503,6 +510,7 @@ public class Intake implements Component {
             agitator.setTargetPosition(0);
             agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             agitator.setPower(0);
+            agitator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             agitatorResetRequest = false;
         }
         /*if (agitatorTurns >= agitatorAdjustNumber) { //This is code to adjust for our error in converting doubles to integers
@@ -519,5 +527,26 @@ public class Intake implements Component {
             prismLights.pGP();
         }*/
 
+    }
+
+    public String getIntakeState() {
+        if (isIntakeOn) {
+            return "On";
+        }
+        if (intakeReversed) {
+            return "Reversed";
+        }
+        return "Off";
+    }
+
+    public String getFirewheelState() {
+        if (isShooting) {
+            return "On";
+        }
+        return "Off";
+    }
+
+    public int getAgitatorPos(){
+        return agitator.getCurrentPosition();
     }
 }
