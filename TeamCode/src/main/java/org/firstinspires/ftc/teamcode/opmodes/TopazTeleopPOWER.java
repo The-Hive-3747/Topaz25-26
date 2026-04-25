@@ -6,6 +6,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -99,6 +100,9 @@ public class TopazTeleopPOWER extends NextFTCOpMode {
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
+        LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
+        //controlHub.getI;
+
 
         //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
@@ -300,7 +304,7 @@ public class TopazTeleopPOWER extends NextFTCOpMode {
         });
         g1X.whenBecomesTrue(() -> {
             if (limelight.isDataFresh()) {
-                turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+                turret.setCurrentPose(follower.getPose());
             }
         });
 
@@ -372,10 +376,10 @@ public class TopazTeleopPOWER extends NextFTCOpMode {
         if (limelight.isDataFresh()) {
             limelightRelocalized = true;
             limelightCorrection = limelight.getPedroPose().getHeading();
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+            turret.setCurrentPose(follower.getPose());
         } else {
             //limelightCorrection = 0.0;
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
+            turret.setCurrentPose(follower.getPose());
         }
 
 

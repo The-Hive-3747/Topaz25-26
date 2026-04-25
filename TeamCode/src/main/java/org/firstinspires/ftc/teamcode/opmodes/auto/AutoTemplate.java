@@ -118,7 +118,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             intake.resetAgitatorEncoder();
             hasResetEncoders = true;
         } else {
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+            turret.setCurrentPose(follower.getPose());
             turret.setTurretStateFixed();
             turret.update();
 

@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -21,6 +22,7 @@ import dev.nextftc.ftc.NextFTCOpMode;
 //@Disabled
 public class EncoderTester extends NextFTCOpMode {
     CRServo turretLeft, turretRight;
+    ServoImplEx rail;
 private TouchSensor limitSwitch;
     DcMotorEx flywheelLeft, flywheelRight, intakeMotor, agitator;
     AnalogInput upperRail;
@@ -36,6 +38,7 @@ private TouchSensor limitSwitch;
         turretLeft = ActiveOpMode.hardwareMap().get(CRServo.class, "turretLeft");
         turretRight = ActiveOpMode.hardwareMap().get(CRServo.class, "turretRight");
 
+        rail = ActiveOpMode.hardwareMap().get(ServoImplEx.class, "upperRail");
         upperRail = ActiveOpMode.hardwareMap().get(AnalogInput.class, "upperRailEncoder");
 
         agitator = ActiveOpMode.hardwareMap().get(DcMotorEx.class, "agitator"); //312 motor with 537.7 pulses per rev
@@ -53,6 +56,8 @@ private TouchSensor limitSwitch;
         flywheelRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         //turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        rail.setPwmEnable();
 
     }
     @Override

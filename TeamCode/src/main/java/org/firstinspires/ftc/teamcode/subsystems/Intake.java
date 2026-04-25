@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -63,6 +64,7 @@ public class Intake implements Component {
     boolean isShooting = false;
     boolean intakeStopping = false;
     boolean wasShotTimerReset = false;
+    //boolean isRailDown = false;
     public static double SHOT_TIME_THRESHOLD_SEC = 2.25, SHOT_TIME_AFTER_AGITATOR_SEC = 0.6;
 
     Artifact leftArtifact = Artifact.EMPTY;
@@ -74,12 +76,18 @@ public class Intake implements Component {
     private final double PURPLE_THRESHOLD_CB_GT =  0.509;
     private final double PURPLE_THRESHOLD_CR_GT =  0.492;
     private final double ARTIFACT_THRESHOLD_CL_GT = 0.01;
+    private boolean isAgitatorShootingInThirds = false, isRailDownRequested = false, useRailDownDetection = false;
+    private ElapsedTime agitatorShootInThirdsTimer = new ElapsedTime(), railDownTimer = new ElapsedTime();
     public double agitatorTurns = 0;
     public double agitatorAdjustNumber = 10;
     public double agitatorError = 0.3;
+    public static double RAIL_DOWN_POS = 1.7;
+    public static double RAIL_DOWN_POS_THRESHOLD = 0.2;
+    public static double AGITATOR_SHOOT_IN_THIRDS_MS = 600;
     YCbCr frontValues, rightValues, leftValues;
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+    AnalogInput upperRail;
 
 
     @Override
@@ -98,6 +106,7 @@ public class Intake implements Component {
         rightColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "rightColor");
         leftColor = ActiveOpMode.hardwareMap().get(NormalizedColorSensor.class, "leftColor");
         prism = ActiveOpMode.hardwareMap().get(GoBildaPrismDriver.class, "lights");
+        upperRail = ActiveOpMode.hardwareMap().get(AnalogInput.class, "upperRailEncoder");
         isIntakeOn = false;
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
@@ -105,6 +114,10 @@ public class Intake implements Component {
         /*PIDFCoefficients pid = agitator.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
         PIDFCoefficients pidNew = new PIDFCoefficients(pid.p*-1, pid.i *-1, pid.d * -1, pid.f * -1);
         agitator.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidNew);*/
+    }
+
+    public void useRailDownDetection() {
+        useRailDownDetection = true;
     }
 
     public void resetAgitatorEncoder() {
@@ -125,8 +138,16 @@ public class Intake implements Component {
         agitator.setTargetPosition(AGITATOR_ENC);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        agitatorTurns +=1;
+    }
 
+    public void railDexInThirds() {
+        stopIntake();
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        agitator.setTargetPosition(agitator.getCurrentPosition() + AGITATOR_ENC/3);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitatorTurns +=1;
     }
     public void startRailDex2Turns() {
         agitator2Turn.reset();
@@ -224,6 +245,8 @@ public class Intake implements Component {
     }
 
     public void railDown(){
+        railDownTimer.reset();
+        isRailDownRequested = true;
         rail.setPosition(RAIL_DOWN);
     }
 
@@ -478,26 +501,48 @@ public class Intake implements Component {
         //ActiveOpMode.telemetry().addData("right color", rightColor.red());
         //ActiveOpMode.telemetry().addData("left color", leftColor.red());*/
 
+        if (isAgitatorShootingInThirds) {
+            if (agitatorTurns >= 3) {
+                agitator.setTargetPosition(AGITATOR_ENC);
+                agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                agitator.setPower(AGITATOR_POWER);
+                isAgitatorShootingInThirds = false;
+                agitatorTurns = 0;
+
+                // Turning isShooting to true here because the agitator becomes not busy on every third, and we dont want to reset
+                isShooting = true;
+            } else {
+                if (agitatorTurns == 0) {
+                    railDexInThirds();
+                    agitatorShootInThirdsTimer.reset();
+                }
+                if (agitatorShootInThirdsTimer.milliseconds() > AGITATOR_SHOOT_IN_THIRDS_MS) {
+                    railDexInThirds();
+                    agitatorShootInThirdsTimer.reset();
+                }
+            }
+        }
 
         if (isShooting && !agitator.isBusy()){
             isShooting = false;
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
-        if (isShooting){
+        if (isShooting || isAgitatorShootingInThirds){
             leftFireServo.setPower(FIRE_POWER);
             rightFireServo.setPower(FIRE_POWER);
         }
 
         if (isIntakeOn){
             resetLatches();
+            railUp();
             intakeMotor.setPower(INTAKE_POWER);
         }
 
         if (intakeReversed && intakeRevTimer.milliseconds() >= REVERSAL_TIME) {
             intakeMotor.setPower(0);
             intakeReversed = false;
-            rail.setPosition(RAIL_DOWN);
+            railDown();
         }
         if(intakeStopping && intakeRevTimer.milliseconds() >= RAIL_DOWN_TIME){
             intakeStopping = false;
@@ -513,6 +558,25 @@ public class Intake implements Component {
             agitator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             agitatorResetRequest = false;
         }
+
+        if (isRailDownRequested && useRailDownDetection) {
+            if (railDownTimer.milliseconds() > RAIL_DOWN_TIME) {
+                if (upperRail.getVoltage() >= RAIL_DOWN_POS + RAIL_DOWN_POS_THRESHOLD) {
+                    railUp();
+                    intakeRevTimer.reset();
+                    // This calls the intake reverse for a time logic
+                    intakeStopping = true;
+                } else {
+                    isRailDownRequested = false;
+                }
+            }
+        }
+        /*if(intakeStopping && upperRail.getVoltage() >= RAIL_DOWN_POS){
+            railUp();
+            intakeReversed = true;
+            intakeRevTimer.reset();
+        }*/
+
         /*if (agitatorTurns >= agitatorAdjustNumber) { //This is code to adjust for our error in converting doubles to integers
             agitator.setTargetPosition((int)(agitator.getCurrentPosition() - agitatorError*agitatorAdjustNumber));
         }*/
@@ -527,6 +591,10 @@ public class Intake implements Component {
             prismLights.pGP();
         }*/
 
+    }
+
+    public void shootInThirds() {
+        isAgitatorShootingInThirds = true;
     }
 
     public String getIntakeState() {

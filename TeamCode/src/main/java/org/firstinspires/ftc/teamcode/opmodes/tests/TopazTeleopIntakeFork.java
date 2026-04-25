@@ -332,7 +332,7 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         });
         g1X.whenBecomesTrue(() -> {
             if (limelight.isDataFresh()) {
-                turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+                turret.setCurrentPose(follower.getPose());
             }
         });
 
@@ -419,17 +419,17 @@ public class TopazTeleopIntakeFork extends NextFTCOpMode {
         if (limelight.isDataFresh()) {
             limelightRelocalized = true;
             limelightCorrection = limelight.getPedroPose().getHeading();
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+            turret.setCurrentPose(follower.getPose());
         } else {
             //limelightCorrection = 0.0;
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
+            turret.setCurrentPose(follower.getPose());
         }
 
 
         // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
         // turret.shootOnTheMove(follower.getVelocity());
 
-        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        turret.setCurrentPose(follower.getPose());
 
         turret.update();
 

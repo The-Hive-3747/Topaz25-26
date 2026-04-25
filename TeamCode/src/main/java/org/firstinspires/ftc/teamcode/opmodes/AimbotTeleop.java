@@ -254,7 +254,7 @@ public class AimbotTeleop extends NextFTCOpMode {
         });
         g1X.whenBecomesTrue(() -> {
             if (limelight.isDataFresh()) {
-                turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+                turret.setCurrentPose(follower.getPose());
             }
         });
 
@@ -299,10 +299,10 @@ public class AimbotTeleop extends NextFTCOpMode {
         if (limelight.isDataFresh()) {
             limelightRelocalized = true;
             limelightCorrection = limelight.getPedroPose().getHeading();
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+            turret.setCurrentPose(follower.getPose());
         } else {
             //limelightCorrection = 0.0;
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
+            turret.setCurrentPose(follower.getPose());
         }
 
 

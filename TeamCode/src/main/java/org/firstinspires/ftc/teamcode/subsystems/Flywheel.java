@@ -2,14 +2,12 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.utilities.AimbotValues;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -46,6 +44,8 @@ public class Flywheel implements Component {
     public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 3000; //UPDATED TO RPM
     public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 4000; //4200; //UPDATED TO RPM
     public static double MANUAL_DEFAULT_POWER = 0.6;
+    public static double HOOD_FRICTION_SPEED_FACTOR_CLOSE = 0.48; //0.405;//0.49;//0.5;//0.75;
+    public static double HOOD_FRICTION_SPEED_FACTOR_FAR = 0.44; //0.405;//0.49;//0.5;//0.75;
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;
     public static double FLYWHEEL_PID_KS = 0.07; //JEM: 0.05;//0.135;
@@ -267,7 +267,9 @@ public class Flywheel implements Component {
     // simple update function. telling the controller the robot's current velocity, and it returns a motor power
     public void update() {
         //cache this value so we don't read it multiple times
-        currentVel = flywheelLeft.getVelocity();
+        if(!USE_VEL_CALC_RPM) {
+            currentVel = flywheelLeft.getVelocity();
+        }
         getVelCache();
 
         //start update calculations

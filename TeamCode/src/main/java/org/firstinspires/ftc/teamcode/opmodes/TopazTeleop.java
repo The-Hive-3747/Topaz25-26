@@ -12,6 +12,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -108,7 +109,7 @@ public class TopazTeleop extends NextFTCOpMode {
     int FLYWHEEL_STEP = 50;
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
-
+AnalogInput upperRailEnc;
     Follower follower;
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -166,6 +167,8 @@ public class TopazTeleop extends NextFTCOpMode {
         } else{
             turretLights.redAlliance();
         }
+
+        upperRailEnc = ActiveOpMode.hardwareMap().get(AnalogInput.class, "upperRailEncoder");
 
         // TODO hood encoder is only available post init
 //        if (!OpModeTransfer.hasBeenTransferred) {
@@ -358,7 +361,7 @@ public class TopazTeleop extends NextFTCOpMode {
         });
         g1X.whenBecomesTrue(() -> {
             if (limelight.isDataFresh()) {
-                turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+                turret.setCurrentPose(follower.getPose());
             }
         });
 
@@ -482,12 +485,12 @@ public class TopazTeleop extends NextFTCOpMode {
         if (limelight.isDataFresh()) {
             limelightRelocalized = true;
             limelightCorrection = limelight.getPedroPose().getHeading();
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+            turret.setCurrentPose(follower.getPose());
         } else {
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
+            turret.setCurrentPose(follower.getPose());
         }
 
-        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        turret.setCurrentPose(follower.getPose());
         turret.update();
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,
@@ -511,6 +514,7 @@ public class TopazTeleop extends NextFTCOpMode {
 
         telemetry.addLine("---- TELEOP ----");
         telemetry.addData("Robot Pose", follower.getPose());
+        telemetry.addData("raikl", upperRailEnc.getVoltage());
         telemetry.addData("Alliance", alliance);
         telemetry.addData("Turret State", turret.getTurretState());
         telemetry.addData("Flywheel State", flywheel.getFlywheelState());

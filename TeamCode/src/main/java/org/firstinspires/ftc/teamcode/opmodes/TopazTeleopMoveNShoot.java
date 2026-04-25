@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import static dev.nextftc.bindings.Bindings.button;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
+import org.firstinspires.ftc.teamcode.subsystems.AimbotSOTM;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -23,7 +25,7 @@ import org.firstinspires.ftc.teamcode.utilities.DataLogger;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
-import org.firstinspires.ftc.teamcode.utilities.ShooterKinematics;
+import org.firstinspires.ftc.teamcode.utilities.ShooterKinematicsAccel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 
+@Configurable
 @TeleOp(name="shoot n move teleop")
 public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(TopazTeleopMoveNShoot.class);
@@ -46,7 +49,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                 intake = new Intake(),
                 BindingsComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower),
-                aimbot = new Aimbot(),
+                aimbot = new AimbotSOTM(),
                 turret = new Turret(),
                 limelight = new Relocalization(),
                 //limelightComponent = new LimelightComponent(),
@@ -62,14 +65,14 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     NormalizedColorSensor rightSensor;
     NormalizedColorSensor leftSensor;
     FieldCentricDrive drive;
-    Aimbot aimbot;
+    AimbotSOTM aimbot;
     Turret turret;
     Relocalization limelight;
     Flywheel  flywheel;
     //TurretLights turretLights;
     private ElapsedTime looptime;
     private ElapsedTime relocalizeTimer = new ElapsedTime();
-    private ShooterKinematics.ShotParameters shotParameters;
+    private ShooterKinematicsAccel.ShotParameters shotParameters;
     private double relocalizeBreak = 1000;
     private double highestLooptime = 0;
     //private LimelightComponent limelightComponent;
@@ -89,17 +92,19 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     private boolean got3Balls = false;
     private boolean isRelocalized = false;
     private boolean limelightRelocalized = false;
+    private boolean isShootingFar = false;
     int FLYWHEEL_STEP = 50;
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
     private double FLYWHEEL_CIRCUMFERENCE = Math.PI * 2 * (36/25.4); //36mm radius, 25.4mm to inches
     //hood friction slows exit vel between 0.5 and 0.75 of flywheel surface speed
-    public static double HOOD_FRICTION_SPEED_FACTOR = 0.75;
-    public static double HOOD_UP_TICKS = 7700;
-    public static double HOOD_UP_DEG = 45;
-    public static double HOOD_DOWN_TICKS = 1200;
-    public static double HOOD_DOWN_DEG = 80;
-    private static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 28;
+    public static double HOOD_UP_TICKS = 13337;//7700;
+    public static double HOOD_UP_DEG = 36;//45;
+    public static double HOOD_DOWN_TICKS = 0;//1200;
+    public static double HOOD_DOWN_DEG = 67;//80;
+    public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;  // was 28 and works well
+    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1;
+    public static double FAR_ZONE_THRESHOLD_IN = 48;
 
     private GoBildaPrismDriver prism;
     Follower follower;
@@ -208,6 +213,9 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         Button g1X = button(() -> gamepad1.x);
         Button g1Y = button(() -> gamepad1.y);
 
+        Button g2Right = button(() -> gamepad2.dpad_right);
+        Button g2Left = button(() -> gamepad2.dpad_left);
+
         Button g2RT = button(() -> gamepad2.right_trigger > 0.1);
         Button g1LT = button(() -> gamepad1.left_trigger > 0.1);
         Button g2LT = button(() -> gamepad2.left_trigger > 0.1);
@@ -230,7 +238,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             FLYWHEEL_ON = true;
             //intake.stopIntake();
             intake.railDown();
-            intake.startRailDex();
+            if (isShootingFar) {
+                intake.shootInThirds();
+            } else {
+                intake.startRailDex();
+            }
+
             //intake.startRailDexTime();
         });
         //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
@@ -293,9 +306,9 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         g1A.whenBecomesTrue(() -> {
             if (alliance == Alliance.RED) {
-                follower.setPose(new Pose(9.5, 9, Math.toRadians(90)));
+                follower.setPose(new Pose(9.5, 9, Math.toRadians(180)));
             } else {
-                follower.setPose(new Pose(134.5, 9, Math.toRadians(90)));
+                follower.setPose(new Pose(134.5, 9, Math.toRadians(0)));
             }
         });
 
@@ -313,6 +326,17 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
 
 
+        g2Right
+                .inLayer(null)
+                .whenBecomesTrue(() ->turret.setTurretStateRezeroRight())
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.increasePower());
+
+        g2Left
+                .inLayer(null)
+                .whenBecomesTrue(() -> turret.setTurretStateRezeroLeft())
+                .inLayer("manual")
+                .whenBecomesTrue(() -> flywheel.decreasePower());
 
         /*gUpOrDown.whenBecomesFalse(() -> { //HOOD ENCODER
                     flywheel.setHoodPower(0);
@@ -328,7 +352,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         });
         g1X.whenBecomesTrue(() -> {
             if (limelight.isDataFresh()) {
-                turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+                turret.setCurrentPose(follower.getPose());
             }
         });
 
@@ -364,27 +388,40 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
 
         dataLogger.setCurrentPose(follower.getPose());
-        dataLogger.addAimbot(aimbot);
+        //dataLogger.addAimbot((aimbot);
         dataLogger.addTurret(turret);
         //dataLogger.update();
 
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
-        FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
+        //FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
         flywheel.setHoodGoalPos(HOOD_POS);
 
-        shotParameters = ShooterKinematics.calculate3DMovingShot(follower.getPose().getX(),
+        shotParameters = ShooterKinematicsAccel.calculate3DMovingShot(
+                follower.getPose().getX(),
                 follower.getPose().getY(),
                 follower.getVelocity().getXComponent(),
                 follower.getVelocity().getYComponent(),
-                aimbot.getGoalX(),
-                aimbot.getGoalY(),
+                follower.getAcceleration().getXComponent(),
+                follower.getAcceleration().getYComponent(),
+                SHOOT_ON_THE_MOVE_DELAY,
+                turret.getGoalX(),
+                turret.getGoalY(),
                 HEIGHT_DIFF_ROBOT_TO_GOAL_IN,
                 convertHoodTicksToDeg((int)HOOD_POS),
-                FLYWHEEL_CIRCUMFERENCE);
-        FLYWHEEL_VEL = shotParameters.flywheelRPM / HOOD_FRICTION_SPEED_FACTOR;
+                FLYWHEEL_CIRCUMFERENCE
+        );
+
+        if (follower.getPose().getY() < FAR_ZONE_THRESHOLD_IN) {
+            isShootingFar = true;
+            FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_FAR;
+        } else {
+            isShootingFar = false;
+            FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_CLOSE;
+        }
+
 
         if (FLYWHEEL_ON) {
             flywheel.setTargetVel(FLYWHEEL_VEL);
@@ -428,17 +465,13 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         if (limelight.isDataFresh()) {
             limelightRelocalized = true;
             limelightCorrection = limelight.getPedroPose().getHeading();
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelight.getPedroPose().getHeading());
+            turret.setCurrentPose(follower.getPose());
         } else {
             //limelightCorrection = 0.0;
-            turret.setCurrentPose(follower.getPose(), follower.getVelocity(), limelightCorrection);
+            turret.setCurrentPose(follower.getPose());
         }
 
-
-        // UNCOMMENT TO ENABLE SHOOT ON THE MOVE. NEEDS TO BE TESTED.
-        turret.shootOnTheMove(follower.getVelocity());
-
-        turret.setCurrentPose(follower.getPose(), follower.getVelocity(), 0);
+        turret.setCurrentPose(follower.getPose());
         //turret.setTurretShootAngle(Math.toDegrees(shotParameters.headingRadians));
         //turret.setTurretShootAngle(turret.convertTurretHeading(shotParameters.headingRadians)); //more recent one
         turret.setTurretOnTheMoveInRads(shotParameters.headingRadians);
@@ -465,6 +498,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //graphManager.update();
 
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        panelsTelemetry.addData("turretGoal", turret.getTurretGoal());
+        panelsTelemetry.addData("turret pos", turret.getTurretAngle());
         panelsTelemetry.addData("hood position", flywheel.getHoodPos());
         panelsTelemetry.addData("hood goal", flywheel.getHoodGoal());
         panelsTelemetry.addData("hub number", allHubs.toArray().length);
@@ -505,6 +540,6 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         return (int) Math.round(HOOD_DOWN_DEG + (hoodTicks + HOOD_DOWN_TICKS) * (HOOD_UP_DEG - HOOD_DOWN_DEG) / (HOOD_UP_TICKS - HOOD_DOWN_TICKS));
     }
     public double calcExitVel(double flywheelRPM){
-        return flywheelRPM * FLYWHEEL_CIRCUMFERENCE * HOOD_FRICTION_SPEED_FACTOR;
+        return flywheelRPM * FLYWHEEL_CIRCUMFERENCE * Flywheel.HOOD_FRICTION_SPEED_FACTOR_CLOSE;
     }
 }

@@ -158,6 +158,7 @@ public class Turret implements Component {
         } else if (TurretState.AUTO_OFF != turretState  && !turretFindingSwitch) {
             //calculate the turret power because both use it
             turretPower = turretPID.calculate(new KineticState(this.getTurretAngle()));
+
             //if we are too far away from being pointed away from the goal, go fast.
             if(Math.abs(this.getTurretAngle() - this.getTurretGoal()) > TURRET_ANGLE_GO_FAST){
                 turretPower = Math.signum(turretPower) * TURRET_POWER_GO_FAST;
@@ -253,10 +254,8 @@ public class Turret implements Component {
      * @param pose: sets the current pose, used for auto-aim calculations
      *            NEEDS TO BE DONE EVERY LOOP
      */
-    public void setCurrentPose(Pose pose, Vector velocity, double offset) {
+    public void setCurrentPose(Pose pose) {
         this.currentPose = pose;
-        this.currentVelocity = velocity;
-        this.turretOffset = offset;
     }
 
     /**
@@ -329,6 +328,14 @@ public class Turret implements Component {
         }
     }
 
+    public double getGoalX() {
+        return goalX;
+    }
+
+    public double getGoalY() {
+        return goalY;
+    }
+
     /**
      * Adjust goal after initialization, meant for use with shooting on the move
      * @param x amount to adjust goal in the x direction
@@ -344,15 +351,6 @@ public class Turret implements Component {
         }
     }
 
-    /**
-     * Use this method to enable shooting on the move. Must be called each loop
-     * @param currentVelocity MUST be a Pedro Vector (in/s).
-     * use follower.getVelocity()
-     */
-    public void shootOnTheMove(Vector currentVelocity) {
-        // these are negative because we want the goal position to adjust in the opposite way of the
-        adjustGoalPosition(-currentVelocity.getXComponent(), -currentVelocity.getYComponent());
-    }
 
     public void setFixedAngleCustom(double angle) {
         turretState = TurretState.FIXED;
