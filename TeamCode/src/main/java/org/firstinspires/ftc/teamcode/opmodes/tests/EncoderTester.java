@@ -71,6 +71,7 @@ private TouchSensor limitSwitch;
         telemetry.addData("flywheelRight vel", flywheelRight.getVelocity());
         telemetry.addData("intakeMotor (turret enc)", intakeMotor.getCurrentPosition());
         telemetry.addData("limit switch", limitSwitch.getValue());
+        telemetry.addData("Is Pressed Limit Switch", limitSwitch.isPressed());
         telemetry.addData("agitator", agitator.getCurrentPosition());
 
         if (gamepad1.a) {

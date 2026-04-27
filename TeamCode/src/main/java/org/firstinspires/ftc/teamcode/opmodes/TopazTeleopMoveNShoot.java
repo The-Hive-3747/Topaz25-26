@@ -91,12 +91,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     private boolean isFlipperOn = false;
     private boolean got3Balls = false;
     private boolean isRelocalized = false;
-    private boolean limelightRelocalized = false;
+    private boolean limelightRelocalized, isManualModeOn = false;
     private boolean isShootingFar = false;
     int FLYWHEEL_STEP = 50;
     private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
-    private double FLYWHEEL_CIRCUMFERENCE = Math.PI * 2 * (36/25.4); //36mm radius, 25.4mm to inches
+    public static double FLYWHEEL_CIRCUMFERENCE = Math.PI * 2 * (36/25.4); //36mm radius, 25.4mm to inches
     //hood friction slows exit vel between 0.5 and 0.75 of flywheel surface speed
     public static double HOOD_UP_TICKS = 13337;//7700;
     public static double HOOD_UP_DEG = 36;//45;
@@ -139,10 +139,10 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         alliance = OpModeTransfer.alliance;
         Button g1Back = button(() -> gamepad1.back);
-        Button g2Back = button(() -> gamepad2.back);
+
         Button g1DDown = button(() -> gamepad1.dpad_down);
         g1DDown.whenBecomesTrue(() -> flywheel.resetHoodEncoder());
-        g2Back.whenBecomesTrue(() -> turret.zeroTurret());
+        //g2Back.whenBecomesTrue(() -> turret.zeroTurret());
         g1Back.whenBecomesTrue(() -> {
                     if (alliance == Alliance.BLUE){
                         alliance = Alliance.RED;
@@ -165,7 +165,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     }
     @Override
     public void onWaitForStart() {
-
+        telemetry.addData("Alliance Color", alliance);
     }
 
     /*public void relocalizeButton(){
@@ -212,6 +212,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         Button g1B = button(() -> gamepad1.b);
         Button g1X = button(() -> gamepad1.x);
         Button g1Y = button(() -> gamepad1.y);
+        Button g2Back = button(() -> gamepad2.back);
 
         Button g2Right = button(() -> gamepad2.dpad_right);
         Button g2Left = button(() -> gamepad2.dpad_left);
@@ -325,6 +326,16 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                 });*/
 
 
+        g2Back
+                .toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> {
+                    BindingManager.setLayer("manual");
+                    isManualModeOn = true;
+                })
+                .whenBecomesFalse(() -> {
+                    BindingManager.setLayer(null);
+                    isManualModeOn = false;
+                });
 
         g2Right
                 .inLayer(null)
@@ -497,6 +508,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //graphManager.addData("flywheel power", flywheel.getPower());
         //graphManager.update();
 
+        telemetry.addData("Bot Pose", follower.getPose());
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
         panelsTelemetry.addData("turretGoal", turret.getTurretGoal());
         panelsTelemetry.addData("turret pos", turret.getTurretAngle());
@@ -536,7 +548,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         OpModeTransfer.hasBeenTransferred = false;
     }
 
-    public int convertHoodTicksToDeg(int hoodTicks){
+    public static int convertHoodTicksToDeg(int hoodTicks){
         return (int) Math.round(HOOD_DOWN_DEG + (hoodTicks + HOOD_DOWN_TICKS) * (HOOD_UP_DEG - HOOD_DOWN_DEG) / (HOOD_UP_TICKS - HOOD_DOWN_TICKS));
     }
     public double calcExitVel(double flywheelRPM){

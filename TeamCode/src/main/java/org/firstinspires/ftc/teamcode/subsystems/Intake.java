@@ -8,15 +8,10 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin;
-import org.firstinspires.ftc.teamcode.opmodes.auto.AutoTemplate;
 import org.firstinspires.ftc.teamcode.utilities.Artifact;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.utilities.Motif;
@@ -38,6 +33,7 @@ public class Intake implements Component {
     ElapsedTime intakeTimer = new ElapsedTime();
     ElapsedTime colorTimer = new ElapsedTime();
     ElapsedTime agitator2Turn = new ElapsedTime();
+    ElapsedTime autoShootInPartsFinishTime = new ElapsedTime();
     private double COLOR_CHECK_MS = 200;
     static boolean isIntakeOn = false;
     double INTAKE_POWER = 0.9;
@@ -55,13 +51,14 @@ public class Intake implements Component {
     static double  AGITATOR_ENC_REVOLUTIONS_GOBILDA_312 = 537.7;
     public static int AGITATOR_ENC = (int) AGITATOR_ENC_REVOLUTIONS_GOBILDA_312;
     int FIRST_ARTIFACT_POS = (AGITATOR_ENC/3);
-
+    public static double SHOOT_IN_PARTS_FINISH_MS = 500;//1000;
     CRServo leftFireServo, rightFireServo, hood;
     Servo rail;
     ElapsedTime intakeRevTimer = new ElapsedTime();
     boolean intakeReversed = false;
     boolean agitatorResetRequest = false;
     boolean isShooting = false;
+    boolean isShootingInParts = false;
     boolean intakeStopping = false;
     boolean wasShotTimerReset = false;
     //boolean isRailDown = false;
@@ -76,14 +73,15 @@ public class Intake implements Component {
     private final double PURPLE_THRESHOLD_CB_GT =  0.509;
     private final double PURPLE_THRESHOLD_CR_GT =  0.492;
     private final double ARTIFACT_THRESHOLD_CL_GT = 0.01;
-    private boolean isAgitatorShootingInThirds = false, isRailDownRequested = false, useRailDownDetection = false;
-    private ElapsedTime agitatorShootInThirdsTimer = new ElapsedTime(), railDownTimer = new ElapsedTime();
+    private boolean isAgitatorShootingInThirds = false, isAgitatorShootingInHalves = false, isRailDownRequested = false, useRailDownDetection = false;
+    private ElapsedTime agitatorShootInPartsTimer = new ElapsedTime(), railDownTimer = new ElapsedTime();
     public double agitatorTurns = 0;
     public double agitatorAdjustNumber = 10;
     public double agitatorError = 0.3;
     public static double RAIL_DOWN_POS = 1.7;
     public static double RAIL_DOWN_POS_THRESHOLD = 0.2;
     public static double AGITATOR_SHOOT_IN_THIRDS_MS = 600;
+    public static double AGITATOR_SHOOT_IN_HALVES_MS = 600; //600;
     YCbCr frontValues, rightValues, leftValues;
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -145,6 +143,16 @@ public class Intake implements Component {
         leftFireServo.setPower(FIRE_POWER);
         rightFireServo.setPower(FIRE_POWER);
         agitator.setTargetPosition(agitator.getCurrentPosition() + AGITATOR_ENC/3);
+        agitator.setPower(AGITATOR_POWER);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitatorTurns +=1;
+    }
+
+    public void railDexInHalves() {
+        stopIntake();
+        leftFireServo.setPower(FIRE_POWER);
+        rightFireServo.setPower(FIRE_POWER);
+        agitator.setTargetPosition(agitator.getCurrentPosition() + AGITATOR_ENC/2);
         agitator.setPower(AGITATOR_POWER);
         agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         agitatorTurns +=1;
@@ -453,6 +461,28 @@ public class Intake implements Component {
         // (shotTimerAfterAgitator.seconds() > SHOT_TIME_AFTER_AGITATOR_SEC && wasShotTimerReset)));
     }
 
+    public Command shootAllThreeInHalves() {
+        ElapsedTime shotTimerAfterAgitator = new ElapsedTime();
+        return new LambdaCommand()
+                .setStart(() ->{
+                    leftFireServo.setPower(FIRE_POWER);
+                    rightFireServo.setPower(FIRE_POWER);
+                    shotTimer.reset();
+                    isShooting = true;
+                    isShootingInParts = true;
+                    railDown();
+                    shootInHalves();
+                })
+                .setUpdate(() -> {
+                    /*if (!agitator.isBusy() && !wasShotTimerReset && agitatorTurns) {
+                        shotTimerAfterAgitator.reset();
+                        wasShotTimerReset = true;
+                    }*/
+                })
+                .setStop(interrupted -> {isShootingInParts = false;})
+                .setIsDone(() -> (autoShootInPartsFinishTime.milliseconds() > SHOOT_IN_PARTS_FINISH_MS && !isShootingInParts));
+    }
+
     public Command firewheelsOff = new InstantCommand(
             () -> {
                 isShooting = false;
@@ -497,6 +527,8 @@ public class Intake implements Component {
         ActiveOpMode.telemetry().addData("left firewheel power", leftFireServo.getPower());
         ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
         ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
+        ActiveOpMode.telemetry().addData("agitator busy", agitator.isBusy());
+
         /*ActiveOpMode.telemetry().addData("front color", Color.luminance(Color.rgb(frontColor.red(), frontColor.green(), frontColor.blue())));
         //ActiveOpMode.telemetry().addData("right color", rightColor.red());
         //ActiveOpMode.telemetry().addData("left color", leftColor.red());*/
@@ -514,21 +546,46 @@ public class Intake implements Component {
             } else {
                 if (agitatorTurns == 0) {
                     railDexInThirds();
-                    agitatorShootInThirdsTimer.reset();
+                    agitatorShootInPartsTimer.reset();
                 }
-                if (agitatorShootInThirdsTimer.milliseconds() > AGITATOR_SHOOT_IN_THIRDS_MS) {
+                if (agitatorShootInPartsTimer.milliseconds() > AGITATOR_SHOOT_IN_THIRDS_MS) {
                     railDexInThirds();
-                    agitatorShootInThirdsTimer.reset();
+                    agitatorShootInPartsTimer.reset();
                 }
             }
         }
 
-        if (isShooting && !agitator.isBusy()){
+        if (isAgitatorShootingInHalves) {
+            if (agitatorTurns >= 2) {
+                agitator.setTargetPosition(AGITATOR_ENC);
+                agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                agitator.setPower(AGITATOR_POWER);
+                isAgitatorShootingInHalves = false;
+                agitatorTurns = 0;
+                isShootingInParts = false;
+                autoShootInPartsFinishTime.reset();
+
+
+                // Turning isShooting to true here because the agitator becomes not busy on every third, and we dont want to reset
+                isShooting = true;
+            } else {
+                if (agitatorTurns == 0) {
+                    railDexInHalves();
+                    agitatorShootInPartsTimer.reset();
+                }
+                if (agitatorShootInPartsTimer.milliseconds() > AGITATOR_SHOOT_IN_HALVES_MS) {
+                    railDexInHalves();
+                    agitatorShootInPartsTimer.reset();
+                }
+            }
+        }
+
+        if (isShooting && !agitator.isBusy() &&!isAgitatorShootingInHalves && !isAgitatorShootingInThirds){
             isShooting = false;
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
-        if (isShooting || isAgitatorShootingInThirds){
+        if (isShooting || isAgitatorShootingInThirds || isAgitatorShootingInHalves){
             leftFireServo.setPower(FIRE_POWER);
             rightFireServo.setPower(FIRE_POWER);
         }
@@ -555,7 +612,7 @@ public class Intake implements Component {
             agitator.setTargetPosition(0);
             agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             agitator.setPower(0);
-            agitator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            //agitator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             agitatorResetRequest = false;
         }
 
@@ -595,6 +652,9 @@ public class Intake implements Component {
 
     public void shootInThirds() {
         isAgitatorShootingInThirds = true;
+    }
+    public void shootInHalves() {
+        isAgitatorShootingInHalves = true;
     }
 
     public String getIntakeState() {

@@ -175,7 +175,9 @@ public class Hood{
             }
             hood.setPower(power);
         }
+    }
 
+    public void telemetry() {
         PanelsTelemetry.INSTANCE.getTelemetry().addData("hood power", power);
         ActiveOpMode.telemetry().addData("hoodPos", this.getHoodPosition());
         ActiveOpMode.telemetry().addData("hoodAllowed", allowPID);

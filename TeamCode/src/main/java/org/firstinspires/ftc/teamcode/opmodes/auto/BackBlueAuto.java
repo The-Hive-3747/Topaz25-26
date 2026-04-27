@@ -10,16 +10,20 @@ public class BackBlueAuto extends AutoTemplate {
         startAtBack();
         setTurretFixedFar();
         setHoodPosFar();
-        turnFlywheelOnForBack();
-        shootAllThreeAtFar(0);
+        turnFlywheelShootNMove();
+        shootAllThreeFarInHalves(0);
         intakeHP(0.3);
-        shootAllThreeAtFar(0);
+        shootAllThreeFarInHalves(0);
         intake3(0.1);
-        shootAllThreeAtFar(0);
-        intakeHP(0.3);
-        shootAllThreeAtFar(0);
-        intakeHP(0.3);
-        shootAllThreeAtFar(0);
+        shootAllThreeFarInHalves(0);
+        intakeRecycled(0.3);
+        shootAllThreeFarInHalves(0);
+        intakeRecycled(0.3);
+        shootAllThreeFarInHalves(0);
+        intakeRecycled(0.3);
+        shootAllThreeFarInHalves(0);
+        intakeRecycled(0.3);
+        shootAllThreeFarInHalves(0);
         parkAtBack();
     }
 }

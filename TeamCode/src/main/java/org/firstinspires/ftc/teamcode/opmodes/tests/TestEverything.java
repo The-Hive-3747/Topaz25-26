@@ -7,11 +7,9 @@ import static dev.nextftc.bindings.Bindings.button;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -19,12 +17,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
-import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name = "test everything")
@@ -57,6 +56,12 @@ public class TestEverything extends NextFTCOpMode {
     private boolean pinpointYPass = false;
     private double WHEEL_POWER = 0.5;
     private double TEST_TIMER_THRESHOLD = 1000;
+    private static double FLYWHEEL_VEL_TEST = 3000, FLYWHEEL_VEL_THRESHOLD = 100, FLYWHEEL_TIME_THRESHOLD_MS = 2000, FLYWHEEL_VEL = 0, FLYWHEEL_TEST_TIME = 2000;
+    private static double HOOD_TEST_POS = 6000,  HOOD_POS_THRESHOLD = 100, HOOD_TIME_THRESHOLD_MS = 500, HOOD_TEST_TIME = 1500, HOOD_POS = 0;
+    private static double TURRET_TEST_POS = 45, TURRET_POS_THRESHOLD = 1, TURRET_TIME_THRESHOLD_MS = 500, TURRET_TEST_TIME = 3000, TURRET_POS = 0;
+    private static boolean isTestingHood = false, hasHoodPassed = false, hasHoodTestCompleted = false;
+    private static boolean isTestingFlywheel = false, hasFlywheelPassed = false, hasFlywheelTestCompleted = false;
+    private static boolean isTestingTurret = false, hasTurretPassed = false, hasTurretTestCompleted = false;
     double pinpointHeading = 0;
     double pinpointX = 0;
     double pinpointY = 0;
@@ -64,7 +69,9 @@ public class TestEverything extends NextFTCOpMode {
     TestName currentTest = TestName.CONFIG;
     DcMotorEx leftFront, rightFront, rightBack, leftBack, agitator, intake, flywheelLeft, flywheelRight;
     Servo rail;
-    CRServo hood, firewheelLeft, firewheelRight, turretLeft, turretRight;
+    CRServo hoodServo, firewheelLeft, firewheelRight, turretLeft, turretRight;
+    Hood hood;
+    Turret turret;
     GoBildaPinpointDriver pinpoint;
     NormalizedColorSensor frontColor, leftColor, rightColor;
     GoBildaPrismDriver prism;
@@ -95,7 +102,7 @@ public class TestEverything extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed(){
-        g1A = button(()-> gamepad1.a);
+        g1A = button(() -> gamepad1.a);
         g1A.whenBecomesTrue(()-> {
             goToNextTest = true;
         });
@@ -120,7 +127,7 @@ public class TestEverything extends NextFTCOpMode {
             flywheelLeft = hardwareMap.tryGet(DcMotorEx.class, "flyWheelLeft");
             flywheelRight = hardwareMap.tryGet(DcMotorEx.class, "flyWheelRight");
             rail = hardwareMap.tryGet(Servo.class, "upperRail");
-            hood = hardwareMap.tryGet(CRServo.class, "hood");
+            hoodServo = hardwareMap.tryGet(CRServo.class, "hood");
             firewheelLeft = hardwareMap.tryGet(CRServo.class, "fireWheelLeft");
             firewheelRight = hardwareMap.tryGet(CRServo.class, "fireWheelRight");
             turretLeft = hardwareMap.tryGet(CRServo.class, "turretLeft");
@@ -129,7 +136,7 @@ public class TestEverything extends NextFTCOpMode {
             frontColor = hardwareMap.tryGet(NormalizedColorSensor.class, "frontColor");
             rightColor = hardwareMap.tryGet(NormalizedColorSensor.class, "rightColor");
             leftColor = hardwareMap.tryGet(NormalizedColorSensor.class, "leftColor");
-            prism = hardwareMap.tryGet(GoBildaPrismDriver.class, "prism");
+            prism = hardwareMap.tryGet(GoBildaPrismDriver.class, "lights");
         }
             telemetry.addLine("Press A to move to next test");
             telemetry.addLine("This tests to see if each named part is in the robot config");
@@ -169,7 +176,7 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addData("rail", "FAIL");
                 somethingFailed = true;
             }
-            if (null == hood) {
+            if (null == hoodServo) {
                 telemetry.addData("hood", "FAIL");
                 somethingFailed = true;
             }
@@ -243,7 +250,7 @@ public class TestEverything extends NextFTCOpMode {
             if (null != rail) {
                 telemetry.addData("rail", "PASS");
             }
-            if (null != hood) {
+            if (null != hoodServo) {
                 telemetry.addData("hood", "PASS");
             }
             if (null != firewheelLeft) {
@@ -341,7 +348,7 @@ public class TestEverything extends NextFTCOpMode {
         pinpoint.update();
         telemetry.addLine("Press A to go to the next test");
         telemetry.addLine("This is to see if the pinpoint works");
-        telemetry.addLine("Turn the robot to test heading");
+        telemetry.addLine("Turn the robot to the right to test heading");
         telemetry.addLine("Spin the forward/back encoder from front to back");
         telemetry.addLine("Spin the lateral encoder from left to right");
         if(null != pinpoint) {
@@ -442,7 +449,7 @@ public class TestEverything extends NextFTCOpMode {
     public void testFirewheels(){
         if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
             telemetry.addLine("Press A to move to the next test");
-            telemetry.addLine("This test alternates turning on and off the intake");
+            telemetry.addLine("This test alternates turning on and off the firewheels");
             if (firewheelRight  != null && firewheelLeft != null) {
                 if (firewheelRight.getPower() > 0) {
                     firewheelRight.setPower(0);
@@ -499,28 +506,150 @@ public class TestEverything extends NextFTCOpMode {
         }
     }
     public void testFlywheelVel(){
-
+        telemetry.addLine("Press A to move to the next test");
+        telemetry.addLine("This test sets the Flywheel to a speed and tests if it can hold that speed");
+        if (flywheel != null ) {
+            if (!isTestingFlywheel) {
+                flywheel.setTargetVel(FLYWHEEL_VEL_TEST);
+                isTestingFlywheel = true;
+                testTimer.reset();
+            } else if (testTimer.milliseconds() < FLYWHEEL_TIME_THRESHOLD_MS) {
+                telemetry.addLine("Spinning up flywheel");
+            } else if (!hasFlywheelTestCompleted) {
+                FLYWHEEL_VEL = flywheel.getVel();
+                if (Math.abs(FLYWHEEL_VEL - FLYWHEEL_VEL_TEST) <= FLYWHEEL_VEL_THRESHOLD) {
+                    telemetry.addLine("Flywheel PASS");
+                    hasFlywheelPassed = true;
+                } else {
+                    telemetry.addLine("Flywheel FAILED");
+                    hasFlywheelPassed = false;
+                }
+                hasFlywheelTestCompleted = true;
+            } else {
+                if (hasFlywheelPassed) {
+                    telemetry.addLine("Flywheel PASS");
+                } else {
+                    telemetry.addLine("Flywheel FAILED");
+                }
+                telemetry.addData("Flywheel Vel Tested", FLYWHEEL_VEL);
+                flywheel.setTargetVel(0);
+            }
+            telemetry.addData("Flywheel Current Vel", flywheel.getVel());
+            telemetry.addData("Flywheel Goal", FLYWHEEL_VEL_TEST);
+            flywheel.update();
+        } else {
+            telemetry.addLine("Skipping flywheel because at least one flywheel does not exist in config");
+        }
+        telemetry.update();
     }
     public void testHood(){
-
+        if (hood != null){
+            telemetry.addLine("Press A to move to the next test");
+            telemetry.addLine("This test moves the hood to a position");
+            if (!isTestingHood) {
+                hood.setGoal(HOOD_TEST_POS);
+                isTestingHood = true;
+                testTimer.reset();
+            } else if (testTimer.milliseconds() < HOOD_TEST_TIME) {
+                telemetry.addLine("Moving the hood up");
+                if (testTimer.milliseconds() < HOOD_TIME_THRESHOLD_MS && hood.getHoodPosition() == 0) {
+                    telemetry.addLine("Stopping Hood because hood position is 0");
+                    hood.setHoodPower(0);
+                    hasHoodPassed = false;
+                    hasHoodTestCompleted = true;
+                }
+            } else if (!hasHoodTestCompleted) {
+                HOOD_POS = hood.getHoodPosition();
+                if (Math.abs(HOOD_POS - HOOD_TEST_POS) <= HOOD_POS_THRESHOLD) {
+                    telemetry.addLine("Hood PASS");
+                    hasHoodPassed = true;
+                } else {
+                    telemetry.addLine("Flywheel FAILED");
+                    hasHoodPassed = false;
+                }
+                hasHoodTestCompleted = true;
+            } else {
+                if (hasHoodPassed) {
+                    telemetry.addLine("Hood PASS");
+                } else {
+                    telemetry.addLine("Hood FAILED");
+                }
+                telemetry.addData("Hood Pos Tested", HOOD_POS);
+                hood.setGoal(0);
+                hood.setHoodPower(0);
+            }
+            telemetry.addData("Hood Current POs", hood.getHoodPosition());
+            telemetry.addData("Hood Goal", HOOD_TEST_POS);
+            hood.update();
+        } else {
+            telemetry.addLine("Skipping hood because either the servo doesnt exist, or the FlywheelRight Encoder");
+        }
+        telemetry.update();
     }
     public void testTurret(){
-
+        if (turret != null){
+            telemetry.addLine("Press A to move to the next test");
+            telemetry.addLine("This test moves the turret to a position");
+            if (!isTestingTurret) {
+                turret.setFixedAngleCustom(TURRET_TEST_POS);
+                isTestingTurret = true;
+                testTimer.reset();
+            } else if (testTimer.milliseconds() < TURRET_TEST_TIME) {
+                telemetry.addLine("Moving the turret");
+                if (testTimer.milliseconds() < TURRET_TIME_THRESHOLD_MS && turret.getTurretAngle() == 0) {
+                    telemetry.addLine("Stopping Turret because hood position is 0");
+                    turret.setTurretStateOff();
+                    turret.setTurretPower(0);
+                    hasTurretPassed = false;
+                    hasTurretTestCompleted = true;
+                }
+            } else if (!hasTurretTestCompleted) {
+                TURRET_POS = turret.getTurretAngle();
+                if (Math.abs(TURRET_POS - TURRET_TEST_POS) <= TURRET_POS_THRESHOLD) {
+                    telemetry.addLine("Turret PASS");
+                    hasTurretPassed = true;
+                } else {
+                    telemetry.addLine("Turret FAILED");
+                    hasTurretPassed = false;
+                }
+                hasTurretTestCompleted = true;
+            } else {
+                if (hasTurretPassed) {
+                    telemetry.addLine("Turret PASS");
+                } else {
+                    telemetry.addLine("Turret FAILED");
+                }
+                telemetry.addData("Turret Pos Tested", TURRET_POS);
+                turret.setTurretPower(0);
+                turret.setTurretStateOff();
+            }
+            telemetry.addData("Turret Current Pos", turret.getTurretAngle());
+            telemetry.addData("Turret Goal", TURRET_TEST_POS);
+            turret.update();
+        } else {
+            telemetry.addLine("Skipping turret because either the servos don't exist, or the Intake Encoder");
+        }
+        telemetry.update();
     }
     public void testTurretZero(){
-
+        telemetry.addLine("Press A to move to the next test");
+        telemetry.addLine("This test has not been completed yet");
     }
     public void testLimelight(){
-
+        telemetry.addLine("Press A to move to the next test");
+        telemetry.addLine("This test has not been completed yet");
     }
     public void testLights(){
-
+        telemetry.addLine("Press A to move to the next test");
+        telemetry.addLine("This test has not been completed yet");
     }
     public void testColorSensors(){
-
+        telemetry.addLine("Press A to move to the next test");
+        telemetry.addLine("This test has not been completed yet");
     }
     public void showResults(){
-
+        telemetry.addLine("Press A to move to the next test");
+        telemetry.addLine("This test has not been completed yet");
     }
     public void runTests(){
         switch(currentTest){
@@ -556,6 +685,9 @@ public class TestEverything extends NextFTCOpMode {
             case INTAKE:
                 testIntake();
                 if(goToNextTest){
+                    if(intake != null){
+                        intake.setPower(0);
+                    }
                     currentTest = TestName.RAIL;
                     goToNextTest = false;
                 }
@@ -587,6 +719,12 @@ public class TestEverything extends NextFTCOpMode {
                     if(flywheelLeft != null){
                         flywheelLeft.setDirection(DcMotorSimple.Direction.REVERSE);
                     }
+                    if (firewheelLeft != null) {
+                        firewheelLeft.setPower(0);
+                    }
+                    if (firewheelRight != null) {
+                        firewheelRight.setPower(0);
+                    }
                     currentTest = TestName.FLYWHEEL_LEFT;
                     goToNextTest = false;
                 }
@@ -594,6 +732,9 @@ public class TestEverything extends NextFTCOpMode {
             case FLYWHEEL_LEFT:
                 testFlywheelLeft();
                 if(goToNextTest){
+                    if(flywheelLeft != null){
+                        flywheelLeft.setPower(0);
+                    }
                     currentTest = TestName.FLYWHEEL_RIGHT;
                     goToNextTest = false;
                 }
@@ -601,8 +742,12 @@ public class TestEverything extends NextFTCOpMode {
             case FLYWHEEL_RIGHT:
                 testFlywheelRight();
                 if(goToNextTest){
+                    if(flywheelRight != null){
+                        flywheelRight.setPower(0);
+                    }
                     if(flywheelLeft != null && flywheelRight != null){
                         flywheel = new Flywheel();
+                        flywheel.postInit();
                     }
                     currentTest = TestName.FLYWHEEL_VEL;
                     goToNextTest = false;
@@ -610,7 +755,20 @@ public class TestEverything extends NextFTCOpMode {
                 break;
             case FLYWHEEL_VEL:
                 testFlywheelVel();
-                if(goToNextTest){
+                if(goToNextTest) {
+                    if (flywheelRight != null) {
+                        flywheelRight.setPower(0);
+                    }
+                    if (flywheelLeft != null) {
+                        flywheelLeft.setPower(0);
+                    }
+                    if (flywheel != null) {
+                        flywheel.setTargetVel(0);
+                    }
+                    if (flywheelRight != null && hoodServo != null) {
+                        hood = new Hood(flywheelRight);
+                        hood.init();
+                    }
                     currentTest = TestName.HOOD;
                     goToNextTest = false;
                 }
@@ -618,6 +776,16 @@ public class TestEverything extends NextFTCOpMode {
             case HOOD:
                 testHood();
                 if(goToNextTest){
+                    if (hood != null) {
+                        hood.setGoal(0);
+                        hood.setHoodPower(0);
+                    }
+                    if (turretLeft != null && turretRight != null && intake != null) {
+                        turret = new Turret();
+                        turret.preInit();
+                        turret.postInit();
+                        turret.setTurretStateOff();
+                    }
                     currentTest = TestName.TURRET;
                     goToNextTest = false;
                 }

@@ -21,8 +21,13 @@ public class Turret implements Component {
     CRServo turretLeft, turretRight;
     DcMotor thruTurret;
     private TouchSensor limitSwitch;
-    Pose currentPose, limelightPose;
+    Pose currentPose = new Pose (0,0,0), limelightPose;
     Vector currentVelocity;
+
+    public void setMoveNShoot() {
+        isMoveNShoot = true;
+    }
+
     public enum TurretState {
         OFF,
         AUTO_OFF,
@@ -44,31 +49,32 @@ public class Turret implements Component {
     private final KineticState ZERO_ANGLE = new KineticState(0);
     private KineticState FIXED_ANGLE = new KineticState(-95);
     public static double turretOffset = 0;
-    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -139; //-92 -95
+    public static double AUTON_RED_SHOOT_ANGLE_CLOSE = -144; //-92 -95
     public static double AUTON_BLUE_SHOOT_ANGLE_CLOSE = 144;
-    public static double AUTON_RED_SHOOT_ANGLE_FAR = -116; //-92 -95
-    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 116; //113.2; //114 112
+    public static double AUTON_RED_SHOOT_ANGLE_FAR = -115; //-92 -95
+    public static double AUTON_BLUE_SHOOT_ANGLE_FAR = 114; //113.2; //114 112
     public static double LEFT_LIMIT_TICKS = 685;
     public static double RIGHT_LIMIT_TICKS = -856;
-    public static double turretRezeroTolerance = 5;
+    //public static double turretRezeroTolerance = 0.5; //TODO: rezero tolerance has to match deadzone
     public double REZERO_POWER = 0.16;//0.11;//0.2;//0.1;//0.05;
     public boolean hasBeenReset = false;
     public boolean turretPressedAndReset = false;
     public boolean turretRezeroed = false;
     public boolean turretFindingSwitch = false;
+    public boolean isMoveNShoot = true;
     public int turretZone;
     public double turretZoneMarginBack = 17, turretZoneMargin = 11, midPointX = 72, midPointY = 72, farZoneHeight = 24, endPointY = 144;// turretzonemargin:11//8.5
 
     double botY, botX;
-    public static double TURRET_PID_KP = 0.008;//0.01; //0.038; //0.017;
-    public static double TURRET_PID_KD = 1.0;//0.1;//0.001;//0.2; //0.01;
-    public static double TURRET_PID_KS = 0.09;//0.08;
-    public static double TURRET_PID_KI = 0.00000000000000001;//10;//0;//0.000000000000000000001;//0.0;
+    public static double TURRET_PID_KP = 0.0015;//0.0075;//0.01; //0.038; //0.017;
+    public static double TURRET_PID_KD = 1.0;//1.0;//0.1;//0.001;//0.2; //0.01;
+    public static double TURRET_PID_KS = 0.125;//0.11; //0.10; //0.09;//0.08;
+    public static double TURRET_PID_KI = 0.0000000000001;//0.00000000000000001;//10;//0;//0.000000000000000000001;//0.0;
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private double shootingGoal = 0;
-    public static double TURRET_ANGLE_GO_FAST = 20;//3;
-    public static double TURRET_POWER_GO_FAST = 0.9;
-    private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 0.5, TURRET_POWER_MIN = 0.05;//D: 1
+    public static double TURRET_ANGLE_GO_FAST = 25;//3;
+    public static double TURRET_POWER_GO_FAST = 0.8;
+    private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 0.5, TURRET_POWER_MIN = 0.05;//D: 0.5//1
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
     public double turretRobotHeadingInDeg, robotFieldHeadingInRads, shootOnTheMoveHeadingInRads;
     ControlSystem turretPID, turretSecPID;
@@ -125,27 +131,35 @@ public class Turret implements Component {
             //turretPID.setGoal(new KineticState(shootingGoal));
             turretPID.setGoal(convertFieldHeadingRadsToKineticStateUsingDeg(shootOnTheMoveHeadingInRads));
         } else if(turretState == TurretState.REZEROING_RIGHT){
-            if (!turretRezeroed && !limitSwitch.isPressed()) {
+            if (!turretRezeroed && !limitSwitch.isPressed()) { //cannot fix as there is no way to reverse polarity on limit switch.
                 turretFindingSwitch = false;
                 //zeroTurret();
                 turretPID.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
                 turretRezeroed = true;
             }
-            if (Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= turretRezeroTolerance) {
+            if (turretRezeroed && Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= TURRET_ANGLE_DEADZONE) {
                 this.zeroTurret();
-                turretState = TurretState.AUTO;
+                if (isMoveNShoot) {
+                    turretState = TurretState.MOVE_N_SHOOT;
+                }else {
+                    turretState = TurretState.AUTO;
+                }
                 turretRezeroed = false;
             }
-        }else if(turretState == TurretState.REZEROING_LEFT){
+        }else if(turretState == TurretState.REZEROING_LEFT){ //cannot fix as there is no way to reverse polarity on limit switch.
             if (!turretRezeroed && !limitSwitch.isPressed()) {
                 turretFindingSwitch = false;
                 //zeroTurret();
                 turretPID.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
                 turretRezeroed = true;
             }
-            if (Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= turretRezeroTolerance) {
+            if (turretRezeroed && Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= TURRET_ANGLE_DEADZONE) {
                 this.zeroTurret();
-                turretState = TurretState.AUTO;
+                if (isMoveNShoot) {
+                    turretState = TurretState.MOVE_N_SHOOT;
+                }else {
+                    turretState = TurretState.AUTO;
+                }
                 turretRezeroed = false;
             }
         } else {
@@ -198,7 +212,9 @@ public class Turret implements Component {
         if (turretState != TurretState.OFF && !turretFindingSwitch) {
             this.setTurretPower(turretPower);
         }
+    }
 
+    public void telemetry() {
         ActiveOpMode.telemetry().addData("TURRET state", turretState);
         ActiveOpMode.telemetry().addData("TURRET zone", turretZone);
         ActiveOpMode.telemetry().addData("TURRET pose", this.currentPose);
@@ -208,6 +224,9 @@ public class Turret implements Component {
         ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
         ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
         ActiveOpMode.telemetry().addData("Turret touch sensor", limitSwitch.getValue());
+        ActiveOpMode.telemetry().addData("Is Turret Rezeroed", turretRezeroed);
+        ActiveOpMode.telemetry().addData("Is limit switch pressed", limitSwitch.isPressed());
+        ActiveOpMode.telemetry().addData("Ready to rezero", !turretRezeroed && !limitSwitch.isPressed());
 
     }
 
@@ -230,7 +249,7 @@ public class Turret implements Component {
     }
     public void setTurretOnTheMoveInRads(double goalFieldHeadingInRads) {
         shootOnTheMoveHeadingInRads = goalFieldHeadingInRads;
-        setTurretStateMoveNShoot();
+        //setTurretStateMoveNShoot();
     }
 
     /**
@@ -269,7 +288,7 @@ public class Turret implements Component {
 
     public void setTurretShootAngle(double goal){
         shootingGoal = normalizeAngleInRads(goal + 180);
-        turretState = TurretState.MOVE_N_SHOOT;
+        //turretState = TurretState.MOVE_N_SHOOT;
         turretPID.setGoal(new KineticState(shootingGoal));
     }
 
@@ -375,12 +394,15 @@ public class Turret implements Component {
     }
     public void setTurretStateOff() {
         turretState = TurretState.OFF;
+        isMoveNShoot = false;
     }
     public void setTurretStateAuto() {
         turretState = TurretState.AUTO;
+        isMoveNShoot = false;
     }
     public void setTurretStateMoveNShoot() {
         turretState = TurretState.MOVE_N_SHOOT;
+        isMoveNShoot = true;
     }
     public void setTurretStateRezeroLeft() {
         turretRezeroed = false;

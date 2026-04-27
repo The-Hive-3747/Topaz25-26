@@ -372,5 +372,7 @@ public class Flywheel implements Component {
         ActiveOpMode.telemetry().addData("Flywheel Goal", targetVel + targetAdjust);
         ActiveOpMode.telemetry().addData("Flywheel Power", correct);
         ActiveOpMode.telemetry().addData("Is Flywheel Manual?", flywheelState == FlywheelState.MANUAL);
+
+        hood.telemetry();
     }
 }
