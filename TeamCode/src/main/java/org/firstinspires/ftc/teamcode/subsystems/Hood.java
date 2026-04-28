@@ -31,7 +31,7 @@ public class Hood{
     public static double HOOD_I = 0;//0.00000000000000001;//0.0000000000003;//0.0;
     public static double HOOD_FF = 0;
 
-    public static double HOOD_AUTON_CLOSE_POS = 5250;
+    public static double HOOD_AUTON_CLOSE_POS = 5700;//5500;//5250;
     public static double HOOD_AUTON_FAR_POS = 8150; //8300; //9200 7500
     public static double HOOD_MANUAL_POWER = 0.3;
     private KineticState goal;

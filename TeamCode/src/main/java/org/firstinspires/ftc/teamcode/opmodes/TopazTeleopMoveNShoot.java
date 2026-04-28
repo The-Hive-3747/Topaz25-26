@@ -102,7 +102,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public static double HOOD_UP_DEG = 36;//45;
     public static double HOOD_DOWN_TICKS = 0;//1200;
     public static double HOOD_DOWN_DEG = 67;//80;
-    public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;  // was 28 and works well
+    public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;//37;//40;//34;  // was 28 and works well
     public static double SHOOT_ON_THE_MOVE_DELAY = 0.1;
     public static double FAR_ZONE_THRESHOLD_IN = 48;
 
@@ -136,6 +136,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //turretLights = new TurretLights(hardwareMap, telemetry);
 
         Drawing.init();
+
+        turret.isTeleop = true;
 
         alliance = OpModeTransfer.alliance;
         Button g1Back = button(() -> gamepad1.back);
@@ -487,6 +489,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //turret.setTurretShootAngle(turret.convertTurretHeading(shotParameters.headingRadians)); //more recent one
         turret.setTurretOnTheMoveInRads(shotParameters.headingRadians);
         turret.update();
+        turret.telemetry();
 
 
         Drawing.drawOnlyCurrentWithTurretAndGoal(follower,

@@ -2,14 +2,12 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "back blue auto / shoots far SOTM", group = "default")
-public class BackBlueAutoSOTM extends AutoTemplate {
+@Autonomous(name = "back red auto / shoots far SOTM", group = "default")
+public class BackRedAutoSOTM extends AutoTemplate {
     @Override
     public void initAuto() {
-        //TURRET_ANGLE_ADJUST_DEG = -10;
-        startAsBlueSOTM();
+        startAsRedSOTM();
         startAtBackSOTM();
-        //setTurretFixedFar();
         setHoodPosFar();
         turnFlywheelShootNMove();
         shootAllThreeFarInHalves(0);

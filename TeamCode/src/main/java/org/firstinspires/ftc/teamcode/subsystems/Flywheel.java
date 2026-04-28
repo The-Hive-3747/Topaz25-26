@@ -44,7 +44,7 @@ public class Flywheel implements Component {
     public static double FLYWHEEL_AUTO_TARGET_VEL_FRONT = 3000; //UPDATED TO RPM
     public static double FLYWHEEL_AUTO_TARGET_VEL_BACK = 4000; //4200; //UPDATED TO RPM
     public static double MANUAL_DEFAULT_POWER = 0.6;
-    public static double HOOD_FRICTION_SPEED_FACTOR_CLOSE = 0.48; //0.405;//0.49;//0.5;//0.75;
+    public static double HOOD_FRICTION_SPEED_FACTOR_CLOSE = 0.475;//0.46;//0.48; //0.405;//0.49;//0.5;//0.75;
     public static double HOOD_FRICTION_SPEED_FACTOR_FAR = 0.44; //0.405;//0.49;//0.5;//0.75;
     public static double FLYWHEEL_PID_KP = 0.00055;
     public static double FLYWHEEL_PID_KV = 0.00018;//0.000245;

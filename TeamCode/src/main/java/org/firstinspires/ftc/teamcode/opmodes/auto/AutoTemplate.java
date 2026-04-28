@@ -38,7 +38,6 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import dev.nextftc.ftc.NextFTCOpMode;
-import kotlin.time.Instant;
 
 public abstract class AutoTemplate extends NextFTCOpMode {
     {
@@ -63,7 +62,9 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     TelemetryManager telemetryM;
     Follower follower;
     double HOOD_POS, secondsBeforeIntakeOff = 0.5, maxLoopTimeMS = 0;
-    boolean FIREWHEELS_ON = false, hasResetEncoders = false;
+    //this is the value that adjusts in auto to make it shoot a little to a specific direction
+    double TURRET_ANGLE_ADJUST_DEG = 0.0;
+    boolean FIREWHEELS_ON = false, hasResetEncoders = false, autonomousClose = false;
     public double FLYWHEEL_VEL;
 
     public boolean isDone;
@@ -163,7 +164,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
                     FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_CLOSE;
                 }
                 //flywheel.setTargetVel(FLYWHEEL_VEL);
-                turret.setCurrentPose(follower.getPose());
+                //turret.setCurrentPose(follower.getPose());
                 //turret.setTurretShootAngle(Math.toDegrees(shotParameters.headingRadians));
                 //turret.setTurretShootAngle(turret.convertTurretHeading(shotParameters.headingRadians)); //more recent one
                 turret.setTurretOnTheMoveInRads(shotParameters.headingRadians);
@@ -171,7 +172,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             }
 
             turret.update();
-
+            turret.telemetry();
             flywheel.setHoodGoalPos(HOOD_POS);
             flywheel.setTargetVel(0);
             flywheel.update();
@@ -230,9 +231,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             turret.setCurrentPose(follower.getPose());
             //turret.setTurretShootAngle(Math.toDegrees(shotParameters.headingRadians));
             //turret.setTurretShootAngle(turret.convertTurretHeading(shotParameters.headingRadians)); //more recent one
-            turret.setTurretOnTheMoveInRads(shotParameters.headingRadians);
+            turret.setTurretOnTheMoveInRads(shotParameters.headingRadians + Math.toRadians(TURRET_ANGLE_ADJUST_DEG));
 
         }
+
 
         if (matchTimer.milliseconds() >= GO_PARK_THRESHOLD_TIME_MS && !isParkingNormally && !isPanicParking) {
             CommandManager.INSTANCE.cancelAll();
@@ -250,6 +252,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         flywheel.update();
         intake.update();
         turret.update();
+        turret.telemetry();
 
         if(loopTime.milliseconds() > maxLoopTimeMS) {
             maxLoopTimeMS = loopTime.milliseconds();
@@ -259,6 +262,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         telemetry.addData("pose", follower.getPose());
         telemetry.addData("looptime", loopTime.milliseconds());
         telemetry.addData("max looptime", maxLoopTimeMS);
+        telemetry.addData("turretGoal", turret.getTurretGoal());
+        telemetry.addData("turretPos",turret.getTurretAngle());
         telemetry.addData("t value=1 pose", follower.isBusy() ? follower.getCurrentPath().getPose(1) : "mewo");
         telemetry.update();
     }
@@ -302,11 +307,11 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void setHoodPosClose() {
-        autonomousCommands = autonomousCommands.then(new InstantCommand(() -> setHoodPos(true)));
+        setHoodPos(true);
     }
 
     protected void setHoodPosFar() {
-        autonomousCommands = autonomousCommands.then(new InstantCommand(() -> setHoodPos(false)));
+        setHoodPos(false);
     }
 
     protected void setHoodPos(boolean isClose) {
@@ -321,24 +326,30 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         alliance = Alliance.BLUE;
         AutoPaths.alliance = alliance;
         turret.setTurretStateFixed();
+        turret.setAutoPID();
+
     }
 
     protected void startAsRed() {
         alliance = Alliance.RED;
         AutoPaths.alliance = alliance;
         turret.setTurretStateFixed();
+        turret.setAutoPID();
+
     }
 
     protected void startAsBlueSOTM() {
         alliance = Alliance.BLUE;
         AutoPaths.alliance = alliance;
         turret.setMoveNShoot();
+        turret.setAutoPID();
     }
 
     protected void startAsRedSOTM() {
         alliance = Alliance.RED;
         AutoPaths.alliance = alliance;
         turret.setMoveNShoot();
+        turret.setAutoPID();
     }
 
     protected void startAtBack() {
@@ -369,28 +380,30 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void startAtBackSOTM() {
         if (alliance == Alliance.RED) {
-            startPose = new Pose(81, 9.5, Math.toRadians(0)); //79.5
+            startPose = new Pose(78.8, 9, Math.toRadians(0));//new Pose(81, 9.5, Math.toRadians(0)); //79.5
         } else {
-            startPose = new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
+            startPose = new Pose(61.5, 9, Math.toRadians(180));//new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
         AutoPaths.generatePoses(follower);
         turret.setCurrentPose(startPose);
+        autonomousClose = false;
         //setHoodPos(false);
         //setTurretFixed(alliance, false);
     }
 
     protected void startAtFrontSOTM() {
         if (alliance == Alliance.RED) {
-            startPose = new Pose(110, 134.25, Math.toRadians(-94.95));
+            startPose = new Pose(112, 133, Math.toRadians(-92));//new Pose(110, 134.25, Math.toRadians(-94.95));
         } else {
-            startPose = new Pose(34, 134.25,Math.toRadians(-85.05));
+            startPose = new Pose(35.1, 135.6, Math.toRadians(-88.5));//new Pose(34, 134.25,Math.toRadians(-85.05));
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
         AutoPaths.generatePoses(follower);
         setHoodPos(true);
+        autonomousClose = true;
         //setTurretFixed(alliance, true);
     }
 
@@ -414,7 +427,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         autonomousCommands = autonomousCommands.then(flywheel.startFlywheelBack);
     }
     protected void turnFlywheelShootNMove() {
-        autonomousCommands = autonomousCommands.then(new InstantCommand(() -> isShootNMove = true));
+        isShootNMove = true;
     }
 
     protected void turnFlywheelOnCustom(double power) {

@@ -256,6 +256,9 @@ public class Intake implements Component {
         railDownTimer.reset();
         isRailDownRequested = true;
         rail.setPosition(RAIL_DOWN);
+        agitator.setTargetPosition(agitator.getCurrentPosition() + 5*AGITATOR_ENC/360);
+        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agitator.setPower(AGITATOR_POWER);
     }
 
     public void railUp(){
@@ -621,6 +624,9 @@ public class Intake implements Component {
                 if (upperRail.getVoltage() >= RAIL_DOWN_POS + RAIL_DOWN_POS_THRESHOLD) {
                     railUp();
                     intakeRevTimer.reset();
+                    agitator.setTargetPosition(0);
+                    agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    agitator.setPower(AGITATOR_POWER);
                     // This calls the intake reverse for a time logic
                     intakeStopping = true;
                 } else {
