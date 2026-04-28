@@ -6,12 +6,14 @@ import static dev.nextftc.bindings.Bindings.button;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -24,6 +26,7 @@ import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
+import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @TeleOp(name = "test everything")
@@ -59,9 +62,13 @@ public class TestEverything extends NextFTCOpMode {
     private static double FLYWHEEL_VEL_TEST = 3000, FLYWHEEL_VEL_THRESHOLD = 100, FLYWHEEL_TIME_THRESHOLD_MS = 2000, FLYWHEEL_VEL = 0, FLYWHEEL_TEST_TIME = 2000;
     private static double HOOD_TEST_POS = 6000,  HOOD_POS_THRESHOLD = 100, HOOD_TIME_THRESHOLD_MS = 500, HOOD_TEST_TIME = 1500, HOOD_POS = 0;
     private static double TURRET_TEST_POS = 45, TURRET_POS_THRESHOLD = 1, TURRET_TIME_THRESHOLD_MS = 500, TURRET_TEST_TIME = 3000, TURRET_POS = 0;
+    private static double TURRET_REZERO_TEST_TIME = 4000;
+    public static double RAIL_DOWN_POS = 1.7, RAIL_POS_THRESHOLD = 0.2, RAIL_UP_POS = 2.3;
+    private static boolean hasRailPassed = false;
     private static boolean isTestingHood = false, hasHoodPassed = false, hasHoodTestCompleted = false;
     private static boolean isTestingFlywheel = false, hasFlywheelPassed = false, hasFlywheelTestCompleted = false;
     private static boolean isTestingTurret = false, hasTurretPassed = false, hasTurretTestCompleted = false;
+    private static boolean isTestingTurretRezero = false, hasTurretRezeroPassed = false, hasTurretRezeroTestCompleted = false;
     double pinpointHeading = 0;
     double pinpointX = 0;
     double pinpointY = 0;
@@ -70,11 +77,13 @@ public class TestEverything extends NextFTCOpMode {
     DcMotorEx leftFront, rightFront, rightBack, leftBack, agitator, intake, flywheelLeft, flywheelRight;
     Servo rail;
     CRServo hoodServo, firewheelLeft, firewheelRight, turretLeft, turretRight;
+    TouchSensor limitSwitch;
     Hood hood;
     Turret turret;
     GoBildaPinpointDriver pinpoint;
     NormalizedColorSensor frontColor, leftColor, rightColor;
     GoBildaPrismDriver prism;
+    AnalogInput railEnc;
     Button g1A;
 
     @Override
@@ -137,6 +146,8 @@ public class TestEverything extends NextFTCOpMode {
             rightColor = hardwareMap.tryGet(NormalizedColorSensor.class, "rightColor");
             leftColor = hardwareMap.tryGet(NormalizedColorSensor.class, "leftColor");
             prism = hardwareMap.tryGet(GoBildaPrismDriver.class, "lights");
+            limitSwitch = hardwareMap.tryGet(TouchSensor.class, "limitSwitch");
+            railEnc = hardwareMap.tryGet(AnalogInput.class, "upperRailEncoder");
         }
             telemetry.addLine("Press A to move to next test");
             telemetry.addLine("This tests to see if each named part is in the robot config");
@@ -216,6 +227,14 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addData("prism", "FAIL");
                 somethingFailed = true;
             }
+            if (null == limitSwitch) {
+                telemetry.addData("limit switch", "FAIL");
+                somethingFailed = true;
+            }
+            if (null == railEnc) {
+                telemetry.addData("Rail Encoder", "FAIL");
+                somethingFailed = true;
+            }
 
             if (!somethingFailed) {
                 telemetry.addLine("ALL PASS");
@@ -279,6 +298,12 @@ public class TestEverything extends NextFTCOpMode {
             }
             if (null != prism) {
                 telemetry.addData("prism", "PASS");
+            }
+            if (null != limitSwitch) {
+                telemetry.addData("limit switch", "PASS");
+            }
+            if (null != railEnc) {
+                telemetry.addData("rail encoder", "PASS");
             }
             telemetry.update();
             telemetrySent = true;
@@ -405,10 +430,10 @@ public class TestEverything extends NextFTCOpMode {
         }
     }
     public void testRail(){
-        if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
-            telemetry.addLine("Press A to move to the next test");
-            telemetry.addLine("This test alternates moving the rail up and down");
-            if (rail != null) {
+        if (rail != null && railEnc != null) {
+            if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
+                telemetry.addLine("Press A to move to the next test");
+                telemetry.addLine("This test alternates moving the rail up and down");
                 if (rail.getPosition() > RAIL_DOWN) {
                     rail.setPosition(RAIL_DOWN);
                     telemetry.addLine("rail is down");
@@ -416,13 +441,24 @@ public class TestEverything extends NextFTCOpMode {
                     rail.setPosition(RAIL_UP);
                     telemetry.addLine("rail is up");
                 }
-            } else {
-                telemetry.addLine("Skipping rail because it doesn't exist in config");
+                testTimer.reset();
+                telemetry.update();
             }
-            testTimer.reset();
-            telemetry.update();
+            if (rail.getPosition() > RAIL_DOWN) {
+                if (railEnc.getVoltage() >= RAIL_UP_POS - RAIL_POS_THRESHOLD && railEnc.getVoltage() != 0) {
+                    hasRailPassed = true;
+                }
+            } else {
+                if (railEnc.getVoltage() <= RAIL_DOWN_POS + RAIL_POS_THRESHOLD && railEnc.getVoltage() != 0) {
+                    hasRailPassed = true;
+                }
+            }
+            telemetry.addData("Has Rail Passed?", hasRailPassed);
+        } else {
+            telemetry.addLine("Skipping rail because it doesn't exist in config");
         }
     }
+
     public void testAgitator(){
         telemetry.addLine("Press A to move to the next test");
         telemetry.addLine("This test alternates moving the agitator 180 deg");
@@ -632,8 +668,42 @@ public class TestEverything extends NextFTCOpMode {
         telemetry.update();
     }
     public void testTurretZero(){
-        telemetry.addLine("Press A to move to the next test");
-        telemetry.addLine("This test has not been completed yet");
+        if (hasTurretPassed){
+            telemetry.addLine("Press A to move to the next test");
+            telemetry.addLine("This test the turret zero");
+            if (!isTestingTurretRezero) {
+                turret.setTurretStateRezeroRight();
+                isTestingTurretRezero = true;
+                testTimer.reset();
+            } else if (testTimer.milliseconds() < TURRET_REZERO_TEST_TIME && !hasTurretRezeroPassed) {
+                telemetry.addLine("Moving the turret to limitswitch");
+                if (turret.turretRezeroed || limitSwitch.isPressed()) {
+                    hasTurretRezeroPassed = true;
+                }
+            } else if (!hasTurretRezeroTestCompleted) {
+                if (turret.turretRezeroed || hasTurretRezeroPassed) {
+                    telemetry.addLine("Turret Rezero PASS");
+                    hasTurretRezeroPassed = true;
+                } else {
+                    telemetry.addLine("Turret Rezero FAILED");
+                    hasTurretPassed = false;
+                }
+                hasTurretRezeroTestCompleted = true;
+            } else {
+                if (hasTurretRezeroPassed) {
+                    telemetry.addLine("Turret Rezero PASS");
+                } else {
+                    telemetry.addLine("Turret Rezero FAILED");
+                }
+                turret.setTurretPower(0);
+                turret.setTurretStateOff();
+            }
+            telemetry.addData("Turret Current Pos", turret.getTurretAngle());
+            turret.update();
+        } else {
+            telemetry.addLine("Skipping turret limit switch test because turret failed. Fix the turret, then retry.");
+        }
+        telemetry.update();
     }
     public void testLimelight(){
         telemetry.addLine("Press A to move to the next test");
