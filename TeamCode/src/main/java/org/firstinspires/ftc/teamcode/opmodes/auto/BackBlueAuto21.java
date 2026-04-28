@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous(name = "back blue auto TWENTY ONE / shoots far", group = "default")
 public class BackBlueAuto21 extends AutoTemplate {
     @Override

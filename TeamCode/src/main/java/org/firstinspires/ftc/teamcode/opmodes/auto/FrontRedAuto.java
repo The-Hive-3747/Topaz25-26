@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous(name = "front red auto / shoots close", group = "default")
 public class FrontRedAuto extends AutoTemplate {
     @Override

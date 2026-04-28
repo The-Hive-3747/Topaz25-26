@@ -383,7 +383,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         if (alliance == Alliance.RED) { //80.8
             startPose = new Pose(81.8, 9, Math.toRadians(0));//new Pose(81, 9.5, Math.toRadians(0)); //79.5
         } else {
-            startPose = new Pose(61.5, 9, Math.toRadians(180));//new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
+            startPose = new Pose(61.5, 11, Math.toRadians(180));//new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
@@ -684,10 +684,14 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void openGate(double delayAfterOpenGate) {
-        lineUpForOpenGateFromLastPose = generatePath(AutoTemplate.lastPose, openGateStartPose);
+        lineUpForOpenGateFromLastPose = generatePathCurve(AutoTemplate.lastPose, curveIntake2, openGateStartPose);
         openGate = generatePath(openGateStartPose, openGateEndPose);
         autonomousCommands = autonomousCommands.then(
-                intake.stopIntakeNoReverse,
+                new ParallelGroup(
+                        new FollowPath(lineUpForOpenGateFromLastPose),
+                        intake.stopIntakeNoReverse,
+                        intake.railDownAuto
+                ),
                 new FollowPath(openGate),
                 new Delay(delayAfterOpenGate)
         );

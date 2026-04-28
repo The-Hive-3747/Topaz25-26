@@ -6,17 +6,19 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class FrontRedGATEAuto extends AutoTemplate {
     @Override
     public void initAuto() {
-        startAsRed();
-        startAtFront();
-        setTurretFixedClose();
+        startAsRedSOTM();
+        startAtFrontSOTM();
         setHoodPosClose();
-        turnFlywheelOnForFront();
+        isShootNMove = true;
+        turnFlywheelShootNMove();
         shootAllThreeAtClose(0);
-        intake1(0.1);
+        intake1(0.3);
         shootAllThreeAtClose(0);
-        intake2(0.1);
+        intake2(0.3);
         openGate(1);
-        shootAllThreeAtCloseCurved(0);
+        shootAllThreeAtClose(0);
+        intake3(0.3);
+        shootAllThreeAtClose(0);
         parkAtFront();
     }
 }
