@@ -73,7 +73,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     public static boolean isShootNMove = false, isParkingNormally = false, isPanicParking = false;
     public static double JIGGLE_TIME_MS = 1100;
     private ElapsedTime matchTimer = new ElapsedTime();
-    double GO_PARK_THRESHOLD_TIME_MS = 29000; // 29 seconds
+    double GO_PARK_THRESHOLD_TIME_MS = 28500; // 28.5 seconds
 
 
 
@@ -134,6 +134,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
             } else if (intake.getMotif().equals(Motif.pPG)) {
                 turretLights.pPG();
             }
+            turretLights.gPP();
             flywheel.resetHoodEncoder();
             turret.zeroTurret();
             intake.resetAgitatorEncoder();
@@ -379,8 +380,8 @@ public abstract class AutoTemplate extends NextFTCOpMode {
     }
 
     protected void startAtBackSOTM() {
-        if (alliance == Alliance.RED) {
-            startPose = new Pose(78.8, 9, Math.toRadians(0));//new Pose(81, 9.5, Math.toRadians(0)); //79.5
+        if (alliance == Alliance.RED) { //80.8
+            startPose = new Pose(81.8, 9, Math.toRadians(0));//new Pose(81, 9.5, Math.toRadians(0)); //79.5
         } else {
             startPose = new Pose(61.5, 9, Math.toRadians(180));//new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
         }
@@ -456,7 +457,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
 
     protected void shootAllThreeFarInHalves(double delayBeforeShot) {
         toShootAtFarFromLastPose = generatePathWithVelocityConstraint(AutoTemplate.lastPose, farShootingPose, 0.7);
-        shootFarJiggle = generatePathShortCallback(farShootingPose, farShootingPoseJiggle);
+        shootFarJiggle = generatePath(farShootingPose, farShootingPoseJiggle); //generatePathWithShortCallback
         generateShootCommandInHalvesWithJiggle(toShootAtFarFromLastPose, farShootingPose, shootFarJiggle, delayBeforeShot);
     }
 

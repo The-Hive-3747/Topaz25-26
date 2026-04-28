@@ -79,9 +79,10 @@ public class Turret implements Component {
     public static double TURRET_PID_KD_RED_CLOSE = 0.08;
     public static double TURRET_PID_KS_RED_CLOSE = 0.095;
     public static double TURRET_PID_KI_RED_CLOSE = 0.0;
-    public static double TURRET_PID_KP_RED_FAR = 0.0011; //not found
-    public static double TURRET_PID_KD_RED_FAR = 0.08;
-    public static double TURRET_PID_KS_RED_FAR = 0.095;
+    public static double TURRET_PID_KP_RED_FAR = 0.0015; //not found
+    public static double TURRET_PID_KD_RED_FAR = 1;
+    public static double TURRET_PID_KS_RED_FAR_POSITIVE = 0.085;
+    public static double TURRET_PID_KS_RED_FAR_NEGATIVE = 0.115;
     public static double TURRET_PID_KI_RED_FAR = 0.0;
 
     public static double TURRET_PID_KP_BLUE_CLOSE = 0.0015; //not found
@@ -90,14 +91,15 @@ public class Turret implements Component {
     public static double TURRET_PID_KI_BLUE_CLOSE = 0.0000000000001;
     public static double TURRET_PID_KP_BLUE_FAR = 0.0015; //mostly tested
     public static double TURRET_PID_KD_BLUE_FAR = 1;
-    public static double TURRET_PID_KS_BLUE_FAR = 0.125;
+    public static double TURRET_PID_KS_BLUE_FAR_POSITIVE = 0.135;
+    public static double TURRET_PID_KS_BLUE_FAR_NEGATIVE = 0.065;
     public static double TURRET_PID_KI_BLUE_FAR = 0.0000000000001;
 
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private double shootingGoal = 0;
     public static double TURRET_ANGLE_GO_FAST = 25;//3;
     public static double TURRET_POWER_GO_FAST = 0.8;
-    private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 0.5, TURRET_POWER_MIN = 0.05;//D: 0.5//1
+    private static double TURRET_POWER_LIMIT = 0.9, TURRET_ANGLE_DEADZONE = 1, TURRET_POWER_MIN = 0.05;//D: 0.5//1
     public static double TURRET_TICKS_TO_DEGREES = (double) 1007616 /3240; // THIS WAS FOUND MATHEMATICALLY DO NOT CHANGE
     public double turretRobotHeadingInDeg, robotFieldHeadingInRads, shootOnTheMoveHeadingInRads;
     ControlSystem turretPIDSOTM, turretPIDRedClose, turretPIDRedFar, turretPIDBlueClose, turretPIDBlueFar;
@@ -247,7 +249,11 @@ public class Turret implements Component {
                 if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
                     pidState = PIDState.RED_FAR_PID;
                     turretPower = turretPIDRedFar.calculate(new KineticState(this.getTurretAngle()));
-                    TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR;
+                    if ((this.getTurretGoal() - this.getTurretAngle()) < 0) {
+                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR_POSITIVE;
+                    } else {
+                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR_NEGATIVE;
+                    }
                 } else {
                     pidState = PIDState.RED_CLOSE_PID;
                     turretPower = turretPIDRedClose.calculate(new KineticState(this.getTurretAngle()));
@@ -257,7 +263,11 @@ public class Turret implements Component {
                 if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
                     pidState = PIDState.BLUE_FAR_PID;
                     turretPower = turretPIDBlueFar.calculate(new KineticState(this.getTurretAngle()));
-                    TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR;
+                    if ((this.getTurretGoal() - this.getTurretAngle()) > 0) {
+                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR_POSITIVE;
+                    } else {
+                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR_NEGATIVE;
+                    }
 
                 } else {
                     pidState = PIDState.BLUE_CLOSE_PID;
@@ -299,7 +309,7 @@ public class Turret implements Component {
         }
 
         // limit the turret power to our Turret Power Limit
-        if (Math.abs(turretPower) < TURRET_POWER_MIN && isTeleop) {
+        if (Math.abs(turretPower) < TURRET_POWER_MIN) {
             turretPower = 0;
         }
         if (turretState != TurretState.OFF && !turretFindingSwitch) {

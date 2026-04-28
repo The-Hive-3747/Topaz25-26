@@ -57,6 +57,7 @@ public class Intake implements Component {
     ElapsedTime intakeRevTimer = new ElapsedTime();
     boolean intakeReversed = false;
     boolean agitatorResetRequest = false;
+    boolean isRailRejecting = false;
     boolean isShooting = false;
     boolean isShootingInParts = false;
     boolean intakeStopping = false;
@@ -256,9 +257,6 @@ public class Intake implements Component {
         railDownTimer.reset();
         isRailDownRequested = true;
         rail.setPosition(RAIL_DOWN);
-        agitator.setTargetPosition(agitator.getCurrentPosition() + 5*AGITATOR_ENC/360);
-        agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        agitator.setPower(AGITATOR_POWER);
     }
 
     public void railUp(){
@@ -621,15 +619,23 @@ public class Intake implements Component {
 
         if (isRailDownRequested && useRailDownDetection) {
             if (railDownTimer.milliseconds() > RAIL_DOWN_TIME) {
-                if (upperRail.getVoltage() >= RAIL_DOWN_POS + RAIL_DOWN_POS_THRESHOLD) {
+                if (upperRail.getVoltage() >= RAIL_DOWN_POS + RAIL_DOWN_POS_THRESHOLD && !isRailRejecting) {
                     railUp();
                     intakeRevTimer.reset();
+                    agitator.setTargetPosition(agitator.getCurrentPosition() + 5*AGITATOR_ENC/360);
+                    agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    agitator.setPower(AGITATOR_POWER);
+
+                    // This calls the intake reverse for a time logic
+                    intakeStopping = true;
+                    isRailRejecting = true;
+                    railDownTimer.reset();
+                } else if (isRailRejecting ) {
                     agitator.setTargetPosition(0);
                     agitator.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     agitator.setPower(AGITATOR_POWER);
-                    // This calls the intake reverse for a time logic
-                    intakeStopping = true;
-                } else {
+                    isRailRejecting = false;
+                }else {
                     isRailDownRequested = false;
                 }
             }

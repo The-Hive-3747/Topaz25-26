@@ -21,8 +21,6 @@ public class BackRedAutoSOTM extends AutoTemplate {
         shootAllThreeFarInHalves(0);
         intakeRecycled(0.3);
         shootAllThreeFarInHalves(0);
-        intakeRecycled(0.3);
-        shootAllThreeFarInHalves(0);
         parkAtBack();
     }
 }
