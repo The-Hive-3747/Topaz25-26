@@ -69,6 +69,7 @@ public class TestEverything extends NextFTCOpMode {
     private static boolean isTestingFlywheel = false, hasFlywheelPassed = false, hasFlywheelTestCompleted = false;
     private static boolean isTestingTurret = false, hasTurretPassed = false, hasTurretTestCompleted = false;
     private static boolean isTestingTurretRezero = false, hasTurretRezeroPassed = false, hasTurretRezeroTestCompleted = false;
+    private static boolean somethingFailed = false;
     double pinpointHeading = 0;
     double pinpointX = 0;
     double pinpointY = 0;
@@ -125,7 +126,7 @@ public class TestEverything extends NextFTCOpMode {
         runTests();
     }
     public void testConfig(){
-        boolean somethingFailed = false;
+        somethingFailed = false;
         if(!telemetrySent) {
             leftFront = hardwareMap.tryGet(DcMotorEx.class, "frontLeftMotor");
             rightFront = hardwareMap.tryGet(DcMotorEx.class, "frontRightMotor");
@@ -718,8 +719,18 @@ public class TestEverything extends NextFTCOpMode {
         telemetry.addLine("This test has not been completed yet");
     }
     public void showResults(){
-        telemetry.addLine("Press A to move to the next test");
-        telemetry.addLine("This test has not been completed yet");
+        telemetry.addLine("--- RESULTS ---");
+        telemetry.addData("Config", passedOrFailed(!somethingFailed));
+        telemetry.addData("Pinpoint X", passedOrFailed(pinpointXPass));
+        telemetry.addData("Pinpoint Y", passedOrFailed(pinpointYPass));
+        telemetry.addData("Pinpoint Heading", passedOrFailed(pinpointHeadingPass));
+        telemetry.addData("Rail", passedOrFailed(hasRailPassed));
+        telemetry.addData("Flywheel", passedOrFailed(hasFlywheelPassed));
+        telemetry.addData("Hood", passedOrFailed(hasHoodPassed));
+        telemetry.addData("Turret", passedOrFailed(hasTurretPassed));
+        telemetry.addData("Turret Rezero", passedOrFailed(hasTurretRezeroPassed));
+        telemetry.addLine("---");
+        telemetry.addData("Entire robot", passedOrFailed(!somethingFailed && pinpointXPass && pinpointYPass && pinpointHeadingPass && hasRailPassed && hasFlywheelPassed && hasHoodPassed && hasTurretPassed && hasTurretRezeroPassed));
     }
     public void runTests(){
         switch(currentTest){
@@ -900,5 +911,10 @@ public class TestEverything extends NextFTCOpMode {
                 break;
 
         }
+    }
+
+    private String passedOrFailed(boolean passed) {
+        if (passed) return "PASS";
+        else return "FAIL";
     }
 }
