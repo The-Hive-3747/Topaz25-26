@@ -9,21 +9,19 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.Aimbot;
 import org.firstinspires.ftc.teamcode.subsystems.AimbotSOTM;
 import org.firstinspires.ftc.teamcode.subsystems.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Relocalization;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.subsystems.TurretLights;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 import org.firstinspires.ftc.teamcode.utilities.DataLogger;
 import org.firstinspires.ftc.teamcode.utilities.Drawing;
-import org.firstinspires.ftc.teamcode.utilities.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.utilities.OpModeTransfer;
 import org.firstinspires.ftc.teamcode.utilities.ShooterKinematicsAccel;
 import org.slf4j.Logger;
@@ -62,15 +60,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     DataLogger dataLogger;
     ElapsedTime matchTimer = new ElapsedTime();
     Intake intake;
-    NormalizedColorSensor frontSensor;
-    NormalizedColorSensor rightSensor;
-    NormalizedColorSensor leftSensor;
     FieldCentricDrive drive;
     AimbotSOTM aimbot;
     Turret turret;
     Relocalization limelight;
     Flywheel  flywheel;
-    //TurretLights turretLights;
+    TurretLights turretLights;
     private ElapsedTime looptime;
     private ElapsedTime relocalizeTimer = new ElapsedTime();
     private ShooterKinematicsAccel.ShotParameters shotParameters;
@@ -80,22 +75,11 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     private double limelightCorrection = 0.0;
     double FLYWHEEL_VEL = 3200; //4000; //2000;//= 1300; // IN RPM
     double HOOD_POS;
-    double INTAKE_POWER = 0.9;
-    double INTAKE_SHOOTING_POWER = 0.65;
-    double THREE_BALL_CURRENT = 6500.0;
     private boolean FLYWHEEL_ON = false;
     private boolean wasReadyToShoot = false;
     private boolean isIntakeOn = false;
-    private boolean isIntakeReversed = false;
-    private boolean isTransferOn = false;
-    private boolean fireWhenReady = false;
-    private boolean isFlipperOn = false;
-    private boolean got3Balls = false;
-    private boolean isRelocalized = false;
     private boolean limelightRelocalized, isManualModeOn = false;
     private boolean isShootingFar = false;
-    int FLYWHEEL_STEP = 50;
-    private double FIRE_POWER = 0.9;
     private double slowModeMultiplier = 1;
     public static double FLYWHEEL_CIRCUMFERENCE = Math.PI * 2 * (36/25.4); //36mm radius, 25.4mm to inches
     //hood friction slows exit vel between 0.5 and 0.75 of flywheel surface speed
@@ -106,13 +90,10 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;//37;//40;//34;  // was 28 and works well
     public static double SHOOT_ON_THE_MOVE_DELAY = 0.1;
     public static double FAR_ZONE_THRESHOLD_IN = 48;
-
-    private GoBildaPrismDriver prism;
     Follower follower;
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     public ElapsedTime lightTimer = new ElapsedTime();
-    Button g2A;
     List<LynxModule> allHubs;
 
 
@@ -126,19 +107,15 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
 
-
-
-
-        //prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         //limelight = new Relocalization();
         //limelight.preInit();
         //limelightComponent = hardwareMap.get(LimelightComponent.class, "limelight");
 
-        //turretLights = new TurretLights(hardwareMap, telemetry);
+        turretLights = new TurretLights(hardwareMap, telemetry);
 
         Drawing.init();
 
-        turret.isTeleop = true;
+        Turret.isTeleop = true;
 
         alliance = OpModeTransfer.alliance;
         Button g1Back = button(() -> gamepad1.back);
@@ -149,22 +126,20 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         g1Back.whenBecomesTrue(() -> {
                     if (alliance == Alliance.BLUE){
                         alliance = Alliance.RED;
-                        //turretLights.redAlliance();
+                        turretLights.redAlliance();
                     } else{
                         alliance = Alliance.BLUE;
-                        //turretLights.blueAlliance();
+                        turretLights.blueAlliance();
                     }
-                    //turret.setAlliance(alliance);
+                    turret.setAlliance(alliance);
                 });
         looptime = new ElapsedTime();
 
         if (alliance == Alliance.BLUE){
-            //turretLights.redAlliance();
+            turretLights.redAlliance();
         } else{
-            //turretLights.blueAlliance();
+            turretLights.blueAlliance();
         }
-
-
     }
     @Override
     public void onWaitForStart() {
@@ -204,7 +179,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         Button g2X = button(() -> gamepad2.x);
         Button g2Y = button(() -> gamepad2.y);
         Button g2B = button(() -> gamepad2.b);
-        g2A = button(() -> gamepad2.a);
+        Button g2A = button(() -> gamepad2.a);
 
         Button gUp = button(() -> gamepad2.dpad_up || gamepad1.dpad_up);
         Button gDown = button(() -> gamepad2.dpad_down || gamepad1.dpad_down);
@@ -242,7 +217,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //g2LT.toggleOnBecomesTrue()
         g2LT.whenBecomesTrue(() ->{
             FLYWHEEL_ON = true;
-            //intake.stopIntake();
+            intake.stopIntake(); //automagically stop intake :)
+            isIntakeOn = false;
             intake.railDown();
             if (isShootingFar) {
                 intake.shootInThirds();
@@ -284,16 +260,16 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         });*/
 
 
-        g2A.toggleOnBecomesTrue()
+        g2A // using the toggleOnBecomesTrue doesnt work here because there are other things that can turn intake off
                 .whenBecomesTrue(() -> {
-                    //intake.turnIsShootingFalse();
-                    intake.startIntake();
-                    isIntakeOn = true;
-                })
-                .whenBecomesFalse(() -> {
-                    intake.stopIntake();
-                    intake.resetRailDex();
-                    isIntakeOn = false;
+                    if (isIntakeOn) {
+                        intake.stopIntake();
+                        intake.resetRailDex();
+                        isIntakeOn = false;
+                    } else {
+                        intake.startIntake();
+                        isIntakeOn = true;
+                    }
                 });
 
         /*g2LT.toggleOnBecomesTrue() //reversing intake
@@ -411,7 +387,6 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
-        //FLYWHEEL_VEL = aimbot.getAimbotValues().velocity;
         HOOD_POS = aimbot.getAimbotValues().hoodPos;
         flywheel.setHoodGoalPos(HOOD_POS);
 
@@ -430,26 +405,18 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                 FLYWHEEL_CIRCUMFERENCE
         );
 
-        if (follower.getPose().getY() < FAR_ZONE_THRESHOLD_IN) {
-            isShootingFar = true;
-            FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_FAR;
-        } else {
-            isShootingFar = false;
-            FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_CLOSE;
-        }
-
-
         if (FLYWHEEL_ON) {
+            if (follower.getPose().getY() < FAR_ZONE_THRESHOLD_IN) {
+                isShootingFar = true;
+                FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_FAR;
+            } else {
+                isShootingFar = false;
+                FLYWHEEL_VEL = shotParameters.flywheelRPM / Flywheel.HOOD_FRICTION_SPEED_FACTOR_CLOSE;
+            }
             flywheel.setTargetVel(FLYWHEEL_VEL);
-        } else {
+        } else { //
             flywheel.setTargetVel(0);
         }
-
-
-        /*if(intakeMotor.getCurrent(CurrentUnit.MILLIAMPS) > THREE_BALL_CURRENT){
-            intakeMotor.setPower(0);
-            got3Balls = true;
-        }*/
 
         if(flywheel.readyToShoot() && !wasReadyToShoot && lightTimer.seconds() > 1.0 && flywheel.getVel() != 0){
             //turretLights.readyToShoot();
@@ -470,8 +437,6 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
               Pose limelightPose = new Pose(limelightComponent.getRobotX(),limelightComponent.getRobotY(),limelightComponent.getRobotHeading());
             }
        }*/
-
-
 
         limelight.update();
         BindingManager.update();
@@ -507,8 +472,6 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             highestLooptime = looptime.milliseconds();
         }
 
-
-
         //graphManager.addData("flywheel velocity", flywheel.getVel());
         //graphManager.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
         //graphManager.addData("flywheel power", flywheel.getPower());
@@ -531,21 +494,6 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         intake.telemetry();
         turret.telemetry();
 
-
-        /*telemetry.addData("limelight correction", limelightCorrection);
-        telemetry.addData("limelight relocalized", limelightRelocalized);
-        telemetry.addData("hood pose", flywheel.getHoodPosition());
-        //telemetry.addData("Limelight fresh",limelight.isDataFresh());
-        //telemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
-        telemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
-        telemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
-        telemetry.addData("looptime (ms)", looptime.milliseconds());
-        telemetry.addData("highest looptime (ms)", highestLooptime);
-        telemetry.addData("pose", follower.getPose());
-        telemetry.addData("Is Intake on: ", isIntakeOn);
-        telemetry.addData("Is Intake Reversed: ", isIntakeReversed);
-        telemetry.addData("Is Flywheel on: ", FLYWHEEL_ON);
-        telemetry.addData("Is Transfer on: ", isTransferOn);*/
         panelsTelemetry.update(telemetry);
     }
 
