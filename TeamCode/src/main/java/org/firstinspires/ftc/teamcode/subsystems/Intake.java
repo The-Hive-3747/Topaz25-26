@@ -518,22 +518,6 @@ public class Intake implements Component {
             colorTimer.reset();
         }
 
-        panelsTelemetry.addData("front artifact", frontArtifact);
-        panelsTelemetry.addData("right artifact", rightArtifact);
-        panelsTelemetry.addData("left artifact", leftArtifact);
-        ActiveOpMode.telemetry().addLine("---- INTAKE ----");
-        ActiveOpMode.telemetry().addData("front artifact", frontArtifact);
-        ActiveOpMode.telemetry().addData("right artifact", rightArtifact);
-        ActiveOpMode.telemetry().addData("left artifact", leftArtifact);
-        ActiveOpMode.telemetry().addData("left firewheel power", leftFireServo.getPower());
-        ActiveOpMode.telemetry().addData("right firewheel power", rightFireServo.getPower());
-        ActiveOpMode.telemetry().addData("agitator encoder", agitator.getCurrentPosition());
-        ActiveOpMode.telemetry().addData("agitator busy", agitator.isBusy());
-
-        /*ActiveOpMode.telemetry().addData("front color", Color.luminance(Color.rgb(frontColor.red(), frontColor.green(), frontColor.blue())));
-        //ActiveOpMode.telemetry().addData("right color", rightColor.red());
-        //ActiveOpMode.telemetry().addData("left color", leftColor.red());*/
-
         if (isAgitatorShootingInThirds) {
             if (agitatorTurns >= 3) {
                 agitator.setTargetPosition(AGITATOR_ENC);
@@ -688,5 +672,16 @@ public class Intake implements Component {
 
     public int getAgitatorPos(){
         return agitator.getCurrentPosition();
+    }
+
+    public void telemetry() {
+        ActiveOpMode.telemetry().addLine("---- Intake ----");
+        ActiveOpMode.telemetry().addData("Left Firewheel Power", leftFireServo.getPower());
+        ActiveOpMode.telemetry().addData("Right Firewheel Power", rightFireServo.getPower());
+        ActiveOpMode.telemetry().addData("Agitator Position", agitator.getCurrentPosition());
+        ActiveOpMode.telemetry().addData("Agitator Is Busy", agitator.isBusy());
+        ActiveOpMode.telemetry().addData("Artifact Colors", this.getMotif());
+        ActiveOpMode.telemetry().addData("Intake Power", intakeMotor.getPower());
+        ActiveOpMode.telemetry().addData("Rail Position", upperRail.getVoltage());
     }
 }

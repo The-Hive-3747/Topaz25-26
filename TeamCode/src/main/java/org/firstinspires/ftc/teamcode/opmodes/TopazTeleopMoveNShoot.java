@@ -38,7 +38,7 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 
 @Configurable
-@TeleOp(name="shoot n move teleop")
+@TeleOp(name="TeleOp SOTM")
 public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(TopazTeleopMoveNShoot.class);
 
@@ -60,6 +60,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
     //Relocalization limelight;
     DataLogger dataLogger;
+    ElapsedTime matchTimer = new ElapsedTime();
     Intake intake;
     NormalizedColorSensor frontSensor;
     NormalizedColorSensor rightSensor;
@@ -189,7 +190,9 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public void onStartButtonPressed() {
         //follower.startTeleOpDrive();
 
-        if (OpModeTransfer.hasBeenTransferred == false) {
+        matchTimer.reset();
+
+        if (!OpModeTransfer.hasBeenTransferred) {
             turret.zeroTurret();
             flywheel.resetHoodEncoder();
         }
@@ -511,22 +514,22 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //graphManager.addData("flywheel power", flywheel.getPower());
         //graphManager.update();
 
-        telemetry.addData("Bot Pose", follower.getPose());
-        //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
-        panelsTelemetry.addData("turretGoal", turret.getTurretGoal());
-        panelsTelemetry.addData("turret pos", turret.getTurretAngle());
-        panelsTelemetry.addData("hood position", flywheel.getHoodPos());
-        panelsTelemetry.addData("hood goal", flywheel.getHoodGoal());
-        panelsTelemetry.addData("hub number", allHubs.toArray().length);
-        panelsTelemetry.addData("flywheel velocity", flywheel.getVel());
-        panelsTelemetry.addData("flywheel goal velocity", flywheel.getFlywheelGoal());
-        panelsTelemetry.addData("Critical loop time", looptime);
-        panelsTelemetry.addData("Highset loop time", highestLooptime);
-        panelsTelemetry.addData("flywheel power", flywheel.getPower());
-        panelsTelemetry.addData("LeftFlyWheel Current (mA)", flywheel.getCurrentLeft());
-        panelsTelemetry.addData("Right Flywheel Current (mA)", flywheel.getCurrentRight());
-        panelsTelemetry.addData("bot Distance", aimbot.getBotDistance());
-        panelsTelemetry.addData("bot values", aimbot.getAimbotValues());
+        telemetry.addLine("---- TELEOP ----");
+        telemetry.addData("Robot Pose", follower.getPose());
+        telemetry.addData("Alliance", alliance);
+        telemetry.addData("Turret State", turret.getTurretState());
+        telemetry.addData("Flywheel State", flywheel.getFlywheelState());
+        telemetry.addData("Intake State", intake.getIntakeState());
+        telemetry.addData("Firewheel State", intake.getFirewheelState());
+        telemetry.addData("Agitator Position", intake.getAgitatorPos());
+        telemetry.addData("Match Time (s)", matchTimer.seconds());
+        panelsTelemetry.addData("Critical Loop Time", looptime);
+        panelsTelemetry.addData("Highset Loop Time", highestLooptime);
+        telemetry.addData("Manual Mode", isManualModeOn);
+
+        flywheel.telemetry(true);
+        intake.telemetry();
+        turret.telemetry();
 
 
         /*telemetry.addData("limelight correction", limelightCorrection);

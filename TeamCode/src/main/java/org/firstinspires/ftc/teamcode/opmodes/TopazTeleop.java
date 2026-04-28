@@ -53,7 +53,7 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.ftc.NextFTCOpMode;
 
-@TeleOp(name="topaz teleop")
+@TeleOp(name="TeleOp Aimbot")
 public class TopazTeleop extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(TopazTeleop.class);
 
@@ -526,7 +526,7 @@ AnalogInput upperRailEnc;
         panelsTelemetry.addData("Highset Loop Time", highestLooptime);
         telemetry.addData("Manual Mode", isManualModeOn);
 
-        flywheel.telemetry();
+        flywheel.telemetry(true);
 
         //panelsTelemetry.addData("Intake Current (mA)", intakeMotor.getCurrent(CurrentUnit.MILLIAMPS));
         //panelsTelemetry.addData("hub number", Servo);

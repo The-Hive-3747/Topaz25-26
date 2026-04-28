@@ -30,7 +30,7 @@ import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 
-@TeleOp(name="topaz teleop set power")
+@TeleOp(name="TeleOp SetPower")
 public class TopazTeleopPOWER extends NextFTCOpMode {
     private static final Logger log = LoggerFactory.getLogger(TopazTeleop.class);
 

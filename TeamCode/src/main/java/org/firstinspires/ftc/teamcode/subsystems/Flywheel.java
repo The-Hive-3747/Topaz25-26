@@ -366,13 +366,18 @@ public class Flywheel implements Component {
         return flywheelState;
     }
 
-    public void telemetry() {
+    /**
+     * Also contains Hood telemetry.
+     */
+    public void telemetry(boolean includeHoodTelemetry) {
         ActiveOpMode.telemetry().addLine("---- FLYWHEEL ----");
         ActiveOpMode.telemetry().addData("Flywheel Velocity", flywheelVel);
         ActiveOpMode.telemetry().addData("Flywheel Goal", targetVel + targetAdjust);
         ActiveOpMode.telemetry().addData("Flywheel Power", correct);
         ActiveOpMode.telemetry().addData("Is Flywheel Manual?", flywheelState == FlywheelState.MANUAL);
 
-        hood.telemetry();
+        if (includeHoodTelemetry) {
+            hood.telemetry();
+        }
     }
 }

@@ -318,21 +318,13 @@ public class Turret implements Component {
     }
 
     public void telemetry() {
-        ActiveOpMode.telemetry().addData("TURRET state", turretState);
-        ActiveOpMode.telemetry().addData("TURRET zone", turretZone);
-        ActiveOpMode.telemetry().addData("TURRET pose", this.currentPose);
-        ActiveOpMode.telemetry().addData("TURRET goal", turretPIDSOTM.getGoal().component1());
-        ActiveOpMode.telemetry().addData("TURRET power", turretPower);
-        ActiveOpMode.telemetry().addData("TURRET angle", this.getTurretAngle());
-        ActiveOpMode.telemetry().addData("TURRET lim pressed", hasBeenReset);
-        ActiveOpMode.telemetry().addData("TURRET lim has been pressed", turretPressedAndReset);
-        ActiveOpMode.telemetry().addData("Turret touch sensor", limitSwitch.getValue());
-        ActiveOpMode.telemetry().addData("Is Turret Rezeroed", turretRezeroed);
-        ActiveOpMode.telemetry().addData("Is limit switch pressed", limitSwitch.isPressed());
-        ActiveOpMode.telemetry().addData("Ready to rezero", !turretRezeroed && !limitSwitch.isPressed());
-        ActiveOpMode.telemetry().addData("Turret alliance", alliance);
-        ActiveOpMode.telemetry().addData("Turret is close", currentPose.getY()>FAR_ZONE_THRESHOLD_IN);
-        ActiveOpMode.telemetry().addData("PID state", pidState);
+        ActiveOpMode.telemetry().addLine("---- Turret ----");
+        ActiveOpMode.telemetry().addData("Turret state", turretState);
+        ActiveOpMode.telemetry().addData("Turret PID state", pidState);
+        ActiveOpMode.telemetry().addData("Turret power", turretPower);
+        ActiveOpMode.telemetry().addData("Turret position", this.getTurretAngle());
+        ActiveOpMode.telemetry().addData("Turret goal", turretPIDSOTM.getGoal().component1());
+        ActiveOpMode.telemetry().addData("Turret limit switch has been pressed", turretPressedAndReset);
 
 
     }
