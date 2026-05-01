@@ -242,9 +242,39 @@ public class Turret implements Component {
         } else if (TurretState.AUTO_OFF != turretState  && !turretFindingSwitch) {
             //calculate the turret power because both use it
             if (isTeleop) {
+                if (thruTurret.getCurrentPosition()<0) { //turret is on negative side
+                    if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
+                        pidState = PIDState.RED_FAR_PID;
+                        turretPower = turretPIDRedFar.calculate(new KineticState(this.getTurretAngle()));
+                        if ((this.getTurretGoal() - this.getTurretAngle()) < 0) {
+                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR_POSITIVE;
+                        } else {
+                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR_NEGATIVE;
+                        }
+                    } else {
+                        pidState = PIDState.RED_CLOSE_PID;
+                        turretPower = turretPIDRedClose.calculate(new KineticState(this.getTurretAngle()));
+                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_CLOSE;
+                    }
+                } else if (thruTurret.getCurrentPosition()>=0) { //turret is in positive zone
+                    if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
+                        pidState = PIDState.BLUE_FAR_PID;
+                        turretPower = turretPIDBlueFar.calculate(new KineticState(this.getTurretAngle()));
+                        if ((this.getTurretGoal() - this.getTurretAngle()) > 0) {
+                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR_POSITIVE;
+                        } else {
+                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR_NEGATIVE;
+                        }
+                    } else { //default
+                        pidState = PIDState.BLUE_CLOSE_PID;
+                        turretPower = turretPIDBlueClose.calculate(new KineticState(this.getTurretAngle()));
+                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_CLOSE;
+                    }
+                } else {
                 pidState = PIDState.TELEOP_PID;
                 turretPower = turretPIDSOTM.calculate(new KineticState(this.getTurretAngle()));
                 TURRET_PID_KS_CURRENT = TURRET_PID_KS_SOTM;
+                }
             } else if (Alliance.RED == alliance) {
                 if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
                     pidState = PIDState.RED_FAR_PID;

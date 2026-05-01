@@ -121,7 +121,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         Drawing.init();
 
-        //Turret.isTeleop = true;
+        Turret.isTeleop = true;
 
         alliance = OpModeTransfer.alliance;
         Button g1Back = button(() -> gamepad1.back);
@@ -226,7 +226,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             isIntakeOn = false;
             intake.railDown();
             if (isShootingFar) {
-                intake.shootInThirds(); //might want to change to shoot in halves to be sightly faster
+                intake.shootInHalves();//shootInThirds();
             } else {
                 intake.startRailDex();
             }
