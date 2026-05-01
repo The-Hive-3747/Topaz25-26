@@ -18,13 +18,13 @@ public class BackBlueAuto21 extends AutoTemplate {
         shootAllThreeFarInHalves(0);
         intake3(0);
         shootAllThreeFarInHalves(0);
-        intakeRecycled(0);
+        intakeRecycledFar(0);
         shootAllThreeFarInHalves(0);
-        intakeRecycled(0);
+        intakeRecycledFar(0);
         shootAllThreeFarInHalves(0);
-        intakeRecycled(0);
+        intakeRecycledFar(0);
         shootAllThreeFarInHalves(0);
-        intakeRecycled(0);
+        intakeRecycledFar(0);
         shootAllThreeFarInHalves(0);
         parkAtBack();
     }
