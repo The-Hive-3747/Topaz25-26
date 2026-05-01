@@ -103,8 +103,14 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     @Override
     public void onInit() {
         follower = Constants.createFollower(hardwareMap);
-        drive.setOffset(OpModeTransfer.currentPose.getHeading());
-        follower.setStartingPose(OpModeTransfer.currentPose);
+        if(OpModeTransfer.hasBeenTransferred) {
+            drive.setOffset(OpModeTransfer.currentPose.getHeading());
+            follower.setStartingPose(OpModeTransfer.currentPose);
+            //note: the opmode transfer is used later to reset the turret and hood which are built in post init
+        }else{
+            drive.setOffset(OpModeTransfer.startingPose.getHeading());
+            follower.setStartingPose(OpModeTransfer.startingPose);
+        }
         follower.update();
 
         //limelight = new Relocalization();
@@ -115,7 +121,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         Drawing.init();
 
-        Turret.isTeleop = true;
+        //Turret.isTeleop = true;
 
         alliance = OpModeTransfer.alliance;
         Button g1Back = button(() -> gamepad1.back);
@@ -163,13 +169,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
-        //follower.startTeleOpDrive();
-
         matchTimer.reset();
 
         if (!OpModeTransfer.hasBeenTransferred) {
             turret.zeroTurret();
             flywheel.resetHoodEncoder();
+            intake.resetAgitatorEncoder();
         }
 
         turret.setAlliance(alliance);
@@ -221,7 +226,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             isIntakeOn = false;
             intake.railDown();
             if (isShootingFar) {
-                intake.shootInThirds();
+                intake.shootInThirds(); //might want to change to shoot in halves to be sightly faster
             } else {
                 intake.startRailDex();
             }
@@ -288,9 +293,9 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         g1A.whenBecomesTrue(() -> {
             if (alliance == Alliance.RED) {
-                follower.setPose(new Pose(9.5, 9, Math.toRadians(180)));
+                follower.setPose(new Pose(11.5, 11, Math.toRadians(180)));//new Pose(9.5, 9, Math.toRadians(180)));
             } else {
-                follower.setPose(new Pose(134.5, 9, Math.toRadians(0)));
+                follower.setPose(new Pose (132.5, 11, Math.toRadians(0)));//(134.5, 9, Math.toRadians(0)));
             }
         });
 

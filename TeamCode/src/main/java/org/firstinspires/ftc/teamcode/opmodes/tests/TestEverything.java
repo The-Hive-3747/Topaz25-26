@@ -64,7 +64,7 @@ public class TestEverything extends NextFTCOpMode {
     private static double TURRET_TEST_POS = 45, TURRET_POS_THRESHOLD = 1, TURRET_TIME_THRESHOLD_MS = 500, TURRET_TEST_TIME = 3000, TURRET_POS = 0;
     private static double TURRET_REZERO_TEST_TIME = 4000;
     public static double RAIL_DOWN_POS = 1.7, RAIL_POS_THRESHOLD = 0.2, RAIL_UP_POS = 2.3;
-    private static boolean hasRailPassed = false;
+    private static boolean hasRailUpPassed = false, hasRailDownPassed = false,  isTestingRailUp = false, isTestingRailDown = false, hasTestedRailUp = false, hasTestedRailDown = false;
     private static boolean isTestingHood = false, hasHoodPassed = false, hasHoodTestCompleted = false;
     private static boolean isTestingFlywheel = false, hasFlywheelPassed = false, hasFlywheelTestCompleted = false;
     private static boolean isTestingTurret = false, hasTurretPassed = false, hasTurretTestCompleted = false;
@@ -124,6 +124,7 @@ public class TestEverything extends NextFTCOpMode {
         telemetry.clearAll();
         telemetry.addData("Current Test", currentTest);
         runTests();
+        telemetry.update();
     }
     public void testConfig(){
         somethingFailed = false;
@@ -306,7 +307,6 @@ public class TestEverything extends NextFTCOpMode {
             if (null != railEnc) {
                 telemetry.addData("rail encoder", "PASS");
             }
-            telemetry.update();
             telemetrySent = true;
     }
     public void testDriveWheels(){
@@ -352,7 +352,6 @@ public class TestEverything extends NextFTCOpMode {
                 }
                 break;
         }
-        telemetry.update();
     }
 
     private void setAllWheelsToOff() {
@@ -409,7 +408,6 @@ public class TestEverything extends NextFTCOpMode {
         }else{
             telemetry.addLine("FAIL: Pinpoint skipped because not found in config");
         }
-        telemetry.update();
     }
     public void testIntake() {
         if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
@@ -427,34 +425,44 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addLine("Skipping intake because it doesn't exist in config");
             }
             testTimer.reset();
-            telemetry.update();
         }
     }
     public void testRail(){
         if (rail != null && railEnc != null) {
-            if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
-                telemetry.addLine("Press A to move to the next test");
-                telemetry.addLine("This test alternates moving the rail up and down");
-                if (rail.getPosition() > RAIL_DOWN) {
+            telemetry.addLine("Press A to move to the next test");
+            telemetry.addLine("This test alternates moving the rail up and down");
+            if (!hasTestedRailDown) {
+                if (!isTestingRailDown) {
+                    isTestingRailDown = true;
                     rail.setPosition(RAIL_DOWN);
-                    telemetry.addLine("rail is down");
-                } else {
-                    rail.setPosition(RAIL_UP);
-                    telemetry.addLine("rail is up");
+                    testTimer.reset();
+                    telemetry.addLine("Moving Rail DOWN");
+                } else if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
+                    if (railEnc.getVoltage() <= RAIL_DOWN_POS + RAIL_POS_THRESHOLD) {
+                        hasRailDownPassed = true;
+                    } else {
+                        hasRailDownPassed = false;
+                    }
+                    hasTestedRailDown = true;
                 }
-                testTimer.reset();
-                telemetry.update();
-            }
-            if (rail.getPosition() > RAIL_DOWN) {
-                if (railEnc.getVoltage() >= RAIL_UP_POS - RAIL_POS_THRESHOLD && railEnc.getVoltage() != 0) {
-                    hasRailPassed = true;
+            } else if (!hasTestedRailUp) {
+                if (!isTestingRailUp) {
+                    isTestingRailUp = true;
+                    rail.setPosition(RAIL_UP);
+                    testTimer.reset();
+                    telemetry.addLine("Moving Rail UP");
+                } else if (testTimer.milliseconds() > TEST_TIMER_THRESHOLD) {
+                    if (railEnc.getVoltage() >= RAIL_UP_POS - RAIL_POS_THRESHOLD) {
+                        hasRailUpPassed = true;
+                    } else {
+                        hasRailUpPassed = false;
+                    }
+                    hasTestedRailUp = true;
                 }
             } else {
-                if (railEnc.getVoltage() <= RAIL_DOWN_POS + RAIL_POS_THRESHOLD && railEnc.getVoltage() != 0) {
-                    hasRailPassed = true;
-                }
+                telemetry.addData("Rail Up", passedOrFailed(hasRailUpPassed));
+                telemetry.addData("Rail Down", passedOrFailed(hasRailDownPassed));
             }
-            telemetry.addData("Has Rail Passed?", hasRailPassed);
         } else {
             telemetry.addLine("Skipping rail because it doesn't exist in config");
         }
@@ -480,7 +488,6 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addLine("Skipping agitator because it doesn't exist in config");
             }
             testTimer.reset();
-            telemetry.update();
         }
     }
     public void testFirewheels(){
@@ -501,7 +508,6 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addLine("Skipping firewheels because one or both don't exist in config");
             }
             testTimer.reset();
-            telemetry.update();
         }
     }
     public void testFlywheelLeft(){
@@ -520,7 +526,6 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addLine("Skipping flywheel left because it doesn't exist in config");
             }
             testTimer.reset();
-            telemetry.update();
         }
     }
     public void testFlywheelRight(){
@@ -539,7 +544,6 @@ public class TestEverything extends NextFTCOpMode {
                 telemetry.addLine("Skipping flywheel right because it doesn't exist in config");
             }
             testTimer.reset();
-            telemetry.update();
         }
     }
     public void testFlywheelVel(){
@@ -577,7 +581,6 @@ public class TestEverything extends NextFTCOpMode {
         } else {
             telemetry.addLine("Skipping flywheel because at least one flywheel does not exist in config");
         }
-        telemetry.update();
     }
     public void testHood(){
         if (hood != null){
@@ -621,7 +624,6 @@ public class TestEverything extends NextFTCOpMode {
         } else {
             telemetry.addLine("Skipping hood because either the servo doesnt exist, or the FlywheelRight Encoder");
         }
-        telemetry.update();
     }
     public void testTurret(){
         if (turret != null){
@@ -666,7 +668,6 @@ public class TestEverything extends NextFTCOpMode {
         } else {
             telemetry.addLine("Skipping turret because either the servos don't exist, or the Intake Encoder");
         }
-        telemetry.update();
     }
     public void testTurretZero(){
         if (hasTurretPassed){
@@ -724,13 +725,13 @@ public class TestEverything extends NextFTCOpMode {
         telemetry.addData("Pinpoint X", passedOrFailed(pinpointXPass));
         telemetry.addData("Pinpoint Y", passedOrFailed(pinpointYPass));
         telemetry.addData("Pinpoint Heading", passedOrFailed(pinpointHeadingPass));
-        telemetry.addData("Rail", passedOrFailed(hasRailPassed));
+        telemetry.addData("Rail", passedOrFailed(hasRailDownPassed && hasRailUpPassed));
         telemetry.addData("Flywheel", passedOrFailed(hasFlywheelPassed));
         telemetry.addData("Hood", passedOrFailed(hasHoodPassed));
         telemetry.addData("Turret", passedOrFailed(hasTurretPassed));
         telemetry.addData("Turret Rezero", passedOrFailed(hasTurretRezeroPassed));
         telemetry.addLine("---");
-        telemetry.addData("Entire robot", passedOrFailed(!somethingFailed && pinpointXPass && pinpointYPass && pinpointHeadingPass && hasRailPassed && hasFlywheelPassed && hasHoodPassed && hasTurretPassed && hasTurretRezeroPassed));
+        telemetry.addData("Entire robot", passedOrFailed(!somethingFailed && pinpointXPass && pinpointYPass && pinpointHeadingPass && hasRailDownPassed && hasRailUpPassed && hasFlywheelPassed && hasHoodPassed && hasTurretPassed && hasTurretRezeroPassed));
     }
     public void runTests(){
         switch(currentTest){

@@ -10,8 +10,8 @@ import com.pedropathing.paths.PathConstraints;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose gateIntakeStartPose, farShootingPoseJiggle, closeShootingPoseJiggle, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose, intakeRecycledStartPose, intakeRecycledEndPose;
-    public static PathChain shootCloseJiggle, toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, shootFarJiggle, lineUpForIntakeRecycled, intakeRecycled;
+    public static Pose gateIntakeStartPose, farShootingPoseJiggle, closeShootingPoseJiggle, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, intakeGateStartPose, intakeGateEndPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose, intakeRecycledStartPose, intakeRecycledEndPose;
+    public static PathChain shootCloseJiggle, toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntakeGate, intakeGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, shootFarJiggle, lineUpForIntakeRecycled, intakeRecycled;
     public static double intakeHPAngle, gateIntakeAngle, closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
@@ -69,6 +69,8 @@ public class AutoPaths {
         openGateEndPose = flipOverCenter(new Pose(12, 77, intakeAngle));//x:13 y:76//x:18.5
         intake2StartPose = flipOverCenter(new Pose(53.25, 56.75, intakeAngle));//x:56.25 y:57.75//y:58//y: 61
         intake2EndPose = flipOverCenter(new Pose(3.5, 56.75, intakeAngle));//x:11.5 y:57.75//x:15 x:8 y:58//x: 9 y:61
+        intakeGateStartPose = flipOverCenter(new Pose(53.25, 42.75, intakeAngle));//x:56.25 y:57.75//y:58//y: 61
+        intakeGateEndPose = flipOverCenter(new Pose(3.5, 42.75, intakeAngle));//x:11.5 y:57.75//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(53.25, 34.75, intakeAngle));//x:56.25 y:33.75//y:38//y: 32
         intake3EndPose = flipOverCenter(new Pose(8, 34.75, intakeAngle));//x:16, y:33.75//x:11.5 y:38//y: 32
         curveIntake2 = flipOverCenter(new Pose(55,68));
