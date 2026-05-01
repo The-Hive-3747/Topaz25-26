@@ -60,7 +60,7 @@ public class AutoPaths {
         farShootingPose = flipOverCenter(new Pose(50.9, 17.9, shootAngle));//x:54.1 y:18.1
         farShootingPoseJiggle = flipOverCenter(new Pose(51, 18, shootAngle));//x:54 y:18
         intakeHPStartPose = flipOverCenter(new Pose(47, 15, intakeHPAngle)); //x:50 y:15 //intakeHpAngle
-        intakeHPEndPose = flipOverCenter(new Pose(8,10.5, intakeAngle));//x:10, y:10.5 //16 //10
+        intakeHPEndPose = flipOverCenter(new Pose(7.5,10.5, intakeAngle));//x:10, y:10.5 //16 //10
         intakeRecycledFarStartPose = flipOverCenter(new Pose(47, 15, intakeHPAngle)); //x:50 y:15
         intakeRecycledFarEndPose = flipOverCenter(new Pose(9,11.5, intakeAngle));//x:16, y:11.5 //15
         intake1StartPose = flipOverCenter(new Pose(48.25, 82.25, intakeAngle));//x:51.25 y:81.25//y:81 34//y:82//x: 47 y:78

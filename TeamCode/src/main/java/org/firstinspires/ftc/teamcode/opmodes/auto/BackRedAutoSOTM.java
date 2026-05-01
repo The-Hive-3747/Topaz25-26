@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class BackRedAutoSOTM extends AutoTemplate {
     @Override
     public void initAuto() {
+        TURRET_ANGLE_ADJUST_DEG=-2;
         startAsRedSOTM();
         startAtBackSOTM();
         setHoodPosFar();

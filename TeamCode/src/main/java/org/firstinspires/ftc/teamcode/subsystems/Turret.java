@@ -476,10 +476,10 @@ public class Turret implements Component {
     public void setAlliance(Alliance all) {
         this.alliance = all;
         if (this.alliance == Alliance.RED) {
-            goalX = 142;//142
+            goalX = 142.5;//142
             goalY = 144;
         } else {
-            goalX = 2;//0
+            goalX = 1.5;//0
             goalY = 144;
         }
     }
