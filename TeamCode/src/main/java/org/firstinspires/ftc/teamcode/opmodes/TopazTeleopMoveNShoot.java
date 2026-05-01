@@ -287,6 +287,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                         intake.startIntake();
                         isIntakeOn = true;
                         turretLights.railUpLights();
+                        turretLights.intakeOnLights();
                     }
                 });
 

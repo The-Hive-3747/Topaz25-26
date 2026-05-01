@@ -177,13 +177,13 @@ public class TurretLights {
     public void railDownLights(){
         railDown.setStartIndex(startIndexBottom);
         railDown.setStopIndex(stopIndexBottom);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, railDown);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_4, railDown);
     }
 
     public void railUpLights() {
         railUp.setStartIndex(startIndexBottom);
         railUp.setStopIndex(stopIndexBottom);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, railUp);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_3, railUp);
     }
 
     public void intakeOnLights(){
