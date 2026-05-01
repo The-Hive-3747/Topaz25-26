@@ -46,7 +46,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                 drive = new FieldCentricDrive(),
                 intake = new Intake(),
                 BindingsComponent.INSTANCE,
-                new PedroComponent(Constants::createFollower),
+                //new PedroComponent(Constants::createFollower),
                 aimbot = new AimbotSOTM(),
                 turret = new Turret(),
                 limelight = new Relocalization(),
@@ -89,7 +89,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public static double HOOD_DOWN_DEG = 67;//80;
     public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;//37;//40;//34;  // was 28 and works well
     public static double SHOOT_ON_THE_MOVE_DELAY = 0.1, FAR_ZONE_THRESHOLD_IN = 48, HOOD_COMP_TIME_THRESHOLD = 1000;
-    public static double HOOD_COMP_CONSTANT = 0.5;
+    public static double HOOD_COMP_CONSTANT = 1.5;
     public static boolean shotFromFar = false;
     Follower follower;
     public Alliance alliance;
@@ -106,11 +106,11 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         follower = Constants.createFollower(hardwareMap);
         if(OpModeTransfer.hasBeenTransferred) {
             drive.setOffset(OpModeTransfer.currentPose.getHeading());
-            follower.setStartingPose(OpModeTransfer.currentPose);
+            follower.setPose(OpModeTransfer.currentPose);
             //note: the opmode transfer is used later to reset the turret and hood which are built in post init
         }else{
             drive.setOffset(OpModeTransfer.startingPose.getHeading());
-            follower.setStartingPose(OpModeTransfer.startingPose);
+            follower.setPose(OpModeTransfer.startingPose);
         }
         follower.update();
 

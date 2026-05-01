@@ -30,7 +30,7 @@ public class AutoPaths {
             parkAngle = flipHeading180Degrees(180);
         }
         if (alliance == Alliance.BLUE) {
-            gateIntakeAngle = Math.toRadians(165);
+            gateIntakeAngle = Math.toRadians(140);
             intakeHPAngle = Math.toRadians(-160);
         } else {
             gateIntakeAngle = Math.toRadians(15);
@@ -77,8 +77,8 @@ public class AutoPaths {
         farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 
 
-        intakeGateStartPose = flipOverCenter(new Pose(30, 55, gateIntakeAngle));
-        intakeGateEndPose = flipOverCenter(new Pose(17, 59.2, gateIntakeAngle));
+        intakeGateStartPose = flipOverCenter(new Pose(30, 60, gateIntakeAngle));
+        intakeGateEndPose = flipOverCenter(new Pose(13, 62.5, gateIntakeAngle));
     }
 
 
