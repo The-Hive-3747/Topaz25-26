@@ -612,6 +612,27 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = intakeHPEndPose;
     }
 
+    /**
+     * aura gate intake
+     */
+    protected void intakeGate(double delayAfterIntake) {
+        lineUpForIntakeGate = generatePath(AutoTemplate.lastPose, intakeGateEndPose);
+        intakeGate = generatePath(intakeGateStartPose, intakeGateEndPose);
+        autonomousCommands = autonomousCommands.then(new SequentialGroup(
+                new ParallelGroup(
+                        new FollowPath(lineUpForIntakeGate),
+                        intake.startIntake
+                ),
+                new ParallelGroup(
+                        intake.startIntake,
+                        new FollowPath(intakeGate)
+                ),
+                new Delay(delayAfterIntake),
+                intake.railDownAuto
+        ));
+        lastPose = intakeGateEndPose;
+    }
+
     protected void intakeRecycledFar(double delayAfterIntake) {
         lineUpForIntakeRecycledFar = generatePath(AutoTemplate.lastPose, intakeRecycledFarStartPose);
         intakeRecycledFar = generatePath(intakeRecycledFarStartPose, intakeRecycledFarEndPose);
