@@ -88,12 +88,13 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public static double HOOD_DOWN_TICKS = 0;//1200;
     public static double HOOD_DOWN_DEG = 67;//80;
     public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;//37;//40;//34;  // was 28 and works well
-    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1;
-    public static double FAR_ZONE_THRESHOLD_IN = 48;
+    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1, FAR_ZONE_THRESHOLD_IN = 48, HOOD_COMP_TIME_THRESHOLD = 1000;
+    public static double HOOD_COMP_CONSTANT = 0.5;
+    public static boolean shotFromFar = false;
     Follower follower;
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-    public ElapsedTime lightTimer = new ElapsedTime();
+    public ElapsedTime lightTimer = new ElapsedTime(), hoodCompTimer = new ElapsedTime();
     List<LynxModule> allHubs;
 
 
@@ -226,6 +227,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             isIntakeOn = false;
             intake.railDown();
             if (isShootingFar) {
+                shotFromFar = true;
+                hoodCompTimer.reset();
                 intake.shootInHalves();//shootInThirds();
             } else {
                 intake.startRailDex();
@@ -392,7 +395,15 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
-        HOOD_POS = aimbot.getAimbotValues().hoodPos;
+        if (shotFromFar) {
+            if (hoodCompTimer.milliseconds() < HOOD_COMP_TIME_THRESHOLD) {
+                HOOD_POS = aimbot.getAimbotValues().hoodPos - ((flywheel.getFlywheelGoal() - flywheel.getVel()) * HOOD_COMP_CONSTANT);
+            } else {
+                shotFromFar = false;
+            }
+        } else {
+            HOOD_POS = aimbot.getAimbotValues().hoodPos;
+        }
         flywheel.setHoodGoalPos(HOOD_POS);
 
         shotParameters = ShooterKinematicsAccel.calculate3DMovingShot(
