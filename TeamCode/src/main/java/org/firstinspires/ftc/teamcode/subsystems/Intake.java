@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -107,6 +108,8 @@ public class Intake implements Component {
         prism = ActiveOpMode.hardwareMap().get(GoBildaPrismDriver.class, "lights");
         upperRail = ActiveOpMode.hardwareMap().get(AnalogInput.class, "upperRailEncoder");
         isIntakeOn = false;
+
+        prismLights = new TurretLights(ActiveOpMode.hardwareMap(), ActiveOpMode.telemetry());
 
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//encoder has 8192 pulses per revolution (REV thru V2)
 
