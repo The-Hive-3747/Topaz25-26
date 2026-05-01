@@ -19,9 +19,9 @@ public class FrontBlueAutoHawk extends AutoTemplate {
         openGate(0.4);
         shootAllThreeAtCloseCurved(0);
         openGate(0.4);
-        intakeGate(0.1);
+        intakeRecycledClose(0.1);
         shootAllThreeAtClose(0);
-        intakeGate(0.1);
+        intakeRecycledClose(0.1);
         shootAllThreeAtClose(0);
         parkAtFront();
     }

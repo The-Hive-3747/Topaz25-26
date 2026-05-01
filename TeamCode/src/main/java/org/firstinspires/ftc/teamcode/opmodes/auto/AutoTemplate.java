@@ -585,10 +585,10 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         generateIntakeCommand(lineUpForIntake3FromLastPose, intake3, intake3EndPose, delayAfterIntake);
     }
 
-    protected void intakeGate(double delayAfterIntake) {
-        lineUpForIntakeGate = generatePath(AutoTemplate.lastPose, intakeGateStartPose);
-        intakeGate = generatePath(intakeGateStartPose, intakeGateEndPose);
-        generateIntakeCommand(lineUpForIntakeGate, intakeGate, intakeGateEndPose, delayAfterIntake);
+    protected void intakeRecycledClose(double delayAfterIntake) {
+        lineUpForIntakeRecycledClose = generatePath(AutoTemplate.lastPose, intakeRecycledCloseStartPose);
+        intakeRecycledClose = generatePath(intakeRecycledCloseStartPose, intakeRecycledCloseEndPose);
+        generateIntakeCommand(lineUpForIntakeRecycledClose, intakeRecycledClose, intakeRecycledCloseEndPose, delayAfterIntake);
     }
 
     protected void intakeHP(double delayAfterIntake) {
@@ -612,24 +612,24 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = intakeHPEndPose;
     }
 
-    protected void intakeRecycled(double delayAfterIntake) {
-        lineUpForIntakeRecycled = generatePath(AutoTemplate.lastPose, intakeRecycledStartPose);
-        intakeRecycled = generatePath(intakeRecycledStartPose, intakeRecycledEndPose);
+    protected void intakeRecycledFar(double delayAfterIntake) {
+        lineUpForIntakeRecycledFar = generatePath(AutoTemplate.lastPose, intakeRecycledFarStartPose);
+        intakeRecycledFar = generatePath(intakeRecycledFarStartPose, intakeRecycledFarEndPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         //new InstantCommand(() -> reverseIntake = true),
                         //new InstantCommand(() -> FIREWHEELS_ON=false),
                         //intake.firewheelsOff,
-                        new FollowPath(lineUpForIntakeRecycled),
+                        new FollowPath(lineUpForIntakeRecycledFar),
                         intake.startIntake
                 ),
                 new ParallelGroup(
                         intake.startIntake,
-                        new FollowPath(intakeRecycled)
+                        new FollowPath(intakeRecycledFar)
                 ),
                 new Delay(delayAfterIntake)
         ));
-        lastPose = intakeRecycledEndPose;
+        lastPose = intakeRecycledFarEndPose;
     }
 
     /**
