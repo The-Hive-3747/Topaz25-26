@@ -221,6 +221,8 @@ public class Intake implements Component {
         agitator.setPower(AGITATOR_POWER);
         leftFireServo.setPower(0);
         rightFireServo.setPower(0);
+        prismLights.intakeOnLights();
+        //prismLights.railUpLights();
     }
     public void shiftIntake() {
         if (isIntakeOn) {
@@ -245,6 +247,8 @@ public class Intake implements Component {
         railDown();
         intakeRevTimer.reset();
         intakeStopping = true;
+        prismLights.intakeReversedLights();
+        //prismLights.railDownLights();
     }
     public void turnAgitator() {
 
@@ -258,10 +262,12 @@ public class Intake implements Component {
         railDownTimer.reset();
         isRailDownRequested = true;
         rail.setPosition(RAIL_DOWN);
+        prismLights.railDownLights();
     }
 
     public void railUp(){
         rail.setPosition(RAIL_UP);
+        prismLights.railUpLights();
     }
 
     public Artifact detectArtifact(YCbCr values) {
@@ -580,22 +586,22 @@ public class Intake implements Component {
             resetLatches();
             railUp();
             intakeMotor.setPower(INTAKE_POWER);
-            prismLights.railUpLights();
-            prismLights.intakeOnLights();
+            //prismLights.railUpLights();
+            //prismLights.intakeOnLights();
         }
 
         if (intakeReversed && intakeRevTimer.milliseconds() >= REVERSAL_TIME) {
             intakeMotor.setPower(0);
             intakeReversed = false;
             railDown();
-            prismLights.railDownLights();
+            //prismLights.railDownLights();
         }
         if(intakeStopping && intakeRevTimer.milliseconds() >= RAIL_DOWN_TIME){
             intakeStopping = false;
             intakeReversed = true;
             intakeMotor.setPower(INTAKE_POWER_REVERSED);
             intakeRevTimer.reset();
-            prismLights.intakeReversedLights();
+            //prismLights.intakeReversedLights();
         }
         if (agitatorResetRequest && !agitator.isBusy()) {
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
