@@ -196,7 +196,7 @@ public class Intake implements Component {
     public void reverseIntake() {
         intakeMotor.setPower(-INTAKE_POWER);
         rail.setPosition(RAIL_UP);
-        prismLights.intakeReversedLights();
+        //prismLights.intakeReversedLights();
     }
     public void stopReverseIntake() {
         intakeMotor.setPower(0);
@@ -224,7 +224,7 @@ public class Intake implements Component {
         agitator.setPower(AGITATOR_POWER);
         leftFireServo.setPower(0);
         rightFireServo.setPower(0);
-        prismLights.intakeOnLights();
+        //prismLights.intakeOnLights();
         //prismLights.railUpLights();
     }
     public void shiftIntake() {
@@ -250,7 +250,7 @@ public class Intake implements Component {
         railDown();
         intakeRevTimer.reset();
         intakeStopping = true;
-        prismLights.intakeReversedLights();
+        //prismLights.intakeReversedLights();
         //prismLights.railDownLights();
     }
     public void turnAgitator() {
@@ -265,12 +265,12 @@ public class Intake implements Component {
         railDownTimer.reset();
         isRailDownRequested = true;
         rail.setPosition(RAIL_DOWN);
-        prismLights.railDownLights();
+        //prismLights.railDownLights();
     }
 
     public void railUp(){
         rail.setPosition(RAIL_UP);
-        prismLights.railUpLights();
+        //prismLights.railUpLights();
     }
 
     public Artifact detectArtifact(YCbCr values) {

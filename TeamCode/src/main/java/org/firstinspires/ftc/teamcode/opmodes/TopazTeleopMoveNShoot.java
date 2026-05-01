@@ -239,8 +239,15 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
                 //.whenBecomesFalse(() -> intake.resetRailDex());
         g2RT.toggleOnBecomesTrue()
-                .whenBecomesTrue( () -> intake.reverseIntake())
-                .whenBecomesFalse(() -> intake.stopReverseIntake());
+                .whenBecomesTrue( () ->{
+                    intake.reverseIntake();
+                    turretLights.intakeReversedLights();
+                    turretLights.railUpLights();
+                })
+                .whenBecomesFalse(() -> {
+                    intake.stopReverseIntake();
+                    turretLights.intakeOffLights();
+                });
 
         g1Right.whenBecomesTrue(() -> turret.turretStateForward());
 
@@ -274,9 +281,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                         intake.stopIntake();
                         intake.resetRailDex();
                         isIntakeOn = false;
+                        turretLights.intakeOffLights();
+                        turretLights.railDownLights();
                     } else {
                         intake.startIntake();
                         isIntakeOn = true;
+                        turretLights.railUpLights();
                     }
                 });
 

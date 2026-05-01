@@ -25,6 +25,7 @@ public class TurretLights {
     PrismAnimations.Solid railDown = new PrismAnimations.Solid(Color.ORANGE);
     PrismAnimations.Solid intakeReversed = new PrismAnimations.Solid(Color.TEAL);
     PrismAnimations.Solid intakeOn = new PrismAnimations.Solid(Color.OLIVE);
+    PrismAnimations.Solid intakeOff = new PrismAnimations.Solid(Color.RED);
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
@@ -197,4 +198,10 @@ public class TurretLights {
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, intakeReversed);
     }
 
+    public void intakeOffLights(){
+        intakeOff.setStartIndex(startIndexTop);
+        intakeOff.setStopIndex(stopIndexTop);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_2, intakeOff);
+
+    }
 }
