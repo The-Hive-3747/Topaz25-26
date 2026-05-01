@@ -15,7 +15,7 @@ public class FrontRedAutoGatetake extends AutoTemplate {
         shootAllThreeAtClose(0);
         intake2(0.3);
         shootAllThreeAtClose(0);
-        intakeGate(0.3);
+        //intakeGate(0.3);
         parkAtFront();
     }
 }

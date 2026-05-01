@@ -63,12 +63,12 @@ public class AutoPaths {
         intakeHPEndPose = flipOverCenter(new Pose(8,10.5, intakeAngle));//x:10, y:10.5 //16 //10
         intakeRecycledStartPose = flipOverCenter(new Pose(47, 15, intakeHPAngle)); //x:50 y:15
         intakeRecycledEndPose = flipOverCenter(new Pose(9,11.5, intakeAngle));//x:16, y:11.5 //15
-        intake1StartPose = flipOverCenter(new Pose(48.25, 82.25, intakeAngle));//x:51.25 y:81.25//y:81 34//y:82//x: 47 y:78
-        intake1EndPose = flipOverCenter(new Pose(14, 82.25, intakeAngle)); //x:19 y:81.25//6//x:16 y:82//x: 16 :78
+        intake1StartPose = flipOverCenter(new Pose(48.25, 85.25, intakeAngle));//y:80.25 //x:51.25 y:81.25//y:81 34//y:82//x: 47 y:78
+        intake1EndPose = flipOverCenter(new Pose(14, 85.25, intakeAngle)); //x:19 y:81.25//6//x:16 y:82//x: 16 :78
         openGateStartPose = flipOverCenter(new Pose(32, 77, intakeAngle)); //x:35 y:76//78//x:35
-        openGateEndPose = flipOverCenter(new Pose(12, 77, intakeAngle));//x:13 y:76//x:18.5
-        intake2StartPose = flipOverCenter(new Pose(53.25, 56.75, intakeAngle));//x:56.25 y:57.75//y:58//y: 61
-        intake2EndPose = flipOverCenter(new Pose(3.5, 56.75, intakeAngle));//x:11.5 y:57.75//x:15 x:8 y:58//x: 9 y:61
+        openGateEndPose = flipOverCenter(new Pose(12, 77, intakeAngle));//x:13 y:76//x:18.5       intake2StartPose = flipOverCenter(new Pose(53.25, 56.75, intakeAngle));//x:56.25 y:57.75//y:58//y: 61
+        intake2StartPose = flipOverCenter(new Pose(53.25, 58.75, intakeAngle));//x:56.75
+        intake2EndPose = flipOverCenter(new Pose(8, 58.75, intakeAngle));//x:11.5 y:57.75//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(53.25, 34.75, intakeAngle));//x:56.25 y:33.75//y:38//y: 32
         intake3EndPose = flipOverCenter(new Pose(8, 34.75, intakeAngle));//x:16, y:33.75//x:11.5 y:38//y: 32
         curveIntake2 = flipOverCenter(new Pose(55,68));

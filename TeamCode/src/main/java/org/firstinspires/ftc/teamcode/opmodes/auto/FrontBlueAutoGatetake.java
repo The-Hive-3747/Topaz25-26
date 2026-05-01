@@ -13,7 +13,7 @@ public class FrontBlueAutoGatetake extends AutoTemplate {
         isShootNMove = true;
         turnFlywheelShootNMove();
         shootAllThreeAtClose(0);
-        intakeGate(1);
+        //intakeGate(1);
         shootAllThreeAtClose(0);
         parkAtFront();
     }

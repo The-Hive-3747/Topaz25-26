@@ -46,7 +46,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                 drive = new FieldCentricDrive(),
                 intake = new Intake(),
                 BindingsComponent.INSTANCE,
-                new PedroComponent(Constants::createFollower),
+                //new PedroComponent(Constants::createFollower),
                 aimbot = new AimbotSOTM(),
                 turret = new Turret(),
                 limelight = new Relocalization(),
@@ -104,7 +104,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public void onInit() {
         follower = Constants.createFollower(hardwareMap);
         drive.setOffset(OpModeTransfer.currentPose.getHeading());
-        follower.setStartingPose(OpModeTransfer.currentPose);
+        follower.setPose(OpModeTransfer.currentPose);
         follower.update();
 
         //limelight = new Relocalization();

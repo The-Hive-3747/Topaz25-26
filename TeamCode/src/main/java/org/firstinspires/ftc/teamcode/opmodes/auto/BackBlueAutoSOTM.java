@@ -17,11 +17,11 @@ public class BackBlueAutoSOTM extends AutoTemplate {
         shootAllThreeFarInHalves(0);
         intake3(0.1);
         shootAllThreeFarInHalves(0);
-        intakeRecycledFar(0.3);
+        intakeHP(0.3);
         shootAllThreeFarInHalves(0);
-        intakeRecycledFar(0.3);
+        intakeHP(0.3);
         shootAllThreeFarInHalves(0);
-        intakeRecycledFar(0.3);
+        intakeHP(0.3);
         shootAllThreeFarInHalves(0);
         parkAtBack();
     }
