@@ -193,6 +193,7 @@ public class Intake implements Component {
     public void reverseIntake() {
         intakeMotor.setPower(-INTAKE_POWER);
         rail.setPosition(RAIL_UP);
+        prismLights.intakeReversedLights();
     }
     public void stopReverseIntake() {
         intakeMotor.setPower(0);
@@ -579,18 +580,22 @@ public class Intake implements Component {
             resetLatches();
             railUp();
             intakeMotor.setPower(INTAKE_POWER);
+            prismLights.railUpLights();
+            prismLights.intakeOnLights();
         }
 
         if (intakeReversed && intakeRevTimer.milliseconds() >= REVERSAL_TIME) {
             intakeMotor.setPower(0);
             intakeReversed = false;
             railDown();
+            prismLights.railDownLights();
         }
         if(intakeStopping && intakeRevTimer.milliseconds() >= RAIL_DOWN_TIME){
             intakeStopping = false;
             intakeReversed = true;
             intakeMotor.setPower(INTAKE_POWER_REVERSED);
             intakeRevTimer.reset();
+            prismLights.intakeReversedLights();
         }
         if (agitatorResetRequest && !agitator.isBusy()) {
             agitator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

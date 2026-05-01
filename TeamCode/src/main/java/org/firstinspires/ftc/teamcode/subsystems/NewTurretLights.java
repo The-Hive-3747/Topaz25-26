@@ -44,6 +44,8 @@ public class NewTurretLights {
     int stopIndexTopRight = 17;
     int startIndexTopLeft = 18;
     int stopIndexTopLeft = 23;
+    int startIndexTop = 12;
+    int stopIndexTop = 23;
 
 
     public NewTurretLights(HardwareMap hm, Telemetry tm) {

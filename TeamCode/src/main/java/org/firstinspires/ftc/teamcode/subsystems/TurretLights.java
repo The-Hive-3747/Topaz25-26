@@ -21,6 +21,10 @@ public class TurretLights {
     PrismAnimations.Solid endgameWarning = new PrismAnimations.Solid(Color.YELLOW);
     PrismAnimations.Solid endgameFinalWarning = new PrismAnimations.Solid(Color.RED);
     PrismAnimations.Solid manualMode = new PrismAnimations.Solid(Color.BLUE);
+    PrismAnimations.Solid railUp = new PrismAnimations.Solid(Color.GREEN);
+    PrismAnimations.Solid railDown = new PrismAnimations.Solid(Color.ORANGE);
+    PrismAnimations.Solid intakeReversed = new PrismAnimations.Solid(Color.TEAL);
+    PrismAnimations.Solid intakeOn = new PrismAnimations.Solid(Color.OLIVE);
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
@@ -43,6 +47,8 @@ public class TurretLights {
     int stopIndexTopRight = 17;
     int startIndexTopLeft = 18;
     int stopIndexTopLeft = 23;
+    int startIndexTop = 12;
+    int stopIndexTop = 23;
 
 
     public TurretLights(HardwareMap hm, Telemetry tm) {
@@ -167,5 +173,28 @@ public class TurretLights {
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_6, green2);
     }
 
+    public void railDownLights(){
+        railDown.setStartIndex(startIndexBottom);
+        railDown.setStopIndex(stopIndexBottom);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, railDown);
+    }
+
+    public void railUpLights() {
+        railUp.setStartIndex(startIndexBottom);
+        railUp.setStopIndex(stopIndexBottom);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, railUp);
+    }
+
+    public void intakeOnLights(){
+        intakeOn.setStartIndex(startIndexTop);
+        intakeOn.setStopIndex(stopIndexBottom);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, intakeOn);
+    }
+
+    public void intakeReversedLights(){
+        intakeReversed.setStartIndex(startIndexTop);
+        intakeReversed.setStopIndex(stopIndexTop);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, intakeReversed);
+    }
 
 }
