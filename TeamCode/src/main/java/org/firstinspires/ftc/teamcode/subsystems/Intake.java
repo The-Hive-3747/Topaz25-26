@@ -83,7 +83,7 @@ public class Intake implements Component {
     public static double RAIL_DOWN_POS = 1.7;
     public static double RAIL_DOWN_POS_THRESHOLD = 0.2;
     public static double AGITATOR_SHOOT_IN_THIRDS_MS = 600;
-    public static double AGITATOR_SHOOT_IN_HALVES_MS = 600; //600;
+    public static double AGITATOR_SHOOT_IN_HALVES_MS = 700; //600; //600;
     YCbCr frontValues, rightValues, leftValues;
     double frontRed, frontGreen, frontBlue, rightRed, rightGreen, rightBlue, leftRed, leftGreen, leftBlue;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();

@@ -88,8 +88,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public static double HOOD_DOWN_TICKS = 0;//1200;
     public static double HOOD_DOWN_DEG = 67;//80;
     public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;//37;//40;//34;  // was 28 and works well
-    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1, FAR_ZONE_THRESHOLD_IN = 48, HOOD_COMP_TIME_THRESHOLD = 1000;
-    public static double HOOD_COMP_CONSTANT = 2;
+    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1, FAR_ZONE_THRESHOLD_IN = 48, HOOD_COMP_TIME_THRESHOLD = 3000, HOOD_COMP_DELAY = 650;
+    public static double HOOD_COMP_CONSTANT = 4, HOOD_COMP_TICKS = 2600;
     public static boolean shotFromFar = false;
     Follower follower;
     public Alliance alliance;
@@ -227,9 +227,10 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             isIntakeOn = false;
             intake.railDown();
             if (isShootingFar) {
-                shotFromFar = true;
+                //TODO: COMMENT THE "shotFromFar" LINE TO DISABLE HOOD COMPENSATION
+                //shotFromFar = true;
                 hoodCompTimer.reset();
-                intake.shootInHalves();//shootInThirds();
+                intake.shootInThirds();
             } else {
                 intake.startRailDex();
             }
@@ -241,12 +242,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         g2RT.toggleOnBecomesTrue()
                 .whenBecomesTrue( () ->{
                     intake.reverseIntake();
-                    turretLights.intakeReversedLights();
-                    turretLights.railUpLights();
+                    //turretLights.intakeReversedLights();
+                    //turretLights.railUpLights();
                 })
                 .whenBecomesFalse(() -> {
                     intake.stopReverseIntake();
-                    turretLights.intakeOffLights();
+                    //turretLights.intakeOffLights();
                 });
 
         g1Right.whenBecomesTrue(() -> turret.turretStateForward());
@@ -281,13 +282,13 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                         intake.stopIntake();
                         intake.resetRailDex();
                         isIntakeOn = false;
-                        turretLights.intakeOffLights();
-                        turretLights.railDownLights();
+                        //turretLights.intakeOffLights();
+                        //turretLights.railDownLights();
                     } else {
                         intake.startIntake();
                         isIntakeOn = true;
-                        turretLights.railUpLights();
-                        turretLights.intakeOnLights();
+                        //turretLights.railUpLights();
+                        //turretLights.intakeOnLights();
                     }
                 });
 
@@ -406,9 +407,23 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
+        /*
         if (shotFromFar) {
             if (hoodCompTimer.milliseconds() < HOOD_COMP_TIME_THRESHOLD) {
                 HOOD_POS = aimbot.getAimbotValues().hoodPos - ((flywheel.getFlywheelGoal() - flywheel.getVel()) * HOOD_COMP_CONSTANT);
+            } else {
+                shotFromFar = false;
+            }
+        } else {
+            HOOD_POS = aimbot.getAimbotValues().hoodPos;
+        }*/
+        if (shotFromFar) {
+            if (hoodCompTimer.milliseconds() < HOOD_COMP_TIME_THRESHOLD) {
+                if (hoodCompTimer.milliseconds() < HOOD_COMP_DELAY) {
+                    HOOD_POS = aimbot.getAimbotValues().hoodPos;
+                } else {
+                    HOOD_POS = aimbot.getAimbotValues().hoodPos - HOOD_COMP_TICKS;
+                }
             } else {
                 shotFromFar = false;
             }

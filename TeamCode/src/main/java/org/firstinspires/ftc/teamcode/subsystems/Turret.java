@@ -89,10 +89,10 @@ public class Turret implements Component {
     public static double TURRET_PID_KD_BLUE_CLOSE = 1.0;
     public static double TURRET_PID_KS_BLUE_CLOSE = 0.125;
     public static double TURRET_PID_KI_BLUE_CLOSE = 0.0000000000001;
-    public static double TURRET_PID_KP_BLUE_FAR = 0.0045; //0.0048;//0.005;//0.0015; //mostly tested
-    public static double TURRET_PID_KD_BLUE_FAR = 0.55;//1;
-    public static double TURRET_PID_KS_BLUE_FAR_POSITIVE = 0.123;//0.135;
-    public static double TURRET_PID_KS_BLUE_FAR_NEGATIVE = 0.048;//0.065;
+    public static double TURRET_PID_KP_BLUE_FAR = 0.004; //0.0045; //0.0048;//0.005;//0.0015; //mostly tested
+    public static double TURRET_PID_KD_BLUE_FAR = 0.45;//1;
+    public static double TURRET_PID_KS_BLUE_FAR_POSITIVE = 0.115; //0.123;//0.135;
+    public static double TURRET_PID_KS_BLUE_FAR_NEGATIVE = 0.04; //0.048;//0.065;
     public static double TURRET_PID_KI_BLUE_FAR = 0.0;//0.0000000000001;
 
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
@@ -205,6 +205,10 @@ public class Turret implements Component {
                 turretFindingSwitch = false;
                 //zeroTurret();
                 turretPIDSOTM.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDRedFar.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDRedClose.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDBlueFar.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDBlueClose.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
                 turretRezeroed = true;
             }
             if (turretRezeroed && Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= TURRET_ANGLE_DEADZONE) {
@@ -221,6 +225,10 @@ public class Turret implements Component {
                 turretFindingSwitch = false;
                 //zeroTurret();
                 turretPIDSOTM.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDRedFar.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDRedClose.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDBlueFar.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
+                turretPIDBlueClose.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
                 turretRezeroed = true;
             }
             if (turretRezeroed && Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= TURRET_ANGLE_DEADZONE) {
