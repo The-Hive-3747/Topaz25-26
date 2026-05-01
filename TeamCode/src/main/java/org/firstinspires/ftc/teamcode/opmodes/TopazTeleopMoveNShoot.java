@@ -46,7 +46,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                 drive = new FieldCentricDrive(),
                 intake = new Intake(),
                 BindingsComponent.INSTANCE,
-                //new PedroComponent(Constants::createFollower),
+                new PedroComponent(Constants::createFollower),
                 aimbot = new AimbotSOTM(),
                 turret = new Turret(),
                 limelight = new Relocalization(),
@@ -88,13 +88,12 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     public static double HOOD_DOWN_TICKS = 0;//1200;
     public static double HOOD_DOWN_DEG = 67;//80;
     public static double HEIGHT_DIFF_ROBOT_TO_GOAL_IN = 34;//37;//40;//34;  // was 28 and works well
-    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1, FAR_ZONE_THRESHOLD_IN = 48, HOOD_COMP_TIME_THRESHOLD = 3000, HOOD_COMP_DELAY = 650;
-    public static double HOOD_COMP_CONSTANT = 4, HOOD_COMP_TICKS = 2600;
-    public static boolean shotFromFar = false;
+    public static double SHOOT_ON_THE_MOVE_DELAY = 0.1;
+    public static double FAR_ZONE_THRESHOLD_IN = 48;
     Follower follower;
     public Alliance alliance;
     TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-    public ElapsedTime lightTimer = new ElapsedTime(), hoodCompTimer = new ElapsedTime();
+    public ElapsedTime lightTimer = new ElapsedTime();
     List<LynxModule> allHubs;
 
 
@@ -104,14 +103,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
     @Override
     public void onInit() {
         follower = Constants.createFollower(hardwareMap);
-        if(OpModeTransfer.hasBeenTransferred) {
-            drive.setOffset(OpModeTransfer.currentPose.getHeading());
-            follower.setPose(OpModeTransfer.currentPose);
-            //note: the opmode transfer is used later to reset the turret and hood which are built in post init
-        }else{
-            drive.setOffset(OpModeTransfer.startingPose.getHeading());
-            follower.setPose(OpModeTransfer.startingPose);
-        }
+        drive.setOffset(OpModeTransfer.currentPose.getHeading());
+        follower.setStartingPose(OpModeTransfer.currentPose);
         follower.update();
 
         //limelight = new Relocalization();
@@ -170,12 +163,13 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
+        //follower.startTeleOpDrive();
+
         matchTimer.reset();
 
         if (!OpModeTransfer.hasBeenTransferred) {
             turret.zeroTurret();
             flywheel.resetHoodEncoder();
-            intake.resetAgitatorEncoder();
         }
 
         turret.setAlliance(alliance);
@@ -227,9 +221,6 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
             isIntakeOn = false;
             intake.railDown();
             if (isShootingFar) {
-                //TODO: COMMENT THE "shotFromFar" LINE TO DISABLE HOOD COMPENSATION
-                //shotFromFar = true;
-                hoodCompTimer.reset();
                 intake.shootInThirds();
             } else {
                 intake.startRailDex();
@@ -240,15 +231,8 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
         //g2LT.whenBecomesFalse(() -> intake.startResetRailDex());//intake.resetRailDex());
                 //.whenBecomesFalse(() -> intake.resetRailDex());
         g2RT.toggleOnBecomesTrue()
-                .whenBecomesTrue( () ->{
-                    intake.reverseIntake();
-                    //turretLights.intakeReversedLights();
-                    //turretLights.railUpLights();
-                })
-                .whenBecomesFalse(() -> {
-                    intake.stopReverseIntake();
-                    //turretLights.intakeOffLights();
-                });
+                .whenBecomesTrue( () -> intake.reverseIntake())
+                .whenBecomesFalse(() -> intake.stopReverseIntake());
 
         g1Right.whenBecomesTrue(() -> turret.turretStateForward());
 
@@ -282,13 +266,9 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
                         intake.stopIntake();
                         intake.resetRailDex();
                         isIntakeOn = false;
-                        //turretLights.intakeOffLights();
-                        //turretLights.railDownLights();
                     } else {
                         intake.startIntake();
                         isIntakeOn = true;
-                        //turretLights.railUpLights();
-                        //turretLights.intakeOnLights();
                     }
                 });
 
@@ -308,9 +288,9 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         g1A.whenBecomesTrue(() -> {
             if (alliance == Alliance.RED) {
-                follower.setPose(new Pose(11.5, 11, Math.toRadians(180)));//new Pose(9.5, 9, Math.toRadians(180)));
+                follower.setPose(new Pose(9.5, 9, Math.toRadians(180)));
             } else {
-                follower.setPose(new Pose (132.5, 11, Math.toRadians(0)));//(134.5, 9, Math.toRadians(0)));
+                follower.setPose(new Pose(134.5, 9, Math.toRadians(0)));
             }
         });
 
@@ -407,29 +387,7 @@ public class TopazTeleopMoveNShoot extends NextFTCOpMode {
 
         aimbot.setCurrentPose(follower.getPose(), follower.getVelocity());
         aimbot.update();
-        /*
-        if (shotFromFar) {
-            if (hoodCompTimer.milliseconds() < HOOD_COMP_TIME_THRESHOLD) {
-                HOOD_POS = aimbot.getAimbotValues().hoodPos - ((flywheel.getFlywheelGoal() - flywheel.getVel()) * HOOD_COMP_CONSTANT);
-            } else {
-                shotFromFar = false;
-            }
-        } else {
-            HOOD_POS = aimbot.getAimbotValues().hoodPos;
-        }*/
-        if (shotFromFar) {
-            if (hoodCompTimer.milliseconds() < HOOD_COMP_TIME_THRESHOLD) {
-                if (hoodCompTimer.milliseconds() < HOOD_COMP_DELAY) {
-                    HOOD_POS = aimbot.getAimbotValues().hoodPos;
-                } else {
-                    HOOD_POS = aimbot.getAimbotValues().hoodPos - HOOD_COMP_TICKS;
-                }
-            } else {
-                shotFromFar = false;
-            }
-        } else {
-            HOOD_POS = aimbot.getAimbotValues().hoodPos;
-        }
+        HOOD_POS = aimbot.getAimbotValues().hoodPos;
         flywheel.setHoodGoalPos(HOOD_POS);
 
         shotParameters = ShooterKinematicsAccel.calculate3DMovingShot(

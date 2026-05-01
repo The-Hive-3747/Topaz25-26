@@ -383,7 +383,7 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         if (alliance == Alliance.RED) { //80.8
             startPose = new Pose(81.8, 9, Math.toRadians(0));//new Pose(81, 9.5, Math.toRadians(0)); //79.5
         } else {
-            startPose = new Pose(61.5, 9, Math.toRadians(180));//Y11 new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
+            startPose = new Pose(61.5, 11, Math.toRadians(180));//new Pose(64.5, 9.5,Math.toRadians(180)); //MEASURED FOR NEW ROBOT
         }
         AutoPaths.setStartPose(startPose);
         lastPose = startPose;
@@ -585,12 +585,6 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         generateIntakeCommand(lineUpForIntake3FromLastPose, intake3, intake3EndPose, delayAfterIntake);
     }
 
-    protected void intakeRecycledClose(double delayAfterIntake) {
-        lineUpForIntakeRecycledClose = generatePath(AutoTemplate.lastPose, intakeRecycledCloseStartPose);
-        intakeRecycledClose = generatePath(intakeRecycledCloseStartPose, intakeRecycledCloseEndPose);
-        generateIntakeCommand(lineUpForIntakeRecycledClose, intakeRecycledClose, intakeRecycledCloseEndPose, delayAfterIntake);
-    }
-
     protected void intakeHP(double delayAfterIntake) {
         lineUpForIntakeHPFromLastPose = generatePath(AutoTemplate.lastPose, intakeHPStartPose);
         intakeHP = generatePath(intakeHPStartPose, intakeHPEndPose);
@@ -612,45 +606,24 @@ public abstract class AutoTemplate extends NextFTCOpMode {
         lastPose = intakeHPEndPose;
     }
 
-    /**
-     * aura gate intake
-     */
-    protected void intakeGate(double delayAfterIntake) {
-        lineUpForIntakeGate = generatePath(AutoTemplate.lastPose, intakeGateEndPose);
-        intakeGate = generatePath(intakeGateStartPose, intakeGateEndPose);
-        autonomousCommands = autonomousCommands.then(new SequentialGroup(
-                new ParallelGroup(
-                        new FollowPath(lineUpForIntakeGate),
-                        intake.startIntake
-                ),
-                new ParallelGroup(
-                        intake.startIntake,
-                        new FollowPath(intakeGate)
-                ),
-                new Delay(delayAfterIntake),
-                intake.railDownAuto
-        ));
-        lastPose = intakeGateEndPose;
-    }
-
-    protected void intakeRecycledFar(double delayAfterIntake) {
-        lineUpForIntakeRecycledFar = generatePath(AutoTemplate.lastPose, intakeRecycledFarStartPose);
-        intakeRecycledFar = generatePath(intakeRecycledFarStartPose, intakeRecycledFarEndPose);
+    protected void intakeRecycled(double delayAfterIntake) {
+        lineUpForIntakeRecycled = generatePath(AutoTemplate.lastPose, intakeRecycledStartPose);
+        intakeRecycled = generatePath(intakeRecycledStartPose, intakeRecycledEndPose);
         autonomousCommands = autonomousCommands.then(new SequentialGroup(
                 new ParallelGroup(
                         //new InstantCommand(() -> reverseIntake = true),
                         //new InstantCommand(() -> FIREWHEELS_ON=false),
                         //intake.firewheelsOff,
-                        new FollowPath(lineUpForIntakeRecycledFar),
+                        new FollowPath(lineUpForIntakeRecycled),
                         intake.startIntake
                 ),
                 new ParallelGroup(
                         intake.startIntake,
-                        new FollowPath(intakeRecycledFar)
+                        new FollowPath(intakeRecycled)
                 ),
                 new Delay(delayAfterIntake)
         ));
-        lastPose = intakeRecycledFarEndPose;
+        lastPose = intakeRecycledEndPose;
     }
 
     /**

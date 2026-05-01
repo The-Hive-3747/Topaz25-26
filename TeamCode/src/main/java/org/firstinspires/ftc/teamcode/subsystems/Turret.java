@@ -89,11 +89,11 @@ public class Turret implements Component {
     public static double TURRET_PID_KD_BLUE_CLOSE = 1.0;
     public static double TURRET_PID_KS_BLUE_CLOSE = 0.125;
     public static double TURRET_PID_KI_BLUE_CLOSE = 0.0000000000001;
-    public static double TURRET_PID_KP_BLUE_FAR = 0.004; //0.0045; //0.0048;//0.005;//0.0015; //mostly tested
-    public static double TURRET_PID_KD_BLUE_FAR = 0.45;//1;
-    public static double TURRET_PID_KS_BLUE_FAR_POSITIVE = 0.115; //0.123;//0.135;
-    public static double TURRET_PID_KS_BLUE_FAR_NEGATIVE = 0.04; //0.048;//0.065;
-    public static double TURRET_PID_KI_BLUE_FAR = 0.0;//0.0000000000001;
+    public static double TURRET_PID_KP_BLUE_FAR = 0.0015; //mostly tested
+    public static double TURRET_PID_KD_BLUE_FAR = 1;
+    public static double TURRET_PID_KS_BLUE_FAR_POSITIVE = 0.135;
+    public static double TURRET_PID_KS_BLUE_FAR_NEGATIVE = 0.065;
+    public static double TURRET_PID_KI_BLUE_FAR = 0.0000000000001;
 
     private static final double LEFT_TURRET_LIMIT = -190, RIGHT_TURRET_LIMIT = 190;
     private double shootingGoal = 0;
@@ -205,10 +205,6 @@ public class Turret implements Component {
                 turretFindingSwitch = false;
                 //zeroTurret();
                 turretPIDSOTM.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDRedFar.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDRedClose.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDBlueFar.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDBlueClose.setGoal(new KineticState(getTurretAngle() -LEFT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
                 turretRezeroed = true;
             }
             if (turretRezeroed && Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= TURRET_ANGLE_DEADZONE) {
@@ -225,10 +221,6 @@ public class Turret implements Component {
                 turretFindingSwitch = false;
                 //zeroTurret();
                 turretPIDSOTM.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDRedFar.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDRedClose.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDBlueFar.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
-                turretPIDBlueClose.setGoal(new KineticState(getTurretAngle() -RIGHT_LIMIT_TICKS/TURRET_TICKS_TO_DEGREES));
                 turretRezeroed = true;
             }
             if (turretRezeroed && Math.abs(this.getTurretAngle() - this.getTurretGoal()) <= TURRET_ANGLE_DEADZONE) {
@@ -250,39 +242,9 @@ public class Turret implements Component {
         } else if (TurretState.AUTO_OFF != turretState  && !turretFindingSwitch) {
             //calculate the turret power because both use it
             if (isTeleop) {
-                if (thruTurret.getCurrentPosition()<0) { //turret is on negative side
-                    if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
-                        pidState = PIDState.RED_FAR_PID;
-                        turretPower = turretPIDRedFar.calculate(new KineticState(this.getTurretAngle()));
-                        if ((this.getTurretGoal() - this.getTurretAngle()) < 0) {
-                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR_POSITIVE;
-                        } else {
-                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_FAR_NEGATIVE;
-                        }
-                    } else {
-                        pidState = PIDState.RED_CLOSE_PID;
-                        turretPower = turretPIDRedClose.calculate(new KineticState(this.getTurretAngle()));
-                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_RED_CLOSE;
-                    }
-                } else if (thruTurret.getCurrentPosition()>=0) { //turret is in positive zone
-                    if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
-                        pidState = PIDState.BLUE_FAR_PID;
-                        turretPower = turretPIDBlueFar.calculate(new KineticState(this.getTurretAngle()));
-                        if ((this.getTurretGoal() - this.getTurretAngle()) > 0) {
-                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR_POSITIVE;
-                        } else {
-                            TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_FAR_NEGATIVE;
-                        }
-                    } else { //default
-                        pidState = PIDState.BLUE_CLOSE_PID;
-                        turretPower = turretPIDBlueClose.calculate(new KineticState(this.getTurretAngle()));
-                        TURRET_PID_KS_CURRENT = TURRET_PID_KS_BLUE_CLOSE;
-                    }
-                } else {
                 pidState = PIDState.TELEOP_PID;
                 turretPower = turretPIDSOTM.calculate(new KineticState(this.getTurretAngle()));
                 TURRET_PID_KS_CURRENT = TURRET_PID_KS_SOTM;
-                }
             } else if (Alliance.RED == alliance) {
                 if (currentPose.getY()<FAR_ZONE_THRESHOLD_IN) {
                     pidState = PIDState.RED_FAR_PID;
@@ -476,10 +438,10 @@ public class Turret implements Component {
     public void setAlliance(Alliance all) {
         this.alliance = all;
         if (this.alliance == Alliance.RED) {
-            goalX = 142.5;//142
+            goalX = 144;//142
             goalY = 144;
         } else {
-            goalX = 1.5;//0
+            goalX = 0;//0
             goalY = 144;
         }
     }

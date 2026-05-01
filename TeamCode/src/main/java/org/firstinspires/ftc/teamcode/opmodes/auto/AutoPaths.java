@@ -10,8 +10,8 @@ import com.pedropathing.paths.PathConstraints;
 import org.firstinspires.ftc.teamcode.utilities.Alliance;
 
 public class AutoPaths {
-    public static Pose intakeGateStartPose, farShootingPoseJiggle, closeShootingPoseJiggle, intakeGateEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, intakeRecycledCloseStartPose, intakeRecycledCloseEndPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose, intakeRecycledFarStartPose, intakeRecycledFarEndPose;
-    public static PathChain intakeGate, lineUpForIntakeGate, shootCloseJiggle, toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntakeRecycledClose, intakeRecycledClose, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, shootFarJiggle, lineUpForIntakeRecycledFar, intakeRecycledFar;
+    public static Pose gateIntakeStartPose, farShootingPoseJiggle, closeShootingPoseJiggle, gateIntakeEndPose, startingPose, curveIntake2,closeShootingPose, intakeHPStartPose, intakeHPEndPose, farShootingPose, intake1StartPose, intake1EndPose, intake2StartPose, intake2EndPose, backParkPose, frontParkPose, openGateStartPose, openGateEndPose, intake3StartPose, intake3EndPose, farJigglePose, intakeRecycledStartPose, intakeRecycledEndPose;
+    public static PathChain shootCloseJiggle, toShootAtCloseFromLastPoseCurved, lineUpForIntakeHPFromLastPose, intakeHP, lineUpForIntake1FromLastPose, intake1, lineUpForOpenGateFromLastPose, lineUpForIntake2FromLastPose, intake2, parkAtBackFromLastPose, parkAtFrontFromLastPose, openGate, lineUpForIntake3FromLastPose, intake3, toShootAtCloseFromLastPose, toShootAtFarFromLastPose, shootFarJiggle, lineUpForIntakeRecycled, intakeRecycled;
     public static double intakeHPAngle, gateIntakeAngle, closeShootAngle, shootAngle, parkAngle, startAngle, intakeAngle, openGateAngle;
     public static Alliance alliance;
     public static Follower follower;
@@ -30,7 +30,7 @@ public class AutoPaths {
             parkAngle = flipHeading180Degrees(180);
         }
         if (alliance == Alliance.BLUE) {
-            gateIntakeAngle = Math.toRadians(140);
+            gateIntakeAngle = Math.toRadians(165);
             intakeHPAngle = Math.toRadians(-160);
         } else {
             gateIntakeAngle = Math.toRadians(15);
@@ -60,25 +60,25 @@ public class AutoPaths {
         farShootingPose = flipOverCenter(new Pose(50.9, 17.9, shootAngle));//x:54.1 y:18.1
         farShootingPoseJiggle = flipOverCenter(new Pose(51, 18, shootAngle));//x:54 y:18
         intakeHPStartPose = flipOverCenter(new Pose(47, 15, intakeHPAngle)); //x:50 y:15 //intakeHpAngle
-        intakeHPEndPose = flipOverCenter(new Pose(7.5,10.5, intakeAngle));//x:10, y:10.5 //16 //10
-        intakeRecycledFarStartPose = flipOverCenter(new Pose(47, 15, intakeHPAngle)); //x:50 y:15
-        intakeRecycledFarEndPose = flipOverCenter(new Pose(9,11.5, intakeAngle));//x:16, y:11.5 //15
+        intakeHPEndPose = flipOverCenter(new Pose(8,10.5, intakeAngle));//x:10, y:10.5 //16 //10
+        intakeRecycledStartPose = flipOverCenter(new Pose(47, 15, intakeHPAngle)); //x:50 y:15
+        intakeRecycledEndPose = flipOverCenter(new Pose(9,11.5, intakeAngle));//x:16, y:11.5 //15
         intake1StartPose = flipOverCenter(new Pose(48.25, 82.25, intakeAngle));//x:51.25 y:81.25//y:81 34//y:82//x: 47 y:78
         intake1EndPose = flipOverCenter(new Pose(14, 82.25, intakeAngle)); //x:19 y:81.25//6//x:16 y:82//x: 16 :78
         openGateStartPose = flipOverCenter(new Pose(32, 77, intakeAngle)); //x:35 y:76//78//x:35
         openGateEndPose = flipOverCenter(new Pose(12, 77, intakeAngle));//x:13 y:76//x:18.5
         intake2StartPose = flipOverCenter(new Pose(53.25, 56.75, intakeAngle));//x:56.25 y:57.75//y:58//y: 61
         intake2EndPose = flipOverCenter(new Pose(3.5, 56.75, intakeAngle));//x:11.5 y:57.75//x:15 x:8 y:58//x: 9 y:61
-        intakeRecycledCloseStartPose = flipOverCenter(new Pose(53.25, 42.75, intakeAngle));//x:56.25 y:57.75//y:58//y: 61
-        intakeRecycledCloseEndPose = flipOverCenter(new Pose(3.5, 42.75, intakeAngle));//x:11.5 y:57.75//x:15 x:8 y:58//x: 9 y:61
         intake3StartPose = flipOverCenter(new Pose(53.25, 34.75, intakeAngle));//x:56.25 y:33.75//y:38//y: 32
         intake3EndPose = flipOverCenter(new Pose(8, 34.75, intakeAngle));//x:16, y:33.75//x:11.5 y:38//y: 32
         curveIntake2 = flipOverCenter(new Pose(55,68));
         farJigglePose = flipOverCenter(new Pose (55,17, shootAngle));
 
 
-        intakeGateStartPose = flipOverCenter(new Pose(30, 60, gateIntakeAngle));
-        intakeGateEndPose = flipOverCenter(new Pose(13, 62.5, gateIntakeAngle));
+
+
+        gateIntakeStartPose = flipOverCenter(new Pose(30, 55, gateIntakeAngle));
+        gateIntakeEndPose = flipOverCenter(new Pose(17, 59.2, gateIntakeAngle));
     }
 
 
